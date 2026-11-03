@@ -39,6 +39,7 @@ versionado (`.env*` está no `.gitignore`, exceto `.env.example`).
 | `NEXT_PUBLIC_SUPABASE_URL`             | URL do projeto Supabase                                      |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Chave pública `sb_publishable_...` (ou a chave legada `anon`) |
 | `SUPABASE_SECRET_KEY`                  | Chave secreta `sb_secret_...` — **somente servidor**, ignora RLS |
+| `SHOW_CONTENT_PLACEHOLDERS`            | `true` exibe o conteúdo provisório em builds de revisão (ver abaixo) |
 
 Variáveis com prefixo `NEXT_PUBLIC_` são expostas ao navegador. Nunca use esse
 prefixo para segredos, e nunca coloque a chave secreta / `service_role` no
@@ -59,27 +60,48 @@ código; quando for, deve ser lida apenas em código de servidor.
 ## Estrutura
 
 ```
-public/                 Arquivos estáticos
+public/patterns/        Padrão vetorial de curvas de nível
 src/
-  app/                  Rotas (App Router), layout raiz e CSS global
+  app/                  Rotas (App Router), layout raiz, CSS global e favicon
+  assets/brand/         Logotipo oficial (importado via next/image)
   components/
-    layout/             Componentes estruturais (ex.: Container)
+    ui/                 Design system: Button, Badge, Container, SectionHeading, CardMedia
+    layout/             Header, menu mobile, Footer e logotipo
+    home/               Seções e cards da homepage
+  data/
+    site.ts             Conteúdo validado do briefing (temporário, até o Supabase)
+    placeholders.ts     Conteúdo provisório apenas para revisão de layout
   lib/
     supabase/           Clientes Supabase (navegador e servidor)
+    utils/              Utilitários compartilhados
   types/
+    content.ts          Formatos de conteúdo derivados do schema
     database.types.ts   Tipos do banco gerados pelo Supabase CLI (não editar)
 supabase/
   config.toml           Configuração do Supabase CLI (ambiente local)
   migrations/           Migrations SQL versionadas
 docs/
   database-schema.md    Modelo de dados
+  design-system.md      Tokens, tipografia, componentes e breakpoints
 ```
 
-Pastas previstas para as próximas etapas, criadas quando houver uso real:
-`src/components/ui/` (design system) e `src/lib/utils/` (utilitários
-compartilhados).
-
 Importações internas usam o alias `@/*` → `src/*`.
+
+## Conteúdo da homepage
+
+Nesta fase a homepage usa dados locais; a integração com o Supabase virá na
+próxima etapa, sem mudar os componentes (as props seguem os tipos do schema).
+
+- `src/data/site.ts`: textos do briefing (hero, apresentação, pilares, linhas
+  de pesquisa, chamada de cooperação).
+- `src/data/placeholders.ts`: projetos, publicações e instituições de
+  **exemplo**, com textos genéricos e marcados como "Conteúdo provisório".
+  Aparecem em `npm run dev` ou com `SHOW_CONTENT_PLACEHOLDERS=true`; no build
+  de produção padrão, as seções mostram apenas uma mensagem de "em breve".
+
+Enquanto as páginas internas não existem, a navegação aponta para as seções
+da homepage (`/#pesquisa`, `/#projetos`…) e ações sem destino real (como
+"Ver todos", "Conheça a GeoLogar" e "Fale com a GeoLogar") não são exibidas.
 
 ## Supabase
 
