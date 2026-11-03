@@ -38,10 +38,12 @@ versionado (`.env*` está no `.gitignore`, exceto `.env.example`).
 | -------------------------------------- | ------------------------------------------------------------ |
 | `NEXT_PUBLIC_SUPABASE_URL`             | URL do projeto Supabase                                      |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Chave pública `sb_publishable_...` (ou a chave legada `anon`) |
+| `SUPABASE_SECRET_KEY`                  | Chave secreta `sb_secret_...` — **somente servidor**, ignora RLS |
 
 Variáveis com prefixo `NEXT_PUBLIC_` são expostas ao navegador. Nunca use esse
 prefixo para segredos, e nunca coloque a chave secreta / `service_role` no
-frontend ou no repositório.
+frontend ou no repositório. A `SUPABASE_SECRET_KEY` ainda não é usada pelo
+código; quando for, deve ser lida apenas em código de servidor.
 
 ## Scripts
 
