@@ -54,6 +54,7 @@ código; quando for, deve ser lida apenas em código de servidor.
 | `npm run start`     | Executa o build de produção localmente                    |
 | `npm run lint`      | ESLint (regras do Next.js + TypeScript)                   |
 | `npm run typecheck` | Gera os tipos de rotas (`next typegen`) e roda `tsc --noEmit` |
+| `npm run db:types`  | Regenera `src/types/database.types.ts` a partir do projeto Supabase vinculado |
 
 ## Estrutura
 
@@ -65,39 +66,64 @@ src/
     layout/             Componentes estruturais (ex.: Container)
   lib/
     supabase/           Clientes Supabase (navegador e servidor)
+  types/
+    database.types.ts   Tipos do banco gerados pelo Supabase CLI (não editar)
 supabase/
   config.toml           Configuração do Supabase CLI (ambiente local)
   migrations/           Migrations SQL versionadas
+docs/
+  database-schema.md    Modelo de dados
 ```
 
 Pastas previstas para as próximas etapas, criadas quando houver uso real:
-`src/components/ui/` (design system), `src/lib/utils/` (utilitários
-compartilhados) e `src/types/` (tipos compartilhados, incluindo os tipos gerados
-do banco).
+`src/components/ui/` (design system) e `src/lib/utils/` (utilitários
+compartilhados).
 
 Importações internas usam o alias `@/*` → `src/*`.
 
 ## Supabase
 
-O projeto utilizará o Supabase para banco de dados (PostgreSQL com Row Level
-Security), autenticação e armazenamento de arquivos. **O schema de negócio ainda
-não foi implementado** — será modelado na próxima etapa por meio de migrations
-versionadas em `supabase/migrations/`.
+O projeto usa o Supabase para banco de dados (PostgreSQL com Row Level
+Security), e futuramente para autenticação e armazenamento de arquivos. O modelo
+de dados está documentado em [`docs/database-schema.md`](docs/database-schema.md).
 
-Clientes disponíveis:
+Clientes disponíveis (tipados com `Database`):
 
 - `@/lib/supabase/client` — para Client Components (navegador).
 - `@/lib/supabase/server` — para Server Components, Server Actions e Route Handlers.
 
+### Migrations
+
+O banco é gerenciado **exclusivamente por migrations** versionadas em
+`supabase/migrations/`, que são a fonte de verdade do schema. Evite alterar a
+estrutura do banco remoto pelo painel do Supabase: toda mudança deve virar uma
+migration no Git.
+
 O Supabase CLI está instalado como dependência de desenvolvimento
-(`npx supabase ...`). Comandos úteis quando o banco for modelado:
+(`npx supabase ...`).
+
+Vincular o repositório ao projeto remoto (uma vez por máquina; o `link` pede a
+senha do banco, em *Project Settings → Database*):
 
 ```bash
 npx supabase login
 npx supabase link --project-ref <project-ref>
-npx supabase migration new <nome>
+```
+
+O `<project-ref>` é o subdomínio de `NEXT_PUBLIC_SUPABASE_URL`.
+
+Criar e aplicar uma migration:
+
+```bash
+npx supabase migration new <nome_descritivo>
+npx supabase db push --dry-run   # revisa o que será aplicado
 npx supabase db push
-npx supabase gen types typescript --remote > src/types/database.types.ts
+```
+
+Regenerar os tipos TypeScript após mudanças no schema:
+
+```bash
+npm run db:types
 ```
 
 Para rodar o Supabase localmente (`npx supabase start`) é necessário Docker.
