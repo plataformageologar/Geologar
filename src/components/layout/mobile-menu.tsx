@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 
 import type { NavItem } from "@/types/content";
+
+import { NavLink } from "./nav-link";
 
 /**
  * Menu de navegação para telas menores que `lg` (padrão disclosure).
@@ -56,13 +57,14 @@ export function MobileMenu({ navigation }: { navigation: NavItem[] }) {
         <ul className="mx-auto flex max-w-[80rem] flex-col px-[clamp(1rem,4vw,2.5rem)] py-3">
           {navigation.map((item) => (
             <li key={item.href} className="border-b border-border last:border-b-0">
-              <Link
+              <NavLink
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className="flex min-h-13 items-center text-body-lg font-semibold text-foreground hover:text-primary"
+                className="flex min-h-13 items-center gap-3 text-body-lg font-semibold text-foreground hover:text-primary"
+                activeClassName="text-primary before:h-6 before:w-1 before:rounded-full before:bg-primary before:content-['']"
               >
                 {item.label}
-              </Link>
+              </NavLink>
             </li>
           ))}
         </ul>

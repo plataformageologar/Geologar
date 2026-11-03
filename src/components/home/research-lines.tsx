@@ -1,30 +1,9 @@
-import {
-  Gem,
-  Landmark,
-  Layers,
-  Recycle,
-  Satellite,
-  Sprout,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-
+import { ResearchLineCard } from "@/components/research/research-line-card";
+import { researchLineIcon, researchLineTint } from "@/components/research/research-line-icons";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { TextLink } from "@/components/ui/text-link";
 import type { ResearchLineSummary } from "@/types/content";
-
-import { ResearchLineCard } from "./research-line-card";
-
-// Ícones de apoio por linha (o slug é estável; o ícone não faz parte do conteúdo).
-const icons: Record<string, LucideIcon> = {
-  "geologia-e-geodiversidade": Layers,
-  "recursos-minerais": Gem,
-  "geologia-ambiental": Sprout,
-  "sustentabilidade-e-economia-circular": Recycle,
-  "patrimonio-geologico": Landmark,
-  "geotecnologias-e-geoprocessamento": Satellite,
-};
-
-const tints = ["green", "earth", "blue"] as const;
 
 export function ResearchLines({
   researchLines,
@@ -44,15 +23,16 @@ export function ResearchLines({
           id="pesquisa-title"
           eyebrow="Pesquisa"
           title="Nossas linhas de pesquisa"
+          action={<TextLink href="/pesquisa">Ver todas as linhas</TextLink>}
         />
-        {/* As páginas /pesquisa/[slug] ainda não existem: cards sem link. */}
         <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {researchLines.map((line, index) => (
             <li key={line.slug}>
               <ResearchLineCard
                 researchLine={line}
-                icon={icons[line.slug] ?? Layers}
-                tint={tints[index % tints.length]}
+                icon={researchLineIcon(line.slug)}
+                tint={researchLineTint(index)}
+                href={`/pesquisa/${line.slug}`}
               />
             </li>
           ))}

@@ -11,6 +11,8 @@ type ResearchLineCardProps = {
   tint: "green" | "earth" | "blue";
   /** Destino da página da linha. Sem ele, o card não é navegável. */
   href?: string;
+  /** Nível do título conforme a hierarquia da página. */
+  headingLevel?: "h2" | "h3";
 };
 
 export function ResearchLineCard({
@@ -18,6 +20,7 @@ export function ResearchLineCard({
   icon,
   tint,
   href,
+  headingLevel: Heading = "h3",
 }: ResearchLineCardProps) {
   return (
     <article
@@ -36,7 +39,7 @@ export function ResearchLineCard({
         className="aspect-[2/1]"
       />
       <div className="flex flex-1 flex-col gap-3 p-6">
-        <h3 className="text-h3">
+        <Heading className="text-h3 break-words">
           {href ? (
             // Link estendido: o card inteiro é clicável, com um único item de foco.
             <Link
@@ -48,7 +51,7 @@ export function ResearchLineCard({
           ) : (
             researchLine.title
           )}
-        </h3>
+        </Heading>
         {researchLine.short_description && (
           <p className="text-body-sm text-muted-foreground">
             {researchLine.short_description}

@@ -1,8 +1,8 @@
+import { PublicationItem } from "@/components/publications/publication-item";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { TextLink } from "@/components/ui/text-link";
 import type { PublicationSummary } from "@/types/content";
-
-import { PublicationItem } from "./publication-item";
 
 type RecentPublicationsProps = {
   publications: PublicationSummary[];
@@ -23,6 +23,7 @@ export function RecentPublications({ publications }: RecentPublicationsProps) {
             id="publicacoes-title"
             eyebrow="Publicações"
             title="Conhecimento publicado"
+            action={<TextLink href="/publicacoes">Ver todas as publicações</TextLink>}
             className="lg:sticky lg:top-[calc(var(--header-height)+2.5rem)]"
           />
         </div>

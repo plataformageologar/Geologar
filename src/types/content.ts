@@ -28,6 +28,19 @@ export type ResearchLineSummary = Pick<
   "slug" | "title" | "short_description" | "image_path" | "image_alt"
 >;
 
+export type ResearchLineLink = Pick<Tables<"research_lines">, "slug" | "title">;
+
+/** Página /pesquisa/[slug]: a linha e o conteúdo publicado relacionado a ela. */
+export type ResearchLineDetail = ResearchLineSummary &
+  Pick<Tables<"research_lines">, "description"> & {
+    projects: ProjectSummary[];
+    publications: PublicationListItem[];
+  };
+
+export type ProjectStatus = "ongoing" | "completed";
+
+export type ProjectLink = Pick<Tables<"projects">, "slug" | "title">;
+
 export type ProjectSummary = Pick<
   Tables<"projects">,
   | "slug"
@@ -50,9 +63,24 @@ export type PublicationSummary = Pick<
   | "external_url"
 >;
 
+/** Publicação nas listagens internas, com os projetos publicados associados. */
+export type PublicationListItem = PublicationSummary & { projects: ProjectLink[] };
+
+/** Página /projetos/[slug]. */
+export type ProjectDetail = ProjectSummary &
+  Pick<
+    Tables<"projects">,
+    "description" | "start_date" | "end_date" | "coordination" | "funding" | "external_url"
+  > & {
+    researchLines: ResearchLineLink[];
+    publications: PublicationListItem[];
+    /** Outros projetos publicados que compartilham ao menos uma linha de pesquisa. */
+    relatedProjects: ProjectSummary[];
+  };
+
 export type InstitutionSummary = Pick<
   Tables<"institutions">,
-  "id" | "name" | "acronym" | "logo_path" | "logo_alt" | "website_url"
+  "id" | "name" | "acronym" | "description" | "logo_path" | "logo_alt" | "website_url"
 >;
 
 export type InstitutionGroup = {

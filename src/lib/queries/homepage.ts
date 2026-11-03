@@ -1,8 +1,8 @@
 import { cache } from "react";
 
-import { fallbackHomepageContent, mainNavigation } from "@/data/site";
+import { fallbackHomepageContent } from "@/data/site";
 import { createPublicClient } from "@/lib/supabase/public";
-import type { HomepageContent, NavItem } from "@/types/content";
+import type { HomepageContent } from "@/types/content";
 
 import { getHomepageInstitutionGroups } from "./institutions";
 import { getFeaturedProjects } from "./projects";
@@ -64,13 +64,11 @@ export const getHomepageData = cache(async () => {
   return { content, researchLines, projects, publications, institutionGroups, sections };
 });
 
-/** Mantém o link apenas se não apontar para uma seção ausente da homepage. */
+/**
+ * Mantém o link apenas se não apontar para uma âncora de seção ausente da
+ * homepage (ex.: valores antigos como "/#pesquisa"). Rotas e URLs externas
+ * são mantidas.
+ */
 export function isLinkAvailable(href: string, sections: Set<string>) {
   return !href.startsWith("/#") || sections.has(href.slice(2));
-}
-
-/** Navegação principal sem itens que levariam a seções não renderizadas. */
-export async function getMainNavigation(): Promise<NavItem[]> {
-  const { sections } = await getHomepageData();
-  return mainNavigation.filter((item) => isLinkAvailable(item.href, sections));
 }

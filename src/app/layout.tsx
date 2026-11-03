@@ -3,7 +3,7 @@ import { Source_Sans_3, Source_Serif_4 } from "next/font/google";
 
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
-import { getMainNavigation } from "@/lib/queries/homepage";
+import { footerNavigation, mainNavigation } from "@/data/site";
 import { getActiveSocialLinks, getSiteSettings } from "@/lib/queries/settings";
 import "./globals.css";
 
@@ -28,15 +28,14 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
 
   return {
-    title: settings.site_name,
+    title: { default: settings.site_name, template: `%s | ${settings.site_name}` },
     description: settings.short_description ?? settings.institutional_name,
   };
 }
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [settings, navigation, socialLinks] = await Promise.all([
+  const [settings, socialLinks] = await Promise.all([
     getSiteSettings(),
-    getMainNavigation(),
     getActiveSocialLinks(),
   ]);
 
@@ -52,11 +51,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         >
           Pular para o conteúdo
         </a>
-        <Header navigation={navigation} institutionalName={settings.institutional_name} />
+        <Header navigation={mainNavigation} institutionalName={settings.institutional_name} />
         <main id="conteudo" tabIndex={-1} className="flex-1 focus:outline-none">
           {children}
         </main>
-        <Footer settings={settings} navigation={navigation} socialLinks={socialLinks} />
+        <Footer settings={settings} navigation={footerNavigation} socialLinks={socialLinks} />
       </body>
     </html>
   );

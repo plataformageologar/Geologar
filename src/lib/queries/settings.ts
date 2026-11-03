@@ -4,7 +4,7 @@ import { fallbackSiteSettings } from "@/data/site";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { SiteSettings, SocialLink } from "@/types/content";
 
-import { logQueryError } from "./shared";
+import { failQuery, logQueryError } from "./shared";
 
 async function fetchSiteSettings() {
   // Registro único, garantido pelo índice site_settings_singleton.
@@ -44,11 +44,31 @@ async function fetchActiveSocialLinks() {
   return data;
 }
 
-export async function getActiveSocialLinks(): Promise<SocialLink[]> {
+/** Redes sociais ativas; lista vazia se a leitura falhar (uso no rodapé). */
+export const getActiveSocialLinks = cache(async (): Promise<SocialLink[]> => {
   try {
     return await fetchActiveSocialLinks();
   } catch (error) {
     logQueryError("social_links", error);
     return [];
+  }
+});
+
+/**
+ * Canais de contato para /contato. Diferente do rodapé, uma falha de leitura
+ * é propagada até `error.tsx`, para não ser exibida como "sem canais".
+ */
+export async function getContactChannels(): Promise<{
+  settings: SiteSettings | null;
+  socialLinks: SocialLink[];
+}> {
+  try {
+    const [settings, socialLinks] = await Promise.all([
+      fetchSiteSettings(),
+      fetchActiveSocialLinks(),
+    ]);
+    return { settings, socialLinks };
+  } catch (error) {
+    failQuery("contact channels", error);
   }
 }

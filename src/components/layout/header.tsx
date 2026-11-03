@@ -1,9 +1,8 @@
-import Link from "next/link";
-
 import { Container } from "@/components/ui/container";
 import type { NavItem } from "@/types/content";
 
 import { MobileMenu } from "./mobile-menu";
+import { NavLink } from "./nav-link";
 import { SiteLogo } from "./site-logo";
 
 type HeaderProps = {
@@ -28,12 +27,13 @@ export function Header({ navigation, institutionalName }: HeaderProps) {
           <ul className="flex items-center gap-1">
             {navigation.map((item) => (
               <li key={item.href}>
-                <Link
+                <NavLink
                   href={item.href}
                   className="inline-flex min-h-11 items-center rounded-full px-4 text-label text-foreground transition-colors hover:bg-surface-muted hover:text-primary"
+                  activeClassName="bg-primary-soft text-primary hover:bg-primary-soft"
                 >
                   {item.label}
-                </Link>
+                </NavLink>
               </li>
             ))}
           </ul>

@@ -1,9 +1,8 @@
-import Image from "next/image";
-
+import { InstitutionLogo } from "@/components/institutions/institution-logo";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { cn } from "@/lib/utils/cn";
-import type { InstitutionGroup, InstitutionSummary } from "@/types/content";
+import { TextLink } from "@/components/ui/text-link";
+import type { InstitutionGroup } from "@/types/content";
 
 type PartnersProps = {
   groups: InstitutionGroup[];
@@ -21,6 +20,9 @@ export function Partners({ groups }: PartnersProps) {
           id="instituicoes-title"
           eyebrow="Instituições"
           title="Instituições que conectam a rede"
+          action={
+            <TextLink href="/instituicoes">Conheça nossas instituições parceiras</TextLink>
+          }
         />
 
         <div className="mt-12 flex flex-col gap-10">
@@ -32,7 +34,7 @@ export function Partners({ groups }: PartnersProps) {
               <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 lg:gap-4">
                 {group.institutions.map((institution) => (
                   <li key={institution.id}>
-                    <PartnerLogo institution={institution} />
+                    <InstitutionLogo institution={institution} />
                   </li>
                 ))}
               </ul>
@@ -41,49 +43,5 @@ export function Partners({ groups }: PartnersProps) {
         </div>
       </Container>
     </section>
-  );
-}
-
-/**
- * Área padronizada para cada marca: o logotipo é contido (object-contain),
- * sem deformação, centralizado em um fundo neutro.
- */
-function PartnerLogo({ institution }: { institution: InstitutionSummary }) {
-  const label = institution.acronym
-    ? `${institution.name} (${institution.acronym})`
-    : institution.name;
-
-  const tile = (
-    <span
-      className={cn(
-        "relative flex aspect-[3/2] items-center justify-center rounded-xl border bg-surface p-4",
-        institution.logo_path ? "border-border" : "border-dashed border-border",
-      )}
-    >
-      {institution.logo_path ? (
-        <span className="relative size-full">
-          <Image
-            src={institution.logo_path}
-            alt={institution.logo_alt ?? label}
-            fill
-            sizes="(min-width: 1024px) 180px, (min-width: 640px) 30vw, 45vw"
-            className="object-contain"
-          />
-        </span>
-      ) : (
-        <span className="text-center text-caption text-muted-foreground">{label}</span>
-      )}
-    </span>
-  );
-
-  return institution.website_url ? (
-    <a
-      href={institution.website_url}
-      className="block rounded-xl transition-colors hover:[&>span]:border-primary/40"
-    >
-      {tile}
-    </a>
-  ) : (
-    tile
   );
 }

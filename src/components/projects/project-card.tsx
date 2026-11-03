@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { CardMedia } from "@/components/ui/card-media";
 import type { ProjectSummary } from "@/types/content";
 
-const statusLabels: Record<string, { label: string; tone: "green" | "blue" }> = {
+export const projectStatusLabels: Record<string, { label: string; tone: "green" | "blue" }> = {
   ongoing: { label: "Em andamento", tone: "green" },
   completed: { label: "Concluído", tone: "blue" },
 };
@@ -14,13 +14,15 @@ type ProjectCardProps = {
   project: ProjectSummary;
   /** Destino da página do projeto. Sem ele, o link "Ver projeto" não aparece. */
   href?: string;
+  /** Nível do título conforme a hierarquia da página. */
+  headingLevel?: "h2" | "h3";
 };
 
 /**
  * Card de projeto. Em tablets fica horizontal; em telas largas, vertical.
  */
-export function ProjectCard({ project, href }: ProjectCardProps) {
-  const status = statusLabels[project.project_status];
+export function ProjectCard({ project, href, headingLevel: Heading = "h3" }: ProjectCardProps) {
+  const status = projectStatusLabels[project.project_status];
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface md:flex-row lg:flex-col">
@@ -39,7 +41,7 @@ export function ProjectCard({ project, href }: ProjectCardProps) {
             {status.label}
           </Badge>
         )}
-        <h3 className="text-h3">{project.title}</h3>
+        <Heading className="text-h3 break-words">{project.title}</Heading>
         {project.short_description && (
           <p className="text-body-sm text-muted-foreground">
             {project.short_description}

@@ -2,9 +2,10 @@
 
 Rede de Pesquisa em Geociências — Recursos Naturais e Sustentabilidade.
 
-Portal institucional da GeoLogar. Nesta fase o repositório contém a homepage,
-integrada ao Supabase (leitura pública via RLS); páginas internas, CMS e
-autenticação serão implementados nas próximas etapas.
+Portal institucional da GeoLogar. Nesta fase o repositório contém a homepage
+e as páginas públicas (A Rede, Pesquisa, Projetos, Publicações, Instituições e
+Contato), integradas ao Supabase (leitura pública via RLS); CMS e autenticação
+serão implementados nas próximas etapas.
 
 ## Stack
 
@@ -64,15 +65,18 @@ src/
   app/                  Rotas (App Router), layout raiz, CSS global e favicon
   assets/brand/         Logotipo oficial (importado via next/image)
   components/
-    ui/                 Design system: Button, Badge, Container, SectionHeading, CardMedia
-    layout/             Header, menu mobile, Footer e logotipo
-    home/               Seções e cards da homepage
+    ui/                 Design system: Button, Badge, Container, SectionHeading, CardMedia,
+                        PageHeader, Breadcrumb, EmptyState, Pagination, TextLink, RichText
+    layout/             Header, menu mobile, NavLink (item ativo), Footer e logotipo
+    home/               Seções da homepage
+    research/ projects/ publications/ institutions/ network/
+                        Cards e listas compartilhados entre homepage e páginas internas
   data/
     site.ts             Navegação, pilares e fallbacks do conteúdo essencial
   lib/
-    queries/            Consultas de conteúdo público (com fallback)
+    queries/            Consultas de conteúdo público
     supabase/           Clientes Supabase (navegador, servidor e público)
-    utils/              Utilitários compartilhados
+    utils/              Utilitários (datas, DOI, links externos, parâmetros de URL)
   types/
     content.ts          Formatos de conteúdo derivados do schema
     database.types.ts   Tipos do banco gerados pelo Supabase CLI (não editar)
@@ -83,6 +87,7 @@ docs/
   database-schema.md    Modelo de dados
   deployment.md         Deploy no Cloudflare Workers e checklist de produção
   design-system.md      Tokens, tipografia, componentes e breakpoints
+  public-pages.md       Rotas, filtros, consultas e regras das páginas públicas
 ```
 
 Importações internas usam o alias `@/*` → `src/*`.
@@ -105,8 +110,9 @@ Regras:
 
 - **Somente leitura pública** com a chave publishable: o RLS decide o que é
   visível (apenas registros publicados/ativos). A chave secreta não é usada.
-- **Seções sem conteúdo não são renderizadas**, e os links da navegação e
-  dos CTAs que apontariam para elas são omitidos.
+- **Seções sem conteúdo não são renderizadas**; cada seção tem um link
+  para a página interna correspondente ("Ver todas as linhas", "Ver todos os
+  projetos"…).
 - **Falhas de banco** são registradas no log do servidor (`[supabase] ...`) e
   nunca exibidas ao visitante. Textos essenciais (hero, apresentação, contato e
   nome institucional) têm fallback em `src/data/site.ts`; listas viram vazias.
@@ -119,10 +125,12 @@ Regras:
   repetem consultas. Cache Components está desativado por incompatibilidade
   com o runtime do Cloudflare Workers (ver [`docs/deployment.md`](docs/deployment.md)).
 
-Enquanto as páginas internas não existem, a navegação aponta para as seções
-da homepage (`/#pesquisa`, `/#projetos`…) e ações sem destino real (como
-"Ver todos" e "Fale com a GeoLogar" sem `cooperation_cta_href`) não são
-exibidas.
+## Páginas internas
+
+A navegação principal aponta para as rotas reais (`/rede`, `/pesquisa`,
+`/projetos`, `/publicacoes`, `/contato`; `/instituicoes` fica no rodapé), com
+indicação do item ativo. Rotas, filtros, consultas, estados vazios e regras de
+erro/404 estão em [`docs/public-pages.md`](docs/public-pages.md).
 
 ## Supabase
 

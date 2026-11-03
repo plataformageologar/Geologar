@@ -4,15 +4,20 @@
  */
 import type { HomepageContent, NavItem, SiteSettings } from "@/types/content";
 
-// As páginas internas ainda não existem: a navegação usa as seções da homepage.
-// Itens de seções sem conteúdo são removidos em `getMainNavigation()`.
 export const mainNavigation: NavItem[] = [
   { label: "Início", href: "/" },
-  { label: "A Rede", href: "/#a-rede" },
-  { label: "Pesquisa", href: "/#pesquisa" },
-  { label: "Projetos", href: "/#projetos" },
-  { label: "Publicações", href: "/#publicacoes" },
-  { label: "Contato", href: "/#contato" },
+  { label: "A Rede", href: "/rede" },
+  { label: "Pesquisa", href: "/pesquisa" },
+  { label: "Projetos", href: "/projetos" },
+  { label: "Publicações", href: "/publicacoes" },
+  { label: "Contato", href: "/contato" },
+];
+
+/** Rodapé: a navegação principal mais as páginas secundárias. */
+export const footerNavigation: NavItem[] = [
+  ...mainNavigation.slice(0, -1),
+  { label: "Instituições", href: "/instituicoes" },
+  ...mainNavigation.slice(-1),
 ];
 
 // Os pilares não existem no schema; permanecem como conteúdo estático.
@@ -69,9 +74,9 @@ export const fallbackHomepageContent: HomepageContent = {
   hero_image_path: null,
   hero_image_alt: null,
   hero_primary_cta_label: "Explore nossas pesquisas",
-  hero_primary_cta_href: "/#pesquisa",
+  hero_primary_cta_href: "/pesquisa",
   hero_secondary_cta_label: "Conheça a rede",
-  hero_secondary_cta_href: "/#a-rede",
+  hero_secondary_cta_href: "/rede",
   about_title: "Uma rede para produzir e compartilhar conhecimento",
   about_description:
     "A GeoLogar é uma rede interdisciplinar dedicada à produção, integração e divulgação do conhecimento em Geociências. Reúne pesquisadores, estudantes e instituições para desenvolver pesquisas, formar pessoas e ampliar a cooperação em recursos naturais e sustentabilidade.",
@@ -79,5 +84,5 @@ export const fallbackHomepageContent: HomepageContent = {
   cooperation_description:
     "Entre em contato para conhecer a rede, propor projetos e explorar oportunidades de cooperação em Geociências e sustentabilidade.",
   cooperation_cta_label: "Fale com a GeoLogar",
-  cooperation_cta_href: null,
+  cooperation_cta_href: "/contato",
 };

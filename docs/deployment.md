@@ -92,8 +92,8 @@ máquina publicaria a chave junto com o código. Por isso:
 
 ## Renderização e cache
 
-A homepage usa `export const dynamic = "force-dynamic"`: cada requisição lê o
-Supabase (7 consultas em paralelo, ~0,8 s no total). Dentro de uma requisição
+A homepage e as páginas internas usam `export const dynamic = "force-dynamic"`:
+cada requisição lê o Supabase (7 consultas em paralelo, ~0,8 s no total). Dentro de uma requisição
 as leituras são compartilhadas com `cache` do React. Alterações publicadas no
 banco aparecem imediatamente, sem novo deploy.
 
@@ -126,6 +126,8 @@ Antes de qualquer mudança, validar com `npm run preview`:
 - [ ] Build e deploy concluídos no Workers Builds.
 - [ ] `GET /` responde `200` com o conteúdo do banco (hero, A Rede, 6 linhas de
       pesquisa, contato).
+- [ ] Páginas internas (`/rede`, `/pesquisa`, `/projetos`, `/publicacoes`,
+      `/instituicoes`, `/contato`) em `200`; slug inexistente em `404`.
 - [ ] Assets `/_next/static/*` com `Cache-Control: public,max-age=31536000,immutable`.
 - [ ] Logotipo (`/_next/image`) carregando.
 - [ ] Sem erros no console nem falhas de hidratação; menu mobile funcionando.
