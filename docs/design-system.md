@@ -12,8 +12,8 @@ Referência prática para as próximas etapas. Os tokens vivem em
   amplos e com baixa opacidade — nunca atrás de texto pequeno.
 - **Sem cores soltas.** Componentes usam apenas tokens (`bg-primary`,
   `text-muted-foreground`…), nunca hexadecimais.
-- **Sem conteúdo inventado.** Placeholders são genéricos e sinalizados com
-  `ProvisionalBadge`; ações sem destino real não são exibidas.
+- **Sem conteúdo inventado.** Seções sem conteúdo publicado não são
+  renderizadas; ações sem destino real não são exibidas.
 - **Movimento mínimo.** Apenas transições curtas de cor/posição em hover;
   tudo é desativado com `prefers-reduced-motion`.
 - **Somente tema claro** nesta versão (`color-scheme: light`).
@@ -32,7 +32,7 @@ Referência prática para as próximas etapas. Os tokens vivem em
 | `primary-soft`              | `#e2eaf1` | Fundos suaves, hover de botões secundários       |
 | `secondary` / `-hover`      | `#2e6a4e` / `#24563f` | Verde: sustentabilidade, ícones, status |
 | `secondary-soft`            | `#e3eee6` | Fundo de ícones e badges verdes                  |
-| `earth` / `earth-soft`      | `#8c4f24` / `#f3e7da` | Terroso: eyebrows, acentos, provisórios |
+| `earth` / `earth-soft`      | `#8c4f24` / `#f3e7da` | Terroso: eyebrows e acentos              |
 | `deep` / `deep-foreground`  | `#0f2537` / `#f2efe8` | Hero sem foto, rodapé                   |
 | `deep-muted`                | `#b9c3cc` | Texto secundário sobre `deep`                    |
 | `ring` / `ring-on-dark`     | `#1f6fb2` / `#f2c46d` | Anel de foco (claro / escuro)           |
@@ -104,12 +104,10 @@ Verificado em 375, 390, 768, 1024, 1280 e 1440 px.
   (opacidade 50%, sem ponteiro).
 - `withArrow` adiciona seta decorativa (oculta para leitores de tela).
 
-### `Badge` / `ProvisionalBadge` (`ui/badge.tsx`)
+### `Badge` (`ui/badge.tsx`)
 
 - Tons: `neutral`, `green`, `blue`, `earth`; `withDot` para estado.
 - Status de projeto: **Em andamento** (`green`) e **Concluído** (`blue`).
-- `ProvisionalBadge`: tracejado terroso, sinaliza conteúdo provisório no
-  ambiente de revisão.
 
 ### `SectionHeading` (`ui/section-heading.tsx`)
 

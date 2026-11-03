@@ -2,9 +2,9 @@
 
 Rede de Pesquisa em Geociências — Recursos Naturais e Sustentabilidade.
 
-Portal institucional da GeoLogar. Este repositório contém, por enquanto, apenas a
-fundação técnica da aplicação; homepage, páginas internas, CMS e autenticação
-serão implementados nas próximas etapas.
+Portal institucional da GeoLogar. Nesta fase o repositório contém a homepage,
+integrada ao Supabase (leitura pública via RLS); páginas internas, CMS e
+autenticação serão implementados nas próximas etapas.
 
 ## Stack
 
@@ -39,7 +39,6 @@ versionado (`.env*` está no `.gitignore`, exceto `.env.example`).
 | `NEXT_PUBLIC_SUPABASE_URL`             | URL do projeto Supabase                                      |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Chave pública `sb_publishable_...` (ou a chave legada `anon`) |
 | `SUPABASE_SECRET_KEY`                  | Chave secreta `sb_secret_...` — **somente servidor**, ignora RLS |
-| `SHOW_CONTENT_PLACEHOLDERS`            | `true` exibe o conteúdo provisório em builds de revisão (ver abaixo) |
 
 Variáveis com prefixo `NEXT_PUBLIC_` são expostas ao navegador. Nunca use esse
 prefixo para segredos, e nunca coloque a chave secreta / `service_role` no
@@ -69,10 +68,10 @@ src/
     layout/             Header, menu mobile, Footer e logotipo
     home/               Seções e cards da homepage
   data/
-    site.ts             Conteúdo validado do briefing (temporário, até o Supabase)
-    placeholders.ts     Conteúdo provisório apenas para revisão de layout
+    site.ts             Navegação, pilares e fallbacks do conteúdo essencial
   lib/
-    supabase/           Clientes Supabase (navegador e servidor)
+    queries/            Consultas de conteúdo público (cache + fallback)
+    supabase/           Clientes Supabase (navegador, servidor e público)
     utils/              Utilitários compartilhados
   types/
     content.ts          Formatos de conteúdo derivados do schema
@@ -82,6 +81,7 @@ supabase/
   migrations/           Migrations SQL versionadas
 docs/
   database-schema.md    Modelo de dados
+  deployment.md         Deploy no Netlify e checklist de produção
   design-system.md      Tokens, tipografia, componentes e breakpoints
 ```
 
@@ -89,19 +89,39 @@ Importações internas usam o alias `@/*` → `src/*`.
 
 ## Conteúdo da homepage
 
-Nesta fase a homepage usa dados locais; a integração com o Supabase virá na
-próxima etapa, sem mudar os componentes (as props seguem os tipos do schema).
+A homepage é um Server Component que lê o conteúdo publicado no Supabase pela
+camada `src/lib/queries/`, em paralelo (`getHomepageData()`):
 
-- `src/data/site.ts`: textos do briefing (hero, apresentação, pilares, linhas
-  de pesquisa, chamada de cooperação).
-- `src/data/placeholders.ts`: projetos, publicações e instituições de
-  **exemplo**, com textos genéricos e marcados como "Conteúdo provisório".
-  Aparecem em `npm run dev` ou com `SHOW_CONTENT_PLACEHOLDERS=true`; no build
-  de produção padrão, as seções mostram apenas uma mensagem de "em breve".
+| Seção                  | Origem                                                      |
+| ---------------------- | ----------------------------------------------------------- |
+| Hero, A Rede, Contato  | `homepage_content` (registro único)                         |
+| Linhas de pesquisa     | `research_lines` publicadas (destaques primeiro, até 6)     |
+| Projetos               | `projects` publicados e em destaque (até 3)                 |
+| Publicações            | `publications` publicadas (destaques, depois mais recentes; até 5) |
+| Instituições           | `institutions` publicadas, agrupadas por `institution_categories` |
+| Rodapé e metadados     | `site_settings` e `social_links` ativos                     |
+
+Regras:
+
+- **Somente leitura pública** com a chave publishable: o RLS decide o que é
+  visível (apenas registros publicados/ativos). A chave secreta não é usada.
+- **Seções sem conteúdo não são renderizadas**, e os links da navegação e
+  dos CTAs que apontariam para elas são omitidos.
+- **Falhas de banco** são registradas no log do servidor (`[supabase] ...`) e
+  nunca exibidas ao visitante. Textos essenciais (hero, apresentação, contato e
+  nome institucional) têm fallback em `src/data/site.ts`; listas viram vazias.
+- **Imagens**: os campos `*_path` aceitam por enquanto apenas caminhos locais
+  (`/...` em `public/`). Caminhos do Storage são ignorados até que os buckets
+  sejam configurados (`resolveImageSrc` em `src/lib/queries/shared.ts`).
+- **Cache**: cada consulta usa `"use cache"` com o perfil `content`
+  (revalidação a cada 5 minutos, em `next.config.ts`) e uma tag por tabela
+  (`contentTags`), pronta para `revalidateTag` quando houver um painel de
+  edição.
 
 Enquanto as páginas internas não existem, a navegação aponta para as seções
 da homepage (`/#pesquisa`, `/#projetos`…) e ações sem destino real (como
-"Ver todos", "Conheça a GeoLogar" e "Fale com a GeoLogar") não são exibidas.
+"Ver todos" e "Fale com a GeoLogar" sem `cooperation_cta_href`) não são
+exibidas.
 
 ## Supabase
 
@@ -112,7 +132,10 @@ de dados está documentado em [`docs/database-schema.md`](docs/database-schema.m
 Clientes disponíveis (tipados com `Database`):
 
 - `@/lib/supabase/client` — para Client Components (navegador).
-- `@/lib/supabase/server` — para Server Components, Server Actions e Route Handlers.
+- `@/lib/supabase/server` — para Server Components, Server Actions e Route
+  Handlers que dependem da sessão (cookies).
+- `@/lib/supabase/public` — leitura de conteúdo público, sem sessão; pode ser
+  usado dentro de funções com `"use cache"`.
 
 ### Migrations
 
@@ -152,5 +175,7 @@ Para rodar o Supabase localmente (`npx supabase start`) é necessário Docker.
 
 ## Deploy
 
-O deploy será feito no Netlify, que detecta projetos Next.js automaticamente.
-Não há configuração específica (`netlify.toml`) por enquanto.
+O site é publicado no [Netlify](https://www.netlify.com), que detecta o
+Next.js automaticamente (sem `netlify.toml` e sem `output: "export"`). A branch
+`main` é a de produção. Passo a passo, variáveis e checklist em
+[`docs/deployment.md`](docs/deployment.md).

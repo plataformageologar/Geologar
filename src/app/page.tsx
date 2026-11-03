@@ -5,35 +5,36 @@ import { Hero } from "@/components/home/hero";
 import { Partners } from "@/components/home/partners";
 import { RecentPublications } from "@/components/home/recent-publications";
 import { ResearchLines } from "@/components/home/research-lines";
-import {
-  featuredProjects,
-  institutionGroups,
-  recentPublications,
-  showContentPlaceholders,
-} from "@/data/placeholders";
-import { homepageContent, pillars, researchLines } from "@/data/site";
+import { pillars } from "@/data/site";
+import { getHomepageData, isLinkAvailable } from "@/lib/queries/homepage";
 
-// Dados locais nesta etapa; serão substituídos por consultas ao Supabase.
-export default function Home() {
+export default async function Home() {
+  const { content, researchLines, projects, publications, institutionGroups, sections } =
+    await getHomepageData();
+
+  // CTAs que apontam para seções ainda sem conteúdo não são exibidos.
+  const heroContent = {
+    ...content,
+    hero_primary_cta_href:
+      content.hero_primary_cta_href && isLinkAvailable(content.hero_primary_cta_href, sections)
+        ? content.hero_primary_cta_href
+        : null,
+    hero_secondary_cta_href:
+      content.hero_secondary_cta_href &&
+      isLinkAvailable(content.hero_secondary_cta_href, sections)
+        ? content.hero_secondary_cta_href
+        : null,
+  };
+
   return (
     <>
-      <Hero
-        content={homepageContent}
-        eyebrow="Rede de Pesquisa em Geociências"
-        showProvisionalNotice={showContentPlaceholders}
-      />
-      <AboutNetwork content={homepageContent} pillars={pillars} />
+      <Hero content={heroContent} eyebrow="Rede de Pesquisa em Geociências" />
+      <AboutNetwork content={content} pillars={pillars} />
       <ResearchLines researchLines={researchLines} />
-      <FeaturedProjects projects={featuredProjects} provisional={showContentPlaceholders} />
-      <RecentPublications
-        publications={recentPublications}
-        provisional={showContentPlaceholders}
-      />
-      <Partners groups={institutionGroups} provisional={showContentPlaceholders} />
-      <CooperationCta
-        content={homepageContent}
-        showProvisionalNotice={showContentPlaceholders}
-      />
+      <FeaturedProjects projects={projects} />
+      <RecentPublications publications={publications} />
+      <Partners groups={institutionGroups} />
+      <CooperationCta content={content} />
     </>
   );
 }

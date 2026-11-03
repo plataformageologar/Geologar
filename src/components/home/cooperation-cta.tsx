@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { ProvisionalBadge } from "@/components/ui/badge";
 import { Container } from "@/components/ui/container";
 import type { HomepageContent } from "@/types/content";
 
@@ -11,11 +10,9 @@ type CooperationCtaProps = {
     | "cooperation_cta_label"
     | "cooperation_cta_href"
   >;
-  /** Sinaliza, no ambiente de revisão, o botão ainda sem destino. */
-  showProvisionalNotice?: boolean;
 };
 
-export function CooperationCta({ content, showProvisionalNotice }: CooperationCtaProps) {
+export function CooperationCta({ content }: CooperationCtaProps) {
   const {
     cooperation_title,
     cooperation_description,
@@ -42,7 +39,8 @@ export function CooperationCta({ content, showProvisionalNotice }: CooperationCt
                 {cooperation_description}
               </p>
             )}
-            {cooperation_cta_label && cooperation_cta_href ? (
+            {/* O botão só aparece quando houver um destino real cadastrado. */}
+            {cooperation_cta_label && cooperation_cta_href && (
               <Button
                 href={cooperation_cta_href}
                 surface="dark"
@@ -52,14 +50,6 @@ export function CooperationCta({ content, showProvisionalNotice }: CooperationCt
               >
                 {cooperation_cta_label}
               </Button>
-            ) : (
-              showProvisionalNotice && (
-                <div className="mt-3">
-                  <ProvisionalBadge>
-                    Botão “{cooperation_cta_label}” aguarda o canal oficial de contato
-                  </ProvisionalBadge>
-                </div>
-              )
             )}
           </div>
         </div>

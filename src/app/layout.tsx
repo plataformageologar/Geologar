@@ -3,7 +3,8 @@ import { Source_Sans_3, Source_Serif_4 } from "next/font/google";
 
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
-import { mainNavigation, siteSettings, socialLinks } from "@/data/site";
+import { getMainNavigation } from "@/lib/queries/homepage";
+import { getActiveSocialLinks, getSiteSettings } from "@/lib/queries/settings";
 import "./globals.css";
 
 // Texto e interface.
@@ -19,13 +20,22 @@ const sourceSerif = Source_Serif_4({
   weight: ["600"],
 });
 
-export const metadata: Metadata = {
-  title: "GeoLogar",
-  description:
-    "Rede de Pesquisa em Geociências — Recursos Naturais e Sustentabilidade",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+  return {
+    title: settings.site_name,
+    description: settings.short_description ?? settings.institutional_name,
+  };
+}
+
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const [settings, navigation, socialLinks] = await Promise.all([
+    getSiteSettings(),
+    getMainNavigation(),
+    getActiveSocialLinks(),
+  ]);
+
   return (
     <html
       lang="pt-BR"
@@ -38,18 +48,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Pular para o conteúdo
         </a>
-        <Header
-          navigation={mainNavigation}
-          institutionalName={siteSettings.institutional_name}
-        />
+        <Header navigation={navigation} institutionalName={settings.institutional_name} />
         <main id="conteudo" tabIndex={-1} className="flex-1 focus:outline-none">
           {children}
         </main>
-        <Footer
-          settings={siteSettings}
-          navigation={mainNavigation}
-          socialLinks={socialLinks}
-        />
+        <Footer settings={settings} navigation={navigation} socialLinks={socialLinks} />
       </body>
     </html>
   );

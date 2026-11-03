@@ -40,15 +40,3 @@ export function Badge({
     </span>
   );
 }
-
-/**
- * Sinaliza conteúdo provisório no ambiente de revisão.
- * Nunca deve aparecer junto de conteúdo validado.
- */
-export function ProvisionalBadge({ children = "Conteúdo provisório" }: { children?: ReactNode }) {
-  return (
-    <Badge tone="earth" className="border border-dashed border-earth/50">
-      {children}
-    </Badge>
-  );
-}

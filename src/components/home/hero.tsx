@@ -1,7 +1,6 @@
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
-import { ProvisionalBadge } from "@/components/ui/badge";
 import { Container } from "@/components/ui/container";
 import type { HomepageContent } from "@/types/content";
 
@@ -18,15 +17,13 @@ type HeroProps = {
     | "hero_secondary_cta_href"
   >;
   eyebrow?: string | null;
-  /** Sinaliza, no ambiente de revisão, a falta da fotografia oficial. */
-  showProvisionalNotice?: boolean;
 };
 
 /**
  * Banner principal. Com `hero_image_path`, usa a fotografia com camada de
  * contraste; sem ela, um fundo institucional com curvas de nível.
  */
-export function Hero({ content, eyebrow, showProvisionalNotice }: HeroProps) {
+export function Hero({ content, eyebrow }: HeroProps) {
   const {
     hero_title,
     hero_description,
@@ -114,12 +111,6 @@ export function Hero({ content, eyebrow, showProvisionalNotice }: HeroProps) {
           </div>
         </div>
       </Container>
-
-      {showProvisionalNotice && !hero_image_path && (
-        <div className="absolute right-4 bottom-4">
-          <ProvisionalBadge>Fotografia oficial do banner pendente</ProvisionalBadge>
-        </div>
-      )}
     </section>
   );
 }

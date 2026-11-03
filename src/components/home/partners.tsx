@@ -1,20 +1,18 @@
 import Image from "next/image";
 
-import { ProvisionalBadge } from "@/components/ui/badge";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { cn } from "@/lib/utils/cn";
 import type { InstitutionGroup, InstitutionSummary } from "@/types/content";
 
-import { EmptyState } from "./empty-state";
-
 type PartnersProps = {
   groups: InstitutionGroup[];
-  provisional?: boolean;
 };
 
-export function Partners({ groups, provisional }: PartnersProps) {
+export function Partners({ groups }: PartnersProps) {
   const visibleGroups = groups.filter((group) => group.institutions.length > 0);
+
+  if (visibleGroups.length === 0) return null;
 
   return (
     <section id="instituicoes" aria-labelledby="instituicoes-title" className="section-y">
@@ -23,32 +21,24 @@ export function Partners({ groups, provisional }: PartnersProps) {
           id="instituicoes-title"
           eyebrow="Instituições"
           title="Instituições que conectam a rede"
-        >
-          {provisional && <ProvisionalBadge />}
-        </SectionHeading>
+        />
 
-        {visibleGroups.length > 0 ? (
-          <div className="mt-12 flex flex-col gap-10">
-            {visibleGroups.map((group) => (
-              <div key={group.category.slug}>
-                <h3 className="font-sans text-label uppercase tracking-[0.12em] text-muted-foreground">
-                  {group.category.name}
-                </h3>
-                <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 lg:gap-4">
-                  {group.institutions.map((institution) => (
-                    <li key={institution.id}>
-                      <PartnerLogo institution={institution} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <EmptyState className="mt-12">
-            As instituições parceiras serão apresentadas em breve.
-          </EmptyState>
-        )}
+        <div className="mt-12 flex flex-col gap-10">
+          {visibleGroups.map((group) => (
+            <div key={group.category.slug}>
+              <h3 className="font-sans text-label uppercase tracking-[0.12em] text-muted-foreground">
+                {group.category.name}
+              </h3>
+              <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 lg:gap-4">
+                {group.institutions.map((institution) => (
+                  <li key={institution.id}>
+                    <PartnerLogo institution={institution} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </Container>
     </section>
   );

@@ -9,6 +9,7 @@ export type SiteSettings = Pick<
   Tables<"site_settings">,
   | "site_name"
   | "institutional_name"
+  | "short_description"
   | "contact_email"
   | "contact_phone"
   | "address"
