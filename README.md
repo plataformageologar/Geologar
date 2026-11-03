@@ -4,8 +4,9 @@ Rede de Pesquisa em Geociências — Recursos Naturais e Sustentabilidade.
 
 Portal institucional da GeoLogar. Nesta fase o repositório contém a homepage
 e as páginas públicas (A Rede, Pesquisa, Projetos, Publicações, Instituições e
-Contato), integradas ao Supabase (leitura pública via RLS); CMS e autenticação
-serão implementados nas próximas etapas.
+Contato), integradas ao Supabase (leitura pública via RLS), e a fundação da
+área administrativa (`/admin`: login, autorização por papel e painel inicial).
+A edição de conteúdo (CMS) será implementada nas próximas etapas.
 
 ## Stack
 
@@ -63,18 +64,25 @@ código; quando for, deve ser lida apenas em código de servidor.
 public/patterns/        Padrão vetorial de curvas de nível
 src/
   app/                  Rotas (App Router), layout raiz, CSS global e favicon
+    (public)/           Site público (layout com cabeçalho e rodapé)
+    admin/              Área administrativa: (auth) login/recuperação, (protected) painel
+    auth/callback/      Retorno dos links de e-mail do Supabase Auth
+  proxy.ts              Sessão do Supabase Auth nas rotas /admin
   assets/brand/         Logotipo oficial (importado via next/image)
   components/
     ui/                 Design system: Button, Badge, Container, SectionHeading, CardMedia,
                         PageHeader, Breadcrumb, EmptyState, Pagination, TextLink, RichText
-    layout/             Header, menu mobile, NavLink (item ativo), Footer e logotipo
+    layout/             Header, menu mobile, NavLink (item ativo), Footer, logotipo e PublicShell
+    admin/              Barra lateral, cabeçalho, cartão de login e formulários do painel
     home/               Seções da homepage
     research/ projects/ publications/ institutions/ network/
                         Cards e listas compartilhados entre homepage e páginas internas
   data/
     site.ts             Navegação, pilares e fallbacks do conteúdo essencial
+    admin-navigation.ts Módulos do painel administrativo
   lib/
-    queries/            Consultas de conteúdo público
+    auth/               Autorização administrativa, Server Actions de login e redirecionamentos seguros
+    queries/            Consultas de conteúdo (públicas e contagens do painel)
     supabase/           Clientes Supabase (navegador, servidor e público)
     utils/              Utilitários (datas, DOI, links externos, parâmetros de URL)
   types/
@@ -84,6 +92,7 @@ supabase/
   config.toml           Configuração do Supabase CLI (ambiente local)
   migrations/           Migrations SQL versionadas
 docs/
+  admin-auth.md         Autenticação, autorização e primeiro administrador
   database-schema.md    Modelo de dados
   deployment.md         Deploy no Cloudflare Workers e checklist de produção
   design-system.md      Tokens, tipografia, componentes e breakpoints
@@ -132,10 +141,19 @@ A navegação principal aponta para as rotas reais (`/rede`, `/pesquisa`,
 indicação do item ativo. Rotas, filtros, consultas, estados vazios e regras de
 erro/404 estão em [`docs/public-pages.md`](docs/public-pages.md).
 
+## Área administrativa
+
+`/admin` usa Supabase Auth (e-mail e senha, sem cadastro público) e um vínculo
+em `admin_memberships` (papéis `admin` e `editor`), verificado a cada
+requisição. Não há usuário padrão: o primeiro administrador é criado no painel
+do Supabase e vinculado por SQL. Fluxos, cookies, configuração de Redirect
+URLs e passo a passo em [`docs/admin-auth.md`](docs/admin-auth.md).
+
 ## Supabase
 
 O projeto usa o Supabase para banco de dados (PostgreSQL com Row Level
-Security), e futuramente para autenticação e armazenamento de arquivos. O modelo
+Security) e autenticação da área administrativa (Supabase Auth); o
+armazenamento de arquivos virá nas próximas etapas. O modelo
 de dados está documentado em [`docs/database-schema.md`](docs/database-schema.md).
 
 Clientes disponíveis (tipados com `Database`):

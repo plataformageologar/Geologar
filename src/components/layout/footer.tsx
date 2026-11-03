@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowUpRight, Lock, Mail, MapPin, Phone } from "lucide-react";
 
 import logo from "@/assets/brand/geologar-logo-circle.png";
 import { Container } from "@/components/ui/container";
@@ -120,10 +120,17 @@ export function Footer({ settings, navigation, socialLinks }: FooterProps) {
       </Container>
 
       <div className="border-t border-white/15">
-        <Container className="py-6 text-caption text-deep-muted">
+        <Container className="flex flex-col gap-2 py-6 text-caption text-deep-muted sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {new Date().getFullYear()} {settings.site_name}. Todos os direitos reservados.
           </p>
+          <Link
+            href="/admin/login"
+            className="inline-flex min-h-10 w-fit items-center gap-1.5 underline-offset-4 hover:text-deep-foreground hover:underline"
+          >
+            <Lock aria-hidden="true" className="size-3.5" />
+            Área restrita
+          </Link>
         </Container>
       </div>
     </footer>

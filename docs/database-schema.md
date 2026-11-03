@@ -4,7 +4,12 @@ Schema do banco PostgreSQL (Supabase) que sustenta o conteúdo institucional do
 portal. A fonte de verdade é a pasta [`supabase/migrations/`](../supabase/migrations/);
 este documento descreve o estado definido por:
 
-- `20261103141529_initial_geologar_content_schema.sql`
+- `20261103141529_initial_geologar_content_schema.sql` (conteúdo)
+- `20261103190445_admin_memberships.sql` (autorização administrativa)
+
+As migrations `20261103154631_initial_homepage_content.sql` e
+`20261103183909_homepage_links_to_internal_pages.sql` apenas inserem e ajustam
+dados, sem alterar a estrutura.
 
 Toda alteração estrutural deve ser feita por uma nova migration. Não altere o
 banco remoto manualmente pelo painel do Supabase.
@@ -24,6 +29,7 @@ banco remoto manualmente pelo painel do Supabase.
 | `project_research_lines`     | Relação N:N       | Quando os dois lados estão publicados    |
 | `publication_projects`       | Relação N:N       | Quando os dois lados estão publicados    |
 | `publication_research_lines` | Relação N:N       | Quando os dois lados estão publicados    |
+| `admin_memberships`          | Autorização       | Nunca (cada usuário lê só o próprio registro) |
 
 ## Diagrama relacional
 
@@ -191,6 +197,25 @@ Redes sociais institucionais. `platform` é um identificador em minúsculas
 (`instagram`, `youtube`, `linkedin`…). `url` é única. Só aparece publicamente
 com `is_active = true`.
 
+### `admin_memberships`
+
+Vínculo administrativo de uma conta do Supabase Auth. Sem registro (ou com
+`is_active = false`) a conta não acessa `/admin`. Detalhes de uso em
+[`admin-auth.md`](admin-auth.md).
+
+| Coluna       | Tipo          | Regra                                                      |
+| ------------ | ------------- | ---------------------------------------------------------- |
+| `user_id`    | `uuid`        | PK; FK para `auth.users(id)` com `ON DELETE CASCADE`        |
+| `role`       | `text`        | `admin` ou `editor` (constraint `admin_memberships_role_check`) |
+| `is_active`  | `boolean`     | Padrão `true`; `false` suspende o acesso sem apagar a conta |
+| `created_at` / `updated_at` | `timestamptz` | Padrão `now()`; trigger `set_updated_at`      |
+
+- Índice parcial `admin_memberships_active_role_idx` em `role` (apenas ativos).
+- O papel vem sempre desta tabela — nunca de `user_metadata`, que o próprio
+  usuário pode alterar.
+- A migration não cria registros: o primeiro administrador é vinculado
+  manualmente (ver [`admin-auth.md`](admin-auth.md#criar-o-primeiro-administrador)).
+
 ### Relações N:N
 
 `project_research_lines`, `publication_projects` e `publication_research_lines`
@@ -248,8 +273,8 @@ Todas as tabelas têm `created_at` (relações N:N só `created_at`) e
 
 ### Row Level Security
 
-RLS está habilitado em **todas** as 11 tabelas. Existem apenas políticas de
-`SELECT`, para os papéis `anon` e `authenticated`:
+RLS está habilitado em **todas** as 12 tabelas. Existem apenas políticas de
+`SELECT`. Nas 11 tabelas de conteúdo, para os papéis `anon` e `authenticated`:
 
 | Tabela                                       | Condição de leitura                      |
 | -------------------------------------------- | ---------------------------------------- |
@@ -257,6 +282,10 @@ RLS está habilitado em **todas** as 11 tabelas. Existem apenas políticas de
 | `research_lines`, `projects`, `publications`, `institutions`  | `is_published`           |
 | `social_links`                               | `is_active`                              |
 | tabelas N:N                                  | as duas entidades vinculadas publicadas  |
+
+Em `admin_memberships`, apenas `authenticated` tem `SELECT`, com a política
+*"Users can read their own admin membership"* (`auth.uid() = user_id`); `anon`
+não tem nenhum privilégio.
 
 ### Escrita
 
@@ -267,15 +296,18 @@ Nenhuma escrita é permitida para `anon` ou `authenticated`:
   (apenas `SELECT` é concedido).
 
 Somente `service_role` (que ignora RLS) pode escrever, e essa chave deve ser
-usada exclusivamente em código de servidor. As políticas de escrita serão
-criadas junto com a autenticação e o CMS.
+usada exclusivamente em código de servidor. O mesmo vale para
+`admin_memberships`: nenhum usuário cria, altera ou promove o próprio vínculo;
+o primeiro administrador é vinculado pelo SQL Editor. As políticas de escrita
+do conteúdo serão criadas junto com o CMS, a partir do vínculo em
+`admin_memberships`.
 
 As funções de trigger usam `search_path` vazio e não podem ser executadas
 diretamente por `anon`/`authenticated`.
 
 ## Ainda não implementado
 
-- Perfis de usuário, papéis administrativos e políticas de escrita.
+- Políticas de escrita no conteúdo (CMS) e gestão de usuários pelo painel.
 - Supabase Storage (buckets e políticas de arquivos).
 - Tabela de autores de publicações.
 - Formulário de contato (mensagens recebidas).

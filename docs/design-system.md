@@ -36,6 +36,7 @@ Referência prática para as próximas etapas. Os tokens vivem em
 | `deep` / `deep-foreground`  | `#0f2537` / `#f2efe8` | Hero sem foto, rodapé                   |
 | `deep-muted`                | `#b9c3cc` | Texto secundário sobre `deep`                    |
 | `ring` / `ring-on-dark`     | `#1f6fb2` / `#f2c46d` | Anel de foco (claro / escuro)           |
+| `danger` / `danger-soft`    | `#a12d22` / `#f9e8e5` | Mensagens de erro em formulários (texto / fundo) |
 
 Contraste (WCAG 2.2): todos os pares de texto usados ficam entre **5,3:1** e
 **14,3:1** (AA exige 4,5:1); anéis de foco ficam acima de **4,8:1** (mínimo 3:1).
@@ -129,6 +130,20 @@ fundo suave com curvas de nível e ícone — decorativo (`aria-hidden`).
   links "Ler publicação" e DOI.
 - Logos de parceiros: área `aspect-[3/2]` padronizada, `object-contain`,
   fundo branco — nunca deformar.
+
+### Área administrativa (`components/admin/`)
+
+- `AdminShell`: barra lateral `deep` fixa a partir de `lg` (`w-80`) e, em telas
+  menores, barra superior com botão "Menu" (mesmo padrão do menu mobile do
+  site). Cabeçalho com e-mail, papel (`Badge`) e "Sair".
+- Itens de navegação sem página aparecem com o selo "Em breve" e **não** são
+  links; o item atual recebe `aria-current="page"`.
+- `AuthCard`: cartão centralizado sobre `surface-muted` com curvas de nível,
+  usado no login, recuperação, nova senha e acesso negado.
+- Formulários (`form-controls.tsx`): `Field` (rótulo + dica ligada por
+  `aria-describedby`), `TextInput`, `PasswordInput` (botão mostrar/ocultar com
+  `aria-pressed`) e `FormMessage` (`error` com `role="alert"`; `success` e
+  `info` com `role="status"`). Campos com 44px de altura mínima.
 
 ### Ícones
 

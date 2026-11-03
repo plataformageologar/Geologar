@@ -121,6 +121,19 @@ Antes de qualquer mudança, validar com `npm run preview`:
 - **Cache Components**: só reativar quando Next.js/OpenNext suportarem
   oficialmente esse modo no runtime do Workers.
 
+## Proxy e área administrativa
+
+`src/proxy.ts` (antigo *middleware*) renova a sessão do Supabase Auth nas rotas
+`/admin` e `/admin/:path*`. No Next.js 16 o proxy roda no runtime Node.js, que
+o OpenNext suporta no Workers em modo **experimental** (o build mostra
+*"Node.js middleware support is experimental in cloudflare"*). O
+funcionamento foi validado no `npm run preview` (redirecionamentos, renovação
+e limpeza de cookies, rejeição de tokens forjados). Após atualizar Next.js ou
+OpenNext, repita a validação antes do deploy. Nenhum binding, KV, R2 ou
+Durable Object foi adicionado; o login usa apenas as variáveis
+`NEXT_PUBLIC_*` já existentes. Configuração do Supabase Auth (Site URL,
+Redirect URLs, cadastro público) em [`admin-auth.md`](admin-auth.md).
+
 ## Checklist pós-deploy
 
 - [ ] Build e deploy concluídos no Workers Builds.
@@ -132,6 +145,9 @@ Antes de qualquer mudança, validar com `npm run preview`:
 - [ ] Logotipo (`/_next/image`) carregando.
 - [ ] Sem erros no console nem falhas de hidratação; menu mobile funcionando.
 - [ ] Nenhuma chave secreta no HTML/JS publicado.
+- [ ] `GET /admin` sem sessão em `307` para `/admin/login`, com
+      `Cache-Control: private, no-store`; `/admin/login` em `200`.
+- [ ] Login, painel, "Meu perfil" e "Sair" funcionando com uma conta vinculada.
 - [ ] Observability do Worker sem erros (*Workers → geologar → Logs*).
 
 ## Problemas comuns
@@ -141,6 +157,8 @@ Antes de qualquer mudança, validar com `npm run preview`:
 | Deploy falha: *"Could not find compiled Open Next config"* | O build não gerou `.open-next/`: o build command deve ser `npm run build` (que executa o OpenNext), não `next build` |
 | `GET /` em 500 com *"code had hung"*      | Cache Components reativado: ver "Renderização e cache" |
 | Site só com hero, A Rede e contato        | Variáveis `NEXT_PUBLIC_*` ausentes no build: cadastre e refaça o build |
+| Link de recuperação volta com "link inválido" | Aberto em outro navegador (PKCE) ou Redirect URL ausente no Supabase: ver [`admin-auth.md`](admin-auth.md) |
+| Login correto leva a "acesso negado"      | Conta sem registro ativo em `admin_memberships`   |
 
 ## Domínio oficial
 

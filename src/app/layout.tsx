@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { Source_Sans_3, Source_Serif_4 } from "next/font/google";
 
-import { Footer } from "@/components/layout/footer";
-import { Header } from "@/components/layout/header";
-import { footerNavigation, mainNavigation } from "@/data/site";
-import { getActiveSocialLinks, getSiteSettings } from "@/lib/queries/settings";
+import { getSiteSettings } from "@/lib/queries/settings";
 import "./globals.css";
 
 // Texto e interface.
@@ -33,30 +30,18 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [settings, socialLinks] = await Promise.all([
-    getSiteSettings(),
-    getActiveSocialLinks(),
-  ]);
-
+/**
+ * Layout raiz: apenas o que é comum às duas áreas (documento, fontes e CSS).
+ * O site público (`(public)/layout.tsx`) e a área administrativa
+ * (`admin/layout.tsx`) definem cada um a própria estrutura e navegação.
+ */
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
       className={`${sourceSans.variable} ${sourceSerif.variable} antialiased`}
     >
-      <body className="flex min-h-dvh flex-col">
-        <a
-          href="#conteudo"
-          className="sr-only z-50 rounded-full bg-primary px-5 py-3 text-label text-primary-foreground focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
-        >
-          Pular para o conteúdo
-        </a>
-        <Header navigation={mainNavigation} institutionalName={settings.institutional_name} />
-        <main id="conteudo" tabIndex={-1} className="flex-1 focus:outline-none">
-          {children}
-        </main>
-        <Footer settings={settings} navigation={footerNavigation} socialLinks={socialLinks} />
-      </body>
+      <body className="flex min-h-dvh flex-col">{children}</body>
     </html>
   );
 }

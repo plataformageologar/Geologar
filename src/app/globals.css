@@ -32,6 +32,10 @@
   --earth: #8c4f24;
   --earth-soft: #f3e7da;
 
+  /* Erros de formulário e avisos de bloqueio (área administrativa). */
+  --danger: #a12d22;
+  --danger-soft: #f9e8e5;
+
   /* Fundo escuro institucional (hero sem foto, CTA, rodapé) */
   --deep: #0f2537;
   --deep-foreground: #f2efe8;
@@ -65,6 +69,9 @@
 
   --color-earth: var(--earth);
   --color-earth-soft: var(--earth-soft);
+
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
 
   --color-deep: var(--deep);
   --color-deep-foreground: var(--deep-foreground);

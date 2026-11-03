@@ -2,24 +2,26 @@
 
 Páginas institucionais do portal (Etapa 5). Todas são Server Components
 renderizados sob demanda (`dynamic = "force-dynamic"`), leem o Supabase com a
-chave publishable (RLS: apenas conteúdo publicado) e compartilham o layout
-raiz (cabeçalho, rodapé e link "Pular para o conteúdo").
+chave publishable (RLS: apenas conteúdo publicado) e ficam no grupo de rotas
+`src/app/(public)/`, cujo layout (`PublicShell`) adiciona cabeçalho, rodapé e
+link "Pular para o conteúdo". O grupo não altera as URLs; a área
+administrativa (`/admin`) tem layout próprio.
 
 ## Rotas
 
 | Rota                | Arquivo                               | Conteúdo                                                           |
 | ------------------- | ------------------------------------- | ------------------------------------------------------------------ |
-| `/`                 | `src/app/page.tsx`                    | Homepage (seções com links para as páginas internas)               |
-| `/rede`             | `src/app/rede/page.tsx`               | Apresentação (`homepage_content`), pilares, linhas e CTA de contato |
-| `/pesquisa`         | `src/app/pesquisa/page.tsx`           | Todas as linhas publicadas (`sort_order`, título)                  |
-| `/pesquisa/[slug]`  | `src/app/pesquisa/[slug]/page.tsx`    | Linha, projetos, publicações (diretas + dos projetos) e outras linhas |
-| `/projetos`         | `src/app/projetos/page.tsx`           | Projetos publicados, filtro por situação e paginação (12/página)   |
-| `/projetos/[slug]`  | `src/app/projetos/[slug]/page.tsx`    | Projeto, ficha técnica, linhas, publicações e projetos relacionados |
-| `/publicacoes`      | `src/app/publicacoes/page.tsx`        | Publicações por ano, busca, filtros por ano e linha (20/página)    |
-| `/instituicoes`     | `src/app/instituicoes/page.tsx`       | Instituições agrupadas pelas categorias cadastradas                |
-| `/contato`          | `src/app/contato/page.tsx`            | Canais reais de `site_settings` e `social_links` (sem formulário)  |
-| 404                 | `src/app/not-found.tsx`               | Página não encontrada, com links de retorno                        |
-| erro                | `src/app/error.tsx`                   | Falha temporária de carregamento, com "Tentar novamente"           |
+| `/`                 | `src/app/(public)/page.tsx`                    | Homepage (seções com links para as páginas internas)               |
+| `/rede`             | `src/app/(public)/rede/page.tsx`               | Apresentação (`homepage_content`), pilares, linhas e CTA de contato |
+| `/pesquisa`         | `src/app/(public)/pesquisa/page.tsx`           | Todas as linhas publicadas (`sort_order`, título)                  |
+| `/pesquisa/[slug]`  | `src/app/(public)/pesquisa/[slug]/page.tsx`    | Linha, projetos, publicações (diretas + dos projetos) e outras linhas |
+| `/projetos`         | `src/app/(public)/projetos/page.tsx`           | Projetos publicados, filtro por situação e paginação (12/página)   |
+| `/projetos/[slug]`  | `src/app/(public)/projetos/[slug]/page.tsx`    | Projeto, ficha técnica, linhas, publicações e projetos relacionados |
+| `/publicacoes`      | `src/app/(public)/publicacoes/page.tsx`        | Publicações por ano, busca, filtros por ano e linha (20/página)    |
+| `/instituicoes`     | `src/app/(public)/instituicoes/page.tsx`       | Instituições agrupadas pelas categorias cadastradas                |
+| `/contato`          | `src/app/(public)/contato/page.tsx`            | Canais reais de `site_settings` e `social_links` (sem formulário)  |
+| 404                 | `src/app/not-found.tsx`, `src/app/(public)/not-found.tsx` | Página não encontrada, com links de retorno (URL inexistente / `notFound()` de uma página) |
+| erro                | `src/app/(public)/error.tsx`                   | Falha temporária de carregamento, com "Tentar novamente"           |
 
 Títulos seguem o modelo `Página | GeoLogar` (template em `src/app/layout.tsx`).
 As rotas dinâmicas geram título e descrição a partir do registro
