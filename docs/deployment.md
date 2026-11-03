@@ -29,7 +29,7 @@ migrate --force-install`, com versões `@latest`) a cada build.
 Não há R2, D1, KV nem Durable Objects: não são necessários enquanto a homepage
 for renderizada sob demanda (ver abaixo).
 
-## Configuração no painel do Cloudflare (passo manual)
+## Configuração no painel do Cloudflare
 
 Em *Workers & Pages → geologar → Settings → Build*:
 
@@ -38,13 +38,15 @@ Em *Workers & Pages → geologar → Settings → Build*:
 | Git repository        | `plataformageologar/Geologar`           |
 | Branch (production)   | `main`                                  |
 | Root directory        | `/` (raiz)                              |
-| **Build command**     | `npx opennextjs-cloudflare build`       |
-| **Deploy command**    | `npx opennextjs-cloudflare deploy`      |
+| Build command         | `npm run build`                         |
+| Deploy command        | `npx wrangler deploy`                   |
 
-O build command é obrigatório: o `wrangler.jsonc` aponta para
-`.open-next/worker.js`, que só existe depois de `opennextjs-cloudflare build`.
-(`npx wrangler deploy` também funciona como deploy command, desde que o build
-command acima esteja configurado.)
+`npm run build` executa `opennextjs-cloudflare build`, que roda o `next build`
+(definido em `buildCommand`, no `open-next.config.ts`) e gera o Worker em
+`.open-next/`. Em seguida, `npx wrangler deploy` detecta o projeto OpenNext e
+delega para `opennextjs-cloudflare deploy`. Se o build command do painel for
+só `next build`, o deploy falha com *"Could not find compiled Open Next
+config"*.
 
 ### Variáveis de ambiente
 
@@ -134,7 +136,7 @@ Antes de qualquer mudança, validar com `npm run preview`:
 
 | Sintoma                                   | Causa provável                                    |
 | ----------------------------------------- | ------------------------------------------------- |
-| Deploy falha: `.open-next/worker.js` não encontrado | Build command do painel não é `npx opennextjs-cloudflare build` |
+| Deploy falha: *"Could not find compiled Open Next config"* | O build não gerou `.open-next/`: o build command deve ser `npm run build` (que executa o OpenNext), não `next build` |
 | `GET /` em 500 com *"code had hung"*      | Cache Components reativado: ver "Renderização e cache" |
 | Site só com hero, A Rede e contato        | Variáveis `NEXT_PUBLIC_*` ausentes no build: cadastre e refaça o build |
 

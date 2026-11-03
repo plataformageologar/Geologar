@@ -4,13 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "opennextjs-cloudflare build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "node scripts/assert-no-secret-env.mjs && opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "upload": "node scripts/assert-no-secret-env.mjs && opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "preview": "npm run build && opennextjs-cloudflare preview",
+    "deploy": "node scripts/assert-no-secret-env.mjs && npm run build && opennextjs-cloudflare deploy",
+    "upload": "node scripts/assert-no-secret-env.mjs && npm run build && opennextjs-cloudflare upload",
     "db:types": "supabase gen types --lang=typescript --schema public --remote > src/types/database.types.ts"
   },
   "engines": {

@@ -50,7 +50,7 @@ código; quando for, deve ser lida apenas em código de servidor.
 | Comando             | Descrição                                                 |
 | ------------------- | --------------------------------------------------------- |
 | `npm run dev`       | Servidor de desenvolvimento                               |
-| `npm run build`     | Build de produção                                         |
+| `npm run build`     | Build de produção para o Cloudflare (OpenNext: `next build` + Worker em `.open-next/`) |
 | `npm run start`     | Executa o build de produção localmente                    |
 | `npm run lint`      | ESLint (regras do Next.js + TypeScript)                   |
 | `npm run typecheck` | Gera os tipos de rotas (`next typegen`) e roda `tsc --noEmit` |
