@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { cacheLife } from "next/cache";
 import { ArrowUpRight, Mail, MapPin, Phone } from "lucide-react";
 
 import logo from "@/assets/brand/geologar-logo-circle.png";
@@ -12,12 +11,6 @@ type FooterProps = {
   navigation: NavItem[];
   socialLinks: SocialLink[];
 };
-
-async function CurrentYear() {
-  "use cache";
-  cacheLife("days");
-  return <>{new Date().getFullYear()}</>;
-}
 
 export function Footer({ settings, navigation, socialLinks }: FooterProps) {
   const location = [settings.city, settings.state, settings.country]
@@ -129,7 +122,7 @@ export function Footer({ settings, navigation, socialLinks }: FooterProps) {
       <div className="border-t border-white/15">
         <Container className="py-6 text-caption text-deep-muted">
           <p>
-            © <CurrentYear /> {settings.site_name}. Todos os direitos reservados.
+            © {new Date().getFullYear()} {settings.site_name}. Todos os direitos reservados.
           </p>
         </Container>
       </div>

@@ -1,81 +1,145 @@
 # Deploy — GeoLogar
 
-O portal é publicado no **Netlify**, que oferece suporte nativo ao Next.js
-(App Router, Server Components, cache e revalidação). Não há `netlify.toml`
-nem `output: "export"`: o Netlify detecta o framework e configura o build
-sozinho.
+O portal é publicado no **Cloudflare Workers** com o adaptador
+[OpenNext](https://opennext.js.org/cloudflare) (`@opennextjs/cloudflare`), que
+converte o build do Next.js em um Worker.
 
-## Visão geral
+| Item               | Valor                                                    |
+| ------------------ | -------------------------------------------------------- |
+| Repositório        | `plataformageologar/Geologar` (GitHub)                   |
+| Branch de produção | `main` (cada push gera um novo deploy pelo Workers Builds) |
+| Worker             | `geologar` → <https://geologar.plataformageologar.workers.dev> |
+| Adaptador          | `@opennextjs/cloudflare` 1.20.15 e `wrangler` 4.157.0 (versões fixas) |
+| Node.js            | versão do `.nvmrc` (22)                                  |
+| Domínio            | ainda **não** configurado — apenas `*.workers.dev`       |
 
-| Item               | Valor                                              |
-| ------------------ | -------------------------------------------------- |
-| Repositório        | `plataformageologar/Geologar` (GitHub)             |
-| Branch de produção | `main` (cada push publica uma nova versão)         |
-| Comando de build   | `npm run build` (detectado automaticamente)        |
-| Diretório publicado| `.next` (detectado automaticamente)                |
-| Node.js            | versão do `.nvmrc` (22)                            |
-| Domínio            | subdomínio `*.netlify.app` — domínio oficial ainda **não** configurado |
+## Arquivos versionados
 
-## Variáveis de ambiente
+| Arquivo                         | Função                                                   |
+| ------------------------------- | -------------------------------------------------------- |
+| `wrangler.jsonc`                | Worker `geologar`, assets estáticos, imagens e autorreferência exigida pelo OpenNext |
+| `open-next.config.ts`           | Configuração do adaptador (sem cache incremental)        |
+| `public/_headers`               | Cache longo (`immutable`) para `/_next/static/*`         |
+| `scripts/assert-no-secret-env.mjs` | Bloqueia deploy local se houver chave secreta em `.env*` |
 
-Cadastre em *Project configuration → Environment variables* (escopo: Builds e
-Functions). Os valores estão no painel do Supabase, em *Project Settings → API
-Keys*; **nunca** os escreva no repositório nem em documentação.
+Com `wrangler.jsonc` no repositório, o Wrangler considera o projeto já
+configurado e **não executa mais a configuração automática** (`@opennextjs/cloudflare
+migrate --force-install`, com versões `@latest`) a cada build.
+
+Não há R2, D1, KV nem Durable Objects: não são necessários enquanto a homepage
+for renderizada sob demanda (ver abaixo).
+
+## Configuração no painel do Cloudflare (passo manual)
+
+Em *Workers & Pages → geologar → Settings → Build*:
+
+| Campo                 | Valor                                   |
+| --------------------- | --------------------------------------- |
+| Git repository        | `plataformageologar/Geologar`           |
+| Branch (production)   | `main`                                  |
+| Root directory        | `/` (raiz)                              |
+| **Build command**     | `npx opennextjs-cloudflare build`       |
+| **Deploy command**    | `npx opennextjs-cloudflare deploy`      |
+
+O build command é obrigatório: o `wrangler.jsonc` aponta para
+`.open-next/worker.js`, que só existe depois de `opennextjs-cloudflare build`.
+(`npx wrangler deploy` também funciona como deploy command, desde que o build
+command acima esteja configurado.)
+
+### Variáveis de ambiente
+
+Cadastre em *Settings → Build → Variables and secrets* (variáveis **de build**:
+o Next.js embute os valores `NEXT_PUBLIC_*` durante o build). Os valores estão
+no painel do Supabase, em *Project Settings → API Keys*; **nunca** os escreva no
+repositório.
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 ```
 
-- Ambas são públicas por natureza (vão para o navegador); a proteção dos
-  dados é feita pelo RLS do banco.
-- **Não** cadastre `SUPABASE_SECRET_KEY` nem a `service_role`: a homepage não
-  precisa delas. Quando alguma funcionalidade de servidor exigir a chave
-  secreta, ela deve ser cadastrada sem o prefixo `NEXT_PUBLIC_` e marcada como
-  secreta no Netlify.
-- Variáveis `NEXT_PUBLIC_*` são embutidas no build: depois de alterá-las,
-  faça um novo deploy (*Deploys → Trigger deploy → Deploy site*).
+- Ambas são públicas por natureza; a proteção dos dados é feita pelo RLS.
+- **Não** cadastre `SUPABASE_SECRET_KEY`: o site não a utiliza.
+- Depois de alterar uma variável, dispare um novo build (*Deployments → Retry
+  build*, ou um novo push na `main`).
 
-## Primeiro deploy (importação do projeto)
+## Desenvolvimento e testes locais
 
-1. No Netlify: *Add new project → Import an existing project → GitHub*.
-2. Autorize o acesso à organização `plataformageologar`, se solicitado, e
-   escolha o repositório `Geologar`.
-3. Branch to deploy: `main`. Mantenha os campos de build sugeridos pelo
-   Netlify (framework **Next.js** detectado).
-4. Em *Environment variables*, adicione as duas variáveis acima.
-5. Clique em *Deploy*. Ao final, o site fica disponível em
-   `https://<nome>.netlify.app`.
+```bash
+npm run dev       # Next.js em modo desenvolvimento (Node.js)
+npm run preview   # build do OpenNext + Worker local no runtime do Cloudflare (workerd)
+```
 
-## Atualização de conteúdo
+O `preview` (porta 8787) reproduz o ambiente de produção e é o teste que vale
+antes de qualquer mudança em cache, renderização ou dependências do servidor.
+No Windows o OpenNext funciona, mas emite um aviso recomendando WSL.
 
-O conteúdo vem do Supabase com cache de 5 minutos (perfil `content` em
-`next.config.ts`). Alterações publicadas no banco aparecem no site em até
-~5 minutos, sem novo deploy. Mudanças de código são publicadas a cada push na
-`main`.
+### Atenção: chave secreta em `.env.local`
+
+O build do OpenNext copia **todas** as variáveis de `.env`, `.env.local` e
+`.env.production*` para o Worker (`.open-next/cloudflare/next-env.mjs`). Se
+`SUPABASE_SECRET_KEY` estiver no `.env.local`, um deploy feito a partir da sua
+máquina publicaria a chave junto com o código. Por isso:
+
+- o deploy de produção é feito apenas pelo Workers Builds (sem `.env*`);
+- `npm run deploy` e `npm run upload` executam
+  `scripts/assert-no-secret-env.mjs` e são interrompidos se a chave estiver
+  definida localmente;
+- `npm run preview` continua permitido (o Worker local não sai da máquina) e
+  `.open-next/` está no `.gitignore`.
+
+## Renderização e cache
+
+A homepage usa `export const dynamic = "force-dynamic"`: cada requisição lê o
+Supabase (7 consultas em paralelo, ~0,8 s no total). Dentro de uma requisição
+as leituras são compartilhadas com `cache` do React. Alterações publicadas no
+banco aparecem imediatamente, sem novo deploy.
+
+`cacheComponents` e `partialPrefetching` estão **desativados** em
+`next.config.ts`. Motivo (causa confirmada do HTTP 500 em produção):
+
+1. Com Cache Components ativo e sem cache incremental, o OpenNext renderiza a
+   homepage a cada requisição dentro do Worker.
+2. O Next.js avisa que não garante o funcionamento de Cache Components com a
+   implementação de `setTimeout()` do runtime do Workers.
+3. A renderização trava depois que as consultas terminam: no `preview` local,
+   as 7 requisições ao Supabase concluíram com sucesso (~300–600 ms cada) e,
+   em seguida, o runtime cancelou a requisição com *"Worker's code had hung and
+   would never generate a response"* — o mesmo erro do log de produção.
+4. Com Cache Components desativado e renderização dinâmica, o mesmo Worker
+   responde `200` (~0,8–1,6 s).
+
+### Reativar cache no futuro
+
+Antes de qualquer mudança, validar com `npm run preview`:
+
+- **ISR / `unstable_cache`**: exige cache incremental persistente no Cloudflare
+  (R2 + `r2IncrementalCache` em `open-next.config.ts`); avaliar quando o volume
+  de acesso justificar.
+- **Cache Components**: só reativar quando Next.js/OpenNext suportarem
+  oficialmente esse modo no runtime do Workers.
 
 ## Checklist pós-deploy
 
-- [ ] Build concluído sem erros no log do Netlify.
-- [ ] Homepage carrega com o conteúdo do banco (hero, A Rede, linhas de
+- [ ] Build e deploy concluídos no Workers Builds.
+- [ ] `GET /` responde `200` com o conteúdo do banco (hero, A Rede, 6 linhas de
       pesquisa, contato).
-- [ ] Seções sem conteúdo publicado não aparecem, nem seus links no menu.
-- [ ] Sem erros no console do navegador nem falhas de hidratação.
-- [ ] Nenhuma requisição com erro (4xx/5xx) na aba Network.
-- [ ] Nenhuma chave secreta no HTML/JS publicado (buscar por `sb_secret`).
-- [ ] Layout conferido em 1280×720, 1440×900, 1024×768, 768×1024, 390×844 e
-      375×812, sem rolagem horizontal.
-- [ ] Menu mobile abre, fecha (Esc) e navega pelas âncoras.
-
-## Domínio oficial
-
-Ainda não configurado. Quando for, a troca de DNS deve ser planejada à parte
-(*Domain management → Add a domain*), sem interromper o site atual.
+- [ ] Assets `/_next/static/*` com `Cache-Control: public,max-age=31536000,immutable`.
+- [ ] Logotipo (`/_next/image`) carregando.
+- [ ] Sem erros no console nem falhas de hidratação; menu mobile funcionando.
+- [ ] Nenhuma chave secreta no HTML/JS publicado.
+- [ ] Observability do Worker sem erros (*Workers → geologar → Logs*).
 
 ## Problemas comuns
 
-| Sintoma                                   | Causa provável                                     |
-| ----------------------------------------- | -------------------------------------------------- |
-| Site publicado só com hero, A Rede e contato (sem linhas de pesquisa); log de build com `Supabase não configurado` | Variáveis não cadastradas no Netlify: cadastre e faça novo deploy |
-| Mesmo sintoma, com outro erro `[supabase] ...` no log | Leitura do banco falhou (projeto pausado, chave inválida): verifique o Supabase |
-| Conteúdo novo não aparece                 | Aguarde a revalidação (até ~5 min)                 |
+| Sintoma                                   | Causa provável                                    |
+| ----------------------------------------- | ------------------------------------------------- |
+| Deploy falha: `.open-next/worker.js` não encontrado | Build command do painel não é `npx opennextjs-cloudflare build` |
+| `GET /` em 500 com *"code had hung"*      | Cache Components reativado: ver "Renderização e cache" |
+| Site só com hero, A Rede e contato        | Variáveis `NEXT_PUBLIC_*` ausentes no build: cadastre e refaça o build |
+
+## Domínio oficial
+
+Ainda não configurado. Quando for, a configuração deve ser planejada à parte
+(*Workers → geologar → Settings → Domains & Routes*), sem alterar o DNS atual
+antes da validação.

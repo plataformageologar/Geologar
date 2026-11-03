@@ -1,15 +1,9 @@
-import { cacheLife, cacheTag } from "next/cache";
-
 import { createPublicClient } from "@/lib/supabase/public";
 import type { PublicationSummary } from "@/types/content";
 
-import { contentTags, logQueryError } from "./shared";
+import { logQueryError } from "./shared";
 
 async function fetchRecentPublications(limit: number) {
-  "use cache";
-  cacheLife("content");
-  cacheTag(contentTags.publications);
-
   const { data, error } = await createPublicClient()
     .from("publications")
     .select(

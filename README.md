@@ -13,7 +13,7 @@ autenticação serão implementados nas próximas etapas.
 - [TypeScript](https://www.typescriptlang.org) (modo estrito)
 - [Tailwind CSS](https://tailwindcss.com) 4
 - [Supabase](https://supabase.com) (PostgreSQL, Auth, Storage)
-- [Netlify](https://www.netlify.com) (deploy)
+- [Cloudflare Workers](https://developers.cloudflare.com/workers/) via [OpenNext](https://opennext.js.org/cloudflare) (deploy)
 
 ## Desenvolvimento local
 
@@ -70,7 +70,7 @@ src/
   data/
     site.ts             Navegação, pilares e fallbacks do conteúdo essencial
   lib/
-    queries/            Consultas de conteúdo público (cache + fallback)
+    queries/            Consultas de conteúdo público (com fallback)
     supabase/           Clientes Supabase (navegador, servidor e público)
     utils/              Utilitários compartilhados
   types/
@@ -81,7 +81,7 @@ supabase/
   migrations/           Migrations SQL versionadas
 docs/
   database-schema.md    Modelo de dados
-  deployment.md         Deploy no Netlify e checklist de produção
+  deployment.md         Deploy no Cloudflare Workers e checklist de produção
   design-system.md      Tokens, tipografia, componentes e breakpoints
 ```
 
@@ -113,10 +113,11 @@ Regras:
 - **Imagens**: os campos `*_path` aceitam por enquanto apenas caminhos locais
   (`/...` em `public/`). Caminhos do Storage são ignorados até que os buckets
   sejam configurados (`resolveImageSrc` em `src/lib/queries/shared.ts`).
-- **Cache**: cada consulta usa `"use cache"` com o perfil `content`
-  (revalidação a cada 5 minutos, em `next.config.ts`) e uma tag por tabela
-  (`contentTags`), pronta para `revalidateTag` quando houver um painel de
-  edição.
+- **Renderização sob demanda**: a homepage usa `dynamic = "force-dynamic"` e
+  lê o banco a cada requisição, sem ISR. Dentro de uma mesma requisição as
+  leituras são compartilhadas (`cache` do React), então layout e página não
+  repetem consultas. Cache Components está desativado por incompatibilidade
+  com o runtime do Cloudflare Workers (ver [`docs/deployment.md`](docs/deployment.md)).
 
 Enquanto as páginas internas não existem, a navegação aponta para as seções
 da homepage (`/#pesquisa`, `/#projetos`…) e ações sem destino real (como
@@ -135,7 +136,7 @@ Clientes disponíveis (tipados com `Database`):
 - `@/lib/supabase/server` — para Server Components, Server Actions e Route
   Handlers que dependem da sessão (cookies).
 - `@/lib/supabase/public` — leitura de conteúdo público, sem sessão; pode ser
-  usado dentro de funções com `"use cache"`.
+  usado em qualquer Server Component.
 
 ### Migrations
 
@@ -175,7 +176,16 @@ Para rodar o Supabase localmente (`npx supabase start`) é necessário Docker.
 
 ## Deploy
 
-O site é publicado no [Netlify](https://www.netlify.com), que detecta o
-Next.js automaticamente (sem `netlify.toml` e sem `output: "export"`). A branch
-`main` é a de produção. Passo a passo, variáveis e checklist em
+O site é publicado no **Cloudflare Workers** com o adaptador
+[OpenNext](https://opennext.js.org/cloudflare) (`@opennextjs/cloudflare`). A
+configuração está versionada (`wrangler.jsonc`, `open-next.config.ts`,
+`public/_headers`); a branch `main` é a de produção.
+
+| Comando           | Descrição                                                         |
+| ----------------- | ----------------------------------------------------------------- |
+| `npm run preview` | Gera o Worker (`.open-next/`) e o executa localmente no runtime do Cloudflare (`http://localhost:8787`) |
+| `npm run deploy`  | Gera e publica o Worker (exige `wrangler login`; em produção o deploy é feito pelo Workers Builds) |
+| `npm run upload`  | Gera e envia uma nova versão sem publicá-la                       |
+
+Passo a passo, configuração do painel e checklist em
 [`docs/deployment.md`](docs/deployment.md).

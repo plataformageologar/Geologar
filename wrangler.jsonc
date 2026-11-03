@@ -1,0 +1,28 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"main": ".open-next/worker.js",
+	// Deve coincidir com o Worker existente (geologar.plataformageologar.workers.dev).
+	"name": "geologar",
+	"compatibility_date": "2026-11-01",
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	// Mantém as variáveis cadastradas no painel do Cloudflare a cada deploy.
+	"keep_vars": true,
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"services": [
+		{
+			// Autorreferência exigida pelo OpenNext; o nome deve ser igual ao do Worker.
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "geologar"
+		}
+	],
+	"images": {
+		// Otimização de imagens do next/image (logotipo).
+		"binding": "IMAGES"
+	},
+	"observability": {
+		"enabled": true
+	}
+}

@@ -20,6 +20,10 @@ const sourceSerif = Source_Serif_4({
   weight: ["600"],
 });
 
+// Renderização sob demanda: o conteúdo vem do Supabase a cada requisição, sem
+// depender de ISR (ainda não há cache incremental configurado no Cloudflare).
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
 

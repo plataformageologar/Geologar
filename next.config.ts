@@ -1,16 +1,10 @@
 import type { NextConfig } from "next";
 
+// Cache Components (`cacheComponents`) e `partialPrefetching` ficam desativados:
+// no runtime do Cloudflare Workers a renderização com Cache Components trava
+// (aviso sobre `setTimeout()`) e a requisição termina em HTTP 500.
+// Ver docs/deployment.md antes de reativar.
 const nextConfig: NextConfig = {
-  cacheComponents: true,
-  partialPrefetching: true,
-  cacheLife: {
-    // Conteúdo público vindo do Supabase: revalida a cada 5 minutos.
-    content: {
-      stale: 60 * 5,
-      revalidate: 60 * 5,
-      expire: 60 * 60 * 24,
-    },
-  },
   turbopack: {
     rules: {
       "*.css": {

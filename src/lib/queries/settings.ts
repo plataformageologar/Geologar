@@ -1,16 +1,12 @@
-import { cacheLife, cacheTag } from "next/cache";
+import { cache } from "react";
 
 import { fallbackSiteSettings } from "@/data/site";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { SiteSettings, SocialLink } from "@/types/content";
 
-import { contentTags, logQueryError } from "./shared";
+import { logQueryError } from "./shared";
 
 async function fetchSiteSettings() {
-  "use cache";
-  cacheLife("content");
-  cacheTag(contentTags.siteSettings);
-
   // Registro único, garantido pelo índice site_settings_singleton.
   const { data, error } = await createPublicClient()
     .from("site_settings")
@@ -23,21 +19,20 @@ async function fetchSiteSettings() {
   return data;
 }
 
-/** Configurações institucionais; usa o fallback se o registro não puder ser lido. */
-export async function getSiteSettings(): Promise<SiteSettings> {
+/**
+ * Configurações institucionais; usa o fallback se o registro não puder ser lido.
+ * `cache` evita consultas repetidas na mesma requisição (metadados + layout).
+ */
+export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
   try {
     return (await fetchSiteSettings()) ?? fallbackSiteSettings;
   } catch (error) {
     logQueryError("site_settings", error);
     return fallbackSiteSettings;
   }
-}
+});
 
 async function fetchActiveSocialLinks() {
-  "use cache";
-  cacheLife("content");
-  cacheTag(contentTags.socialLinks);
-
   const { data, error } = await createPublicClient()
     .from("social_links")
     .select("id, platform, label, url")

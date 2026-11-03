@@ -8,6 +8,8 @@ import { ResearchLines } from "@/components/home/research-lines";
 import { pillars } from "@/data/site";
 import { getHomepageData, isLinkAvailable } from "@/lib/queries/homepage";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const { content, researchLines, projects, publications, institutionGroups, sections } =
     await getHomepageData();

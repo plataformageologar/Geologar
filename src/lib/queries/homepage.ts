@@ -1,4 +1,4 @@
-import { cacheLife, cacheTag } from "next/cache";
+import { cache } from "react";
 
 import { fallbackHomepageContent, mainNavigation } from "@/data/site";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -8,13 +8,9 @@ import { getHomepageInstitutionGroups } from "./institutions";
 import { getFeaturedProjects } from "./projects";
 import { getRecentPublications } from "./publications";
 import { getHomepageResearchLines } from "./research-lines";
-import { contentTags, logQueryError, resolveImageSrc } from "./shared";
+import { logQueryError, resolveImageSrc } from "./shared";
 
 async function fetchHomepageContent() {
-  "use cache";
-  cacheLife("content");
-  cacheTag(contentTags.homepage);
-
   // Registro único, garantido pelo índice homepage_content_singleton.
   const { data, error } = await createPublicClient()
     .from("homepage_content")
@@ -42,8 +38,11 @@ export async function getHomepageContent(): Promise<HomepageContent> {
   }
 }
 
-/** Todo o conteúdo da homepage, carregado em paralelo. */
-export async function getHomepageData() {
+/**
+ * Todo o conteúdo da homepage, carregado em paralelo. `cache` garante uma única
+ * leitura por requisição, compartilhada pelo layout (navegação) e pela página.
+ */
+export const getHomepageData = cache(async () => {
   const [content, researchLines, projects, publications, institutionGroups] =
     await Promise.all([
       getHomepageContent(),
@@ -63,7 +62,7 @@ export async function getHomepageData() {
   if (content.cooperation_title) sections.add("contato");
 
   return { content, researchLines, projects, publications, institutionGroups, sections };
-}
+});
 
 /** Mantém o link apenas se não apontar para uma seção ausente da homepage. */
 export function isLinkAvailable(href: string, sections: Set<string>) {

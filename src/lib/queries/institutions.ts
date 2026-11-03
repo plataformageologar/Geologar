@@ -1,15 +1,9 @@
-import { cacheLife, cacheTag } from "next/cache";
-
 import { createPublicClient } from "@/lib/supabase/public";
 import type { InstitutionGroup } from "@/types/content";
 
-import { contentTags, logQueryError, resolveImageSrc } from "./shared";
+import { logQueryError, resolveImageSrc } from "./shared";
 
 async function fetchHomepageInstitutions(limit: number) {
-  "use cache";
-  cacheLife("content");
-  cacheTag(contentTags.institutions);
-
   // Uma única consulta com a categoria embutida (sem N+1).
   const { data, error } = await createPublicClient()
     .from("institutions")

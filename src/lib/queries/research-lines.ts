@@ -1,15 +1,9 @@
-import { cacheLife, cacheTag } from "next/cache";
-
 import { createPublicClient } from "@/lib/supabase/public";
 import type { ResearchLineSummary } from "@/types/content";
 
-import { contentTags, logQueryError, resolveImageSrc } from "./shared";
+import { logQueryError, resolveImageSrc } from "./shared";
 
 async function fetchHomepageResearchLines(limit: number) {
-  "use cache";
-  cacheLife("content");
-  cacheTag(contentTags.researchLines);
-
   const { data, error } = await createPublicClient()
     .from("research_lines")
     .select("slug, title, short_description, image_path, image_alt")

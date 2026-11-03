@@ -8,6 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "node scripts/assert-no-secret-env.mjs && opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "node scripts/assert-no-secret-env.mjs && opennextjs-cloudflare build && opennextjs-cloudflare upload",
     "db:types": "supabase gen types --lang=typescript --schema public --remote > src/types/database.types.ts"
   },
   "engines": {
@@ -22,6 +25,7 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "1.20.15",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -30,6 +34,7 @@
     "eslint-config-next": "16.4.4",
     "supabase": "^3.0.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "4.157.0"
   }
 }
