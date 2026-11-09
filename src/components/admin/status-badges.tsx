@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock, Flag, PencilLine, Star } from "lucide-react";
+import { CheckCircle2, CircleOff, Clock, Flag, PencilLine, Star } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { projectStatusLabel } from "@/lib/admin/projects";
@@ -19,6 +19,21 @@ export function PublicationBadge({ published }: { published: boolean }) {
     <Badge tone="neutral">
       <PencilLine aria-hidden="true" className="size-3.5" />
       Rascunho
+    </Badge>
+  );
+}
+
+/** Link ativo ou inativo (`is_active`, redes sociais). */
+export function ActiveBadge({ active }: { active: boolean }) {
+  return active ? (
+    <Badge tone="green">
+      <CheckCircle2 aria-hidden="true" className="size-3.5" />
+      Ativo
+    </Badge>
+  ) : (
+    <Badge tone="neutral">
+      <CircleOff aria-hidden="true" className="size-3.5" />
+      Inativo
     </Badge>
   );
 }

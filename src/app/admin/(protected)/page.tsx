@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, FlaskConical, Layers, PanelsTopLeft } from "lucide-react";
+import { ArrowRight, BookOpen, Building2, FlaskConical, Layers, PanelsTopLeft, Settings, Share2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { adminNavigation } from "@/data/admin-navigation";
@@ -37,6 +37,34 @@ const managedModules = [
     title: "Projetos",
     description: "Projetos de pesquisa, situação, publicação e linhas relacionadas.",
     action: "Gerenciar projetos",
+  },
+  {
+    href: "/admin/publicacoes",
+    icon: BookOpen,
+    title: "Publicações",
+    description: "Produção científica, dados bibliográficos, projetos e linhas relacionados.",
+    action: "Gerenciar publicações",
+  },
+  {
+    href: "/admin/instituicoes",
+    icon: Building2,
+    title: "Instituições",
+    description: "Instituições parceiras, categorias, localização e destaques.",
+    action: "Gerenciar instituições",
+  },
+  {
+    href: "/admin/configuracoes",
+    icon: Settings,
+    title: "Informações institucionais",
+    description: "Nome do site, descrição, contato e endereço usados no portal.",
+    action: "Abrir configurações",
+  },
+  {
+    href: "/admin/redes-sociais",
+    icon: Share2,
+    title: "Redes sociais",
+    description: "Perfis oficiais exibidos no rodapé do site.",
+    action: "Gerenciar redes",
   },
 ];
 
@@ -121,6 +149,7 @@ export default async function AdminDashboardPage() {
         </ul>
       </section>
 
+      {plannedModules.length > 0 && (
       <section aria-labelledby="modulos-title" className="flex flex-col gap-4 rounded-2xl border border-dashed border-border p-6">
         <div className="flex flex-col gap-1">
           <h2 id="modulos-title" className="text-h4 font-sans">
@@ -138,6 +167,7 @@ export default async function AdminDashboardPage() {
           ))}
         </ul>
       </section>
+      )}
     </div>
   );
 }

@@ -154,15 +154,21 @@ fundo suave com curvas de nível e ícone — decorativo (`aria-hidden`).
 - `Select` (nativo, ícone de seta) e `Checkbox` (rótulo + descrição ligada por
   `aria-describedby`); `FormMessage` também tem o tom `warning` (`earth`), usado
   no aviso de troca de slug de conteúdo publicado.
-- Selos (`status-badges.tsx`): Publicado/Rascunho, Destaque e situação do
-  projeto, sempre com texto (e ícone), nunca só cor.
+- Selos (`status-badges.tsx`): Publicado/Rascunho, Ativo/Inativo, Destaque e
+  situação do projeto, sempre com texto (e ícone), nunca só cor.
 - Listagens do CMS: tabela a partir de `xl` e cartões abaixo disso, com as
   mesmas ações; botões repetidos ("Editar", "Excluir") recebem o título do
   registro em `sr-only`.
 - Exclusão: `<dialog>` nativo modal, foco inicial em "Cancelar", fundo
   `deep/60`, botão destrutivo `danger` com texto "Excluir permanentemente".
-- Seleção múltipla (linhas de pesquisa do projeto): `fieldset` com checkboxes
-  nativos em cartões, busca a partir de 8 opções, sem biblioteca externa.
+- Seleção múltipla (`RecordPicker`, usado para linhas de pesquisa e projetos):
+  `fieldset` com checkboxes nativos em cartões, selo "Rascunho" nas opções não
+  publicadas, busca a partir de 8 opções, sem biblioteca externa.
+- Módulos de registros pequenos (categorias, redes sociais): lista e formulário
+  na mesma página, lado a lado a partir de `xl`; `?editar=<id>` carrega o
+  registro no formulário.
+- Logotipos e favicon no CMS: pré-visualização somente leitura sobre fundo
+  branco com `object-contain` (sem recorte, distorção ou recoloração).
 
 ### Ícones
 

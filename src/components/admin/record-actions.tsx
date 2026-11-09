@@ -13,17 +13,39 @@ import {
   type ReactNode,
 } from "react";
 
-import type { Entity, RecordActionState } from "@/lib/admin/action-results";
+import { entityNouns, type Entity, type RecordActionState } from "@/lib/admin/action-results";
+import { deleteCategory, deleteInstitution, setInstitutionPublished } from "@/lib/admin/institution-actions";
 import { deleteProject, setProjectPublished } from "@/lib/admin/project-actions";
+import { deletePublication, setPublicationPublished } from "@/lib/admin/publication-actions";
 import { deleteResearchLine, setResearchLinePublished } from "@/lib/admin/research-line-actions";
+import { deleteSocialLink, setSocialLinkActive } from "@/lib/admin/social-link-actions";
 import { cn } from "@/lib/utils/cn";
 
 import { FormMessage } from "./form-controls";
 
-const actions = {
-  "research-line": { publish: setResearchLinePublished, remove: deleteResearchLine },
-  project: { publish: setProjectPublished, remove: deleteProject },
-} satisfies Record<Entity, Record<string, (state: RecordActionState, data: FormData) => Promise<RecordActionState>>>;
+type RecordAction = (state: RecordActionState, data: FormData) => Promise<RecordActionState>;
+
+/** Entidades com ações na listagem (site_settings é um registro único). */
+export type ListEntity = Exclude<Entity, "site-settings">;
+
+const actions: Record<ListEntity, { toggle?: RecordAction; remove: RecordAction }> = {
+  "research-line": { toggle: setResearchLinePublished, remove: deleteResearchLine },
+  project: { toggle: setProjectPublished, remove: deleteProject },
+  publication: { toggle: setPublicationPublished, remove: deletePublication },
+  institution: { toggle: setInstitutionPublished, remove: deleteInstitution },
+  "institution-category": { remove: deleteCategory },
+  "social-link": { toggle: setSocialLinkActive, remove: deleteSocialLink },
+};
+
+/** O que bloqueia a exclusão de cada tipo de registro (texto do diálogo). */
+const deleteRules: Record<ListEntity, string | null> = {
+  "research-line": "Se houver vínculos com projetos ou publicações, a exclusão será recusada e os vínculos serão listados.",
+  project: "Se houver vínculos com linhas de pesquisa ou publicações, a exclusão será recusada e os vínculos serão listados.",
+  publication: "Se houver vínculos com projetos ou linhas de pesquisa, a exclusão será recusada e os vínculos serão listados.",
+  institution: "A categoria da instituição continua cadastrada.",
+  "institution-category": "Categorias com instituições não podem ser excluídas.",
+  "social-link": "Para apenas tirar o link do rodapé, use \u201cDesativar\u201d.",
+};
 
 const connectionFailure: RecordActionState = {
   status: "error",
@@ -77,15 +99,30 @@ const buttonClasses =
 const neutralButton = cn(buttonClasses, "border-border text-foreground hover:border-primary/40 hover:text-primary");
 
 type RecordRowActionsProps = {
-  entity: Entity;
+  entity: ListEntity;
   id: string;
   title: string;
-  isPublished: boolean;
-  editHref: string;
-  /** Página pública (somente quando publicado). */
-  publicHref: string;
-  /** Exclusão: somente administradores e somente rascunhos. */
+  /** Estado do botão alternável (publicado/ativo); `undefined` = sem botão. */
+  isPublished?: boolean;
+  /** Rótulos do botão alternável (padrão: Publicar/Despublicar). */
+  toggleLabels?: ToggleLabels;
+  /** `null` = sem link de edição (ex.: categorias para editores). */
+  editHref: string | null;
+  /** Link externo ou página pública; `null` = sem link. */
+  publicHref?: string | null;
+  /** Texto do link (padrão: "Ver no site", só quando publicado). */
+  publicLabel?: string;
+  /** Exclusão: decidida pela página (papel e situação), reforçada no banco. */
   canDelete: boolean;
+};
+
+type ToggleLabels = { on: string; off: string; turningOn: string; turningOff: string };
+
+const publishLabels: ToggleLabels = {
+  on: "Publicar",
+  off: "Despublicar",
+  turningOn: "Publicando…",
+  turningOff: "Despublicando…",
 };
 
 /** Ações de um registro na listagem: editar, ver no site, publicar e excluir. */
@@ -94,27 +131,30 @@ export function RecordRowActions({
   id,
   title,
   isPublished,
+  toggleLabels = publishLabels,
   editHref,
-  publicHref,
+  publicHref = null,
+  publicLabel,
   canDelete,
 }: RecordRowActionsProps) {
   const report = use(FeedbackContext);
   const [pending, startTransition] = useTransition();
-  const [running, setRunning] = useState<"publish" | "delete" | null>(null);
+  const [running, setRunning] = useState<"toggle" | "delete" | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const dialogId = useId();
+  const toggle = actions[entity].toggle;
 
-  function run(kind: "publish" | "delete") {
+  function run(kind: "toggle" | "delete") {
     const data = new FormData();
     data.set("id", id);
-    if (kind === "publish") data.set("publish", String(!isPublished));
+    if (kind === "toggle") data.set("publish", String(!isPublished));
     setRunning(kind);
     startTransition(async () => {
       let result: RecordActionState;
       try {
         result =
-          kind === "publish"
-            ? await actions[entity].publish({ status: "idle" }, data)
+          kind === "toggle" && toggle
+            ? await toggle({ status: "idle" }, data)
             : await actions[entity].remove({ status: "idle" }, data);
       } catch {
         result = connectionFailure;
@@ -126,35 +166,43 @@ export function RecordRowActions({
   }
 
   const label = <span className="sr-only">: {title}</span>;
+  // Sem rótulo próprio, o link público só existe para conteúdo publicado.
+  const showPublic = publicHref !== null && (publicLabel !== undefined || isPublished === true);
+  const deleteRule = deleteRules[entity];
 
   return (
     <div className="flex flex-wrap gap-2">
-      <Link href={editHref} className={neutralButton}>
-        <Pencil aria-hidden="true" className="size-4" />
-        Editar{label}
-      </Link>
-      {isPublished && (
-        <a href={publicHref} target="_blank" rel="noopener" className={neutralButton}>
+      {editHref !== null && (
+        <Link href={editHref} className={neutralButton}>
+          <Pencil aria-hidden="true" className="size-4" />
+          Editar{label}
+        </Link>
+      )}
+      {showPublic && (
+        <a href={publicHref} target="_blank" rel="noopener noreferrer" className={neutralButton}>
           <ExternalLink aria-hidden="true" className="size-4" />
-          Ver no site{label}
+          {publicLabel ?? "Ver no site"}
+          {label}
           <span className="sr-only"> (abre em nova aba)</span>
         </a>
       )}
-      <button type="button" onClick={() => run("publish")} disabled={pending} className={neutralButton}>
+      {toggle && isPublished !== undefined && (
+      <button type="button" onClick={() => run("toggle")} disabled={pending} className={neutralButton}>
         {isPublished ? (
           <EyeOff aria-hidden="true" className="size-4" />
         ) : (
           <Eye aria-hidden="true" className="size-4" />
         )}
-        {running === "publish"
+        {running === "toggle"
           ? isPublished
-            ? "Despublicando…"
-            : "Publicando…"
+            ? toggleLabels.turningOff
+            : toggleLabels.turningOn
           : isPublished
-            ? "Despublicar"
-            : "Publicar"}
+            ? toggleLabels.off
+            : toggleLabels.on}
         {label}
       </button>
+      )}
       {canDelete && (
         <>
           <button
@@ -180,14 +228,12 @@ export function RecordRowActions({
                 Excluir permanentemente?
               </h2>
               <div id={`${dialogId}-description`} className="flex flex-col gap-2 text-body-sm">
-                <p>
-                  <strong className="font-semibold">“{title}”</strong> será {entity === "project" ? "apagado" : "apagada"} do banco de dados.
+                <p className="break-words">
+                  <strong className="font-semibold">“{title}”</strong> será{" "}
+                  {entityNouns[entity].gender === "f" ? "apagada" : "apagado"} do banco de dados.
                 </p>
                 <p className="font-semibold text-danger">Esta ação não pode ser desfeita.</p>
-                <p className="text-muted-foreground">
-                  Se houver vínculos com projetos, linhas de pesquisa ou publicações, a exclusão será
-                  recusada e os vínculos serão listados.
-                </p>
+                {deleteRule && <p className="text-muted-foreground">{deleteRule}</p>}
               </div>
               <div className="grid grid-cols-1 gap-3 pt-2 sm:flex sm:justify-end">
                 <button

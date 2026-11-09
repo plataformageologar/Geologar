@@ -141,8 +141,17 @@ export type ProjectListItem = {
 };
 
 /** Escapa curingas do LIKE (`%`, `_`, `\`) e o atalho `*` do PostgREST. */
-function likePattern(search: string) {
+export function likePattern(search: string) {
   return `%${search.replace(/[\\%_]/g, "\\$&").replace(/\*/g, "")}%`;
+}
+
+/**
+ * Busca em várias colunas com `or` do PostgREST. O valor vai entre aspas
+ * (vírgulas e parênteses digitados não quebram o filtro).
+ */
+export function ilikeAny(columns: string[], search: string) {
+  const value = `"${likePattern(search).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+  return columns.map((column) => `${column}.ilike.${value}`).join(",");
 }
 
 /** Listagem paginada, filtrada e buscada no banco (nunca tudo no navegador). */

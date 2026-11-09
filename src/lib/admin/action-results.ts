@@ -1,7 +1,9 @@
 import type { PostgrestError } from "@supabase/supabase-js";
 
+import type { AdminAccess, AdminRole } from "@/lib/auth/access";
+
 /**
- * Resultados das Server Actions de linhas de pesquisa e projetos. Mensagens
+ * Resultados das Server Actions do CMS. Mensagens
  * em português e sem detalhes internos; os logs do servidor registram apenas
  * o código do erro, nunca o conteúdo enviado.
  */
@@ -31,20 +33,78 @@ export type RecordActionState =
   | { status: "success"; message: string }
   | FailureState;
 
-export type Entity = "research-line" | "project";
+export type Entity =
+  | "research-line"
+  | "project"
+  | "publication"
+  | "institution"
+  | "institution-category"
+  | "social-link"
+  | "site-settings";
 
-const nouns: Record<Entity, { the: string; a: string; notFound: string }> = {
+/** Gênero gramatical, para mensagens como "foi excluída"/"foi excluído". */
+export type Gender = "f" | "m";
+
+export const entityNouns: Record<Entity, { the: string; a: string; gender: Gender; notFound: string }> = {
   "research-line": {
     the: "a linha de pesquisa",
     a: "uma linha de pesquisa",
+    gender: "f",
     notFound: "Não encontramos a linha de pesquisa: ela pode ter sido excluída. Volte à listagem.",
   },
   project: {
     the: "o projeto",
     a: "um projeto",
+    gender: "m",
     notFound: "Não encontramos o projeto: ele pode ter sido excluído. Volte à listagem.",
   },
+  publication: {
+    the: "a publicação",
+    a: "uma publicação",
+    gender: "f",
+    notFound: "Não encontramos a publicação: ela pode ter sido excluída. Volte à listagem.",
+  },
+  institution: {
+    the: "a instituição",
+    a: "uma instituição",
+    gender: "f",
+    notFound: "Não encontramos a instituição: ela pode ter sido excluída. Volte à listagem.",
+  },
+  "institution-category": {
+    the: "a categoria",
+    a: "uma categoria",
+    gender: "f",
+    notFound: "Não encontramos a categoria: ela pode ter sido excluída. Recarregue a página.",
+  },
+  "social-link": {
+    the: "o link da rede social",
+    a: "um link de rede social",
+    gender: "m",
+    notFound: "Não encontramos o link: ele pode ter sido excluído. Recarregue a página.",
+  },
+  "site-settings": {
+    the: "as informações institucionais",
+    a: "um registro de informações institucionais",
+    gender: "f",
+    notFound:
+      "O registro de informações institucionais não foi encontrado no banco de dados. Nada foi salvo; contate a equipe técnica.",
+  },
 };
+
+const nouns = entityNouns;
+
+/** Escolhe a forma feminina ou masculina de uma palavra. */
+export function byGender(entity: Entity, feminine: string, masculine: string) {
+  return entityNouns[entity].gender === "f" ? feminine : masculine;
+}
+
+/**
+ * Nome da constraint/índice violado (23505, 23503, 23514), lido da mensagem
+ * do PostgreSQL. Usado para apontar o campo certo (slug, DOI, URL…).
+ */
+export function violatedConstraint(error: PostgrestError): string | null {
+  return /"([a-z0-9_]+)"/.exec(`${error.message} ${error.details ?? ""}`)?.[1] ?? null;
+}
 
 export function failureMessage(reason: RecordFailure, entity: Entity): string {
   const noun = nouns[entity];
@@ -110,6 +170,7 @@ export function classifyDatabaseError(
     case "GL404":
       return "not-found";
     case "23514":
+    case "22003":
     case "22023":
     case "22007":
     case "22008":
@@ -117,4 +178,41 @@ export function classifyDatabaseError(
     default:
       return "unexpected";
   }
+}
+
+/** Papéis editoriais (criar, editar, publicar). */
+export const EDITOR_ROLES: readonly AdminRole[] = ["admin", "editor"];
+/** Operações reservadas a administradores (exclusão, configurações). */
+export const ADMIN_ROLES: readonly AdminRole[] = ["admin"];
+
+/**
+ * Falha de autorização para a operação, ou `null` se permitida. A sessão e o
+ * vínculo são lidos de novo a cada chamada; o papel nunca vem do navegador.
+ */
+export function accessFailure(
+  access: AdminAccess,
+  roles: readonly AdminRole[],
+  entity: Entity,
+  forbiddenMessage?: string,
+): FailureState | null {
+  if (access.status === "anonymous") return fail("session", entity);
+  if (access.status === "forbidden" || !roles.includes(access.role)) {
+    return fail("forbidden", entity, { message: forbiddenMessage });
+  }
+  return null;
+}
+
+/** Valor de texto de um FormData (campos ausentes viram `""`). */
+export function formText(formData: FormData, field: string) {
+  const value = formData.get(field);
+  return typeof value === "string" ? value : "";
+}
+
+export function plural(count: number, singular: string, pluralForm: string) {
+  return `${count} ${count === 1 ? singular : pluralForm}`;
+}
+
+/** Erro inesperado (exceção): registra só o tipo, nunca o conteúdo. */
+export function logActionError(scope: string, error: unknown) {
+  console.error(`[cms] Erro ao ${scope}:`, error instanceof Error ? error.name : "desconhecido");
 }

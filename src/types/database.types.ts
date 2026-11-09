@@ -612,6 +612,50 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      save_publication: {
+        Args: {
+          p_abstract: string
+          p_authors: string
+          p_citation: string
+          p_doi: string
+          p_expected_updated_at: string
+          p_external_url: string
+          p_id: string
+          p_is_featured: boolean
+          p_is_published: boolean
+          p_project_ids: string[]
+          p_publication_venue: string
+          p_publication_year: number
+          p_research_line_ids: string[]
+          p_slug: string
+          p_sort_order: number
+          p_title: string
+        }
+        Returns: {
+          abstract: string | null
+          authors: string
+          citation: string | null
+          created_at: string
+          doi: string | null
+          external_url: string | null
+          id: string
+          is_featured: boolean
+          is_published: boolean
+          publication_venue: string | null
+          publication_year: number | null
+          published_at: string | null
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "publications"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never

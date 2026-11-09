@@ -194,7 +194,13 @@ Publicações científicas.
   (ex.: `Silva, A.; Souza, B.`). Não há tabela de autores nesta fase.
 - `publication_year`: entre 1800 e 2100, opcional.
 - `doi`: opcional, sem prefixo de URL (ex.: `10.1234/abcd.5678`); único sem
-  diferenciar maiúsculas/minúsculas.
+  diferenciar maiúsculas/minúsculas. O CMS remove `https://doi.org/` e `doi:`
+  antes de gravar.
+
+**`public.save_publication(...)`** (Etapa 7.3) grava a publicação e seus
+vínculos com projetos e linhas numa única transação, com verificação de versão
+(`updated_at`; erros `GL404`/`GL409`) e validação das listas (`22023`). É
+`SECURITY INVOKER` e só `authenticated` pode executá-la.
 
 ### `institution_categories`
 
@@ -245,12 +251,11 @@ Comportamento na exclusão (desde a Etapa 7.2):
 | `project_research_lines.research_line_id`           | `RESTRICT`  |
 | `publication_projects.project_id`                   | `RESTRICT`  |
 | `publication_research_lines.research_line_id`       | `RESTRICT`  |
-| `publication_projects.publication_id`               | `CASCADE`   |
-| `publication_research_lines.publication_id`         | `CASCADE`   |
+| `publication_projects.publication_id`               | `RESTRICT` (Etapa 7.3) |
+| `publication_research_lines.publication_id`         | `RESTRICT` (Etapa 7.3) |
 
-Linha de pesquisa ou projeto com vínculos não pode ser excluído (erro `23503`):
-os vínculos precisam ser desfeitos antes. Excluir uma publicação continua
-removendo apenas os vínculos dela.
+Nenhum registro com vínculos pode ser excluído (erro `23503`): os vínculos
+precisam ser desfeitos antes, na edição.
 
 ## Regras de conteúdo
 
@@ -331,18 +336,28 @@ e se limitam a:
 | `projects`               | UPDATE   | admin, editor | as mesmas + `image_alt`                              |
 | `projects`               | DELETE   | admin         | somente `is_published = false`                       |
 | `project_research_lines` | INSERT, DELETE | admin, editor | `project_id`, `research_line_id`               |
+| `publications`           | INSERT, UPDATE | admin, editor | colunas editoriais (sem `id`, datas de controle, `published_at`) |
+| `publications`           | DELETE   | admin         | somente `is_published = false`                       |
+| `publication_projects`, `publication_research_lines` | INSERT, DELETE | admin, editor | os dois IDs     |
+| `institutions`           | INSERT   | admin, editor | colunas editoriais (sem `logo_path`, `logo_alt`)     |
+| `institutions`           | UPDATE   | admin, editor | as mesmas + `logo_alt`                               |
+| `institutions`           | DELETE   | admin         | somente `is_published = false`                       |
+| `institution_categories` | INSERT, UPDATE, DELETE | admin | `name`, `slug`, `description`, `sort_order`  |
+| `site_settings`          | UPDATE   | admin         | 10 colunas textuais (sem `logo_path`, `favicon_path`) |
+| `social_links`           | INSERT, UPDATE, DELETE | admin | `platform`, `label`, `url`, `sort_order`, `is_active` |
 
-Admin e editor também leem rascunhos de `research_lines`, `projects` e das três
+Admin e editor também leem rascunhos de `research_lines`, `projects`,
+`publications`, `institutions`, os links inativos de `social_links` e as três
 tabelas N:N (políticas *"CMS staff can read all …"*). As políticas usam a
 função `public.has_cms_role(text[])` (`SECURITY INVOKER`, `search_path` vazio,
 executável só por `authenticated`).
 
-`id`, `created_at`, `updated_at`, `published_at` e `image_path` não recebem
-GRANT de escrita. `publications`, `institutions`, `institution_categories`,
-`social_links`, `site_settings`, `publication_projects` e
-`publication_research_lines` continuam sem escrita para `anon`/`authenticated`.
-Testes em `supabase/tests/database/homepage_content_rls.test.sql` e
-`supabase/tests/database/research_lines_projects_rls.test.sql`.
+`id`, `created_at`, `updated_at`, `published_at`, `image_path`, `logo_path` e
+`favicon_path` não recebem GRANT de escrita. `site_settings` não tem INSERT nem
+DELETE (registro único). Testes em
+`supabase/tests/database/homepage_content_rls.test.sql`,
+`research_lines_projects_rls.test.sql` e
+`publications_institutions_settings_rls.test.sql`.
 
 `service_role` ignora RLS e não é usado pelo CMS. `admin_memberships` não tem
 escrita: nenhum usuário cria, altera ou promove o próprio vínculo; o primeiro
@@ -354,8 +369,7 @@ diretamente por `anon`/`authenticated`.
 
 ## Ainda não implementado
 
-- Políticas de escrita em publicações, instituições, categorias, redes sociais
-  e configurações; gestão de usuários pelo painel.
+- Gestão de usuários pelo painel.
 - Supabase Storage (buckets e políticas de arquivos).
 - Tabela de autores de publicações.
 - Formulário de contato (mensagens recebidas).

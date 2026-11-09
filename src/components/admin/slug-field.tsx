@@ -10,11 +10,14 @@ type SlugFieldProps = {
   value: string;
   title: string;
   error?: string;
-  /** Prefixo do endereço público (ex.: "/pesquisa/"). */
-  publicPrefix: string;
+  /** Prefixo do endereço público (ex.: "/pesquisa/"); `null` = sem página própria. */
+  publicPrefix: string | null;
   /** Slug publicado atualmente; mudar o slug de um conteúdo publicado gera aviso. */
   publishedSlug: string | null;
   onChange: (value: string, manual: boolean) => void;
+  label?: string;
+  /** Explicação do slug quando ainda não há página pública própria. */
+  noPageHint?: string;
 };
 
 /**
@@ -22,19 +25,33 @@ type SlugFieldProps = {
  * formulário) e opção de gerar novamente. Mostra o endereço público
  * resultante e avisa quando a mudança quebra links de um conteúdo publicado.
  */
-export function SlugField({ value, title, error, publicPrefix, publishedSlug, onChange }: SlugFieldProps) {
-  const hint = (
-    <>
-      Endereço público: <span className="break-all font-semibold">{publicPrefix}{value || "…"}</span>. Use
-      letras minúsculas sem acento, números e hífens.
-    </>
-  );
-  const changedPublished = publishedSlug !== null && value.trim() !== publishedSlug;
+export function SlugField({
+  value,
+  title,
+  error,
+  publicPrefix,
+  publishedSlug,
+  onChange,
+  label = "Slug (endereço)",
+  noPageHint,
+}: SlugFieldProps) {
+  const hint =
+    publicPrefix === null ? (
+      <>
+        {noPageHint ?? "Identificador único e legível."} Use letras minúsculas sem acento, números e hífens.
+      </>
+    ) : (
+      <>
+        Endereço público: <span className="break-all font-semibold">{publicPrefix}{value || "…"}</span>. Use
+        letras minúsculas sem acento, números e hífens.
+      </>
+    );
+  const changedPublished = publicPrefix !== null && publishedSlug !== null && value.trim() !== publishedSlug;
   const suggestion = slugify(title);
 
   return (
     <div className="flex flex-col gap-3">
-      <Field id="slug" label="Slug (endereço)" required hint={hint} error={error}>
+      <Field id="slug" label={label} required hint={hint} error={error}>
         <div className="flex flex-col gap-2 sm:flex-row">
           <TextInput
             id="slug"

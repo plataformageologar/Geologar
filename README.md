@@ -5,9 +5,10 @@ Rede de Pesquisa em Geociências — Recursos Naturais e Sustentabilidade.
 Portal institucional da GeoLogar. Nesta fase o repositório contém a homepage
 e as páginas públicas (A Rede, Pesquisa, Projetos, Publicações, Instituições e
 Contato), integradas ao Supabase (leitura pública via RLS), e a área
-administrativa (`/admin`: login, autorização por papel, painel e o primeiro
-módulo do CMS, a edição da homepage). Os demais módulos do CMS virão nas
-próximas etapas.
+administrativa (`/admin`: login, autorização por papel, painel e o CMS de
+homepage, linhas de pesquisa, projetos, publicações, instituições,
+informações institucionais e redes sociais). Upload de imagens e biblioteca de
+mídia virão na próxima etapa.
 
 ## Stack
 
@@ -96,7 +97,7 @@ supabase/
   migrations/           Migrations SQL versionadas
 docs/
   admin-auth.md         Autenticação, autorização e primeiro administrador
-  cms.md                CMS: módulo Homepage, validação, salvamento e RLS de escrita
+  cms.md                CMS: módulos, validação, salvamento, exclusão e RLS de escrita
   database-schema.md    Modelo de dados
   deployment.md         Deploy no Cloudflare Workers e checklist de produção
   design-system.md      Tokens, tipografia, componentes e breakpoints
@@ -174,6 +175,15 @@ rascunho; só administradores excluem, e apenas rascunhos sem vínculos. O
 projeto e seus vínculos são salvos numa única transação (`save_project`).
 Políticas e permissões na migration
 `20261109161944_enable_research_lines_projects_cms.sql`.
+
+**`/admin/publicacoes`**, **`/admin/instituicoes`** (com
+`/admin/instituicoes/categorias`), **`/admin/configuracoes`** e
+**`/admin/redes-sociais`**: publicações com DOI normalizado e vínculos com
+projetos e linhas (gravação atômica em `save_publication`); instituições por
+categoria; informações institucionais usadas no rodapé, em `/contato` e nos
+metadados; redes sociais ativas no rodapé. Categorias, configurações e redes
+sociais são editadas só por administradores. Políticas na migration
+`20261109175247_enable_publications_institutions_settings_cms.sql`.
 
 Detalhes em [`docs/cms.md`](docs/cms.md).
 

@@ -177,3 +177,75 @@ export function validateCta(
   if (href !== null && label === null) errors.label = "Informe o texto do botão ou apague o destino.";
   return errors;
 }
+
+// Publicações ----------------------------------------------------------------------
+
+/** Formato da constraint publications_doi_format (sem prefixo de URL). */
+const DOI_FORMAT = /^10\.[0-9]{4,9}\/\S+$/;
+const DOI_PREFIX = /^(?:https?:\/\/(?:dx\.)?doi\.org\/|doi:\s*)/i;
+export const DOI_MAX_LENGTH = 200;
+
+/**
+ * Aceita `10.1234/abcd`, `doi:10.1234/abcd` ou `https://doi.org/10.1234/abcd`
+ * e devolve sempre o formato do banco (sem prefixo). A grafia do sufixo é
+ * preservada; a unicidade no banco não diferencia maiúsculas.
+ */
+export function normalizeDoi(value: string | null): { value: string | null; error: string | null } {
+  if (value === null) return { value: null, error: null };
+  let doi = value.trim().replace(DOI_PREFIX, "");
+  try {
+    if (/%[0-9a-f]{2}/i.test(doi)) doi = decodeURIComponent(doi);
+  } catch {
+    // Mantém como digitado; o formato é validado abaixo.
+  }
+  if (countCharacters(doi) > DOI_MAX_LENGTH || CONTROL_CHARS.test(doi) || !DOI_FORMAT.test(doi)) {
+    return {
+      value: doi,
+      error: "Informe um DOI válido, como 10.1234/abcd.5678 ou https://doi.org/10.1234/abcd.5678.",
+    };
+  }
+  return { value: doi, error: null };
+}
+
+/** Ano opcional entre 1800 e 2100 (constraint publications_year_range). */
+export function parsePublicationYear(value: string): { value: number | null; error: string | null } {
+  const trimmed = value.trim();
+  if (trimmed === "") return { value: null, error: null };
+  if (!/^\d{4}$/.test(trimmed)) return { value: null, error: "Informe o ano com quatro dígitos (ex.: 2024)." };
+  const year = Number(trimmed);
+  if (year < 1800 || year > 2100) return { value: null, error: "Informe um ano entre 1800 e 2100." };
+  return { value: year, error: null };
+}
+
+// Contato e redes sociais -------------------------------------------------------------
+
+export const EMAIL_MAX_LENGTH = 254;
+/** Mesma regra da constraint site_settings_contact_email_format, um pouco mais estrita. */
+const EMAIL_FORMAT = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+export function validateEmail(value: string | null): string | null {
+  if (value === null) return null;
+  if (countCharacters(value) > EMAIL_MAX_LENGTH || CONTROL_CHARS.test(value) || !EMAIL_FORMAT.test(value)) {
+    return "Informe um e-mail válido, como contato@exemplo.org.";
+  }
+  return null;
+}
+
+/** Telefone como informado, com caracteres usuais de numeração. */
+export function validatePhone(value: string | null): string | null {
+  if (value === null) return null;
+  if (!/^[0-9+()\-.\s/]{8,40}$/.test(value) || (value.match(/\d/g)?.length ?? 0) < 8) {
+    return "Informe um telefone com DDD, usando apenas números, espaços, +, ( ), - ou /.";
+  }
+  return null;
+}
+
+/** Formato da constraint social_links_platform_format (ex.: instagram, x, tik-tok). */
+export const PLATFORM_MAX_LENGTH = 40;
+export function validatePlatform(value: string | null): string | null {
+  if (value === null) return "Informe a plataforma.";
+  if (value.length > PLATFORM_MAX_LENGTH || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(value)) {
+    return "Use letras minúsculas sem acento, números e hífens (ex.: instagram, tik-tok).";
+  }
+  return null;
+}

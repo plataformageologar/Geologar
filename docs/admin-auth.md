@@ -36,7 +36,7 @@ src/app/(public)/                 Site público (layout com Header e Footer)
 src/app/admin/(auth)/             Login, recuperação, nova senha, acesso negado
 src/app/admin/(protected)/        Painel: layout com barra lateral + páginas
 src/components/admin/             AdminShell, AdminNavigation, AuthCard, formulários
-src/data/admin-navigation.ts      Módulos do painel ("Em breve" = sem link)
+src/data/admin-navigation.ts      Módulos do painel (item sem `href` = "Em breve")
 ```
 
 O layout raiz (`src/app/layout.tsx`) contém apenas `html`, `body`, fontes e
@@ -90,8 +90,8 @@ Tabela `public.admin_memberships` (detalhes em
 
 | Papel    | Rótulo         | Uso previsto                                   |
 | -------- | -------------- | ---------------------------------------------- |
-| `admin`  | Administrador  | Gestão completa (inclusive futuros usuários)   |
-| `editor` | Editor         | Edição de conteúdo nas próximas etapas         |
+| `admin`  | Administrador  | Todo o CMS, inclusive exclusões, categorias, configurações e redes sociais |
+| `editor` | Editor         | Homepage, linhas, projetos, publicações e instituições (sem excluir) |
 
 - RLS: o usuário autenticado lê **apenas o próprio** registro; não há políticas
   de escrita, e `anon`/`authenticated` não têm `INSERT`, `UPDATE` ou `DELETE`.
