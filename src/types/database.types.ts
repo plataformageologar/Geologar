@@ -561,7 +561,57 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_cms_role: { Args: { allowed_roles: string[] }; Returns: boolean }
+      save_project: {
+        Args: {
+          p_coordination: string
+          p_description: string
+          p_end_date: string
+          p_expected_updated_at: string
+          p_external_url: string
+          p_funding: string
+          p_id: string
+          p_image_alt: string
+          p_is_featured: boolean
+          p_is_published: boolean
+          p_project_status: string
+          p_research_line_ids: string[]
+          p_result_or_contribution: string
+          p_short_description: string
+          p_slug: string
+          p_sort_order: number
+          p_start_date: string
+          p_title: string
+        }
+        Returns: {
+          coordination: string | null
+          created_at: string
+          description: string | null
+          end_date: string | null
+          external_url: string | null
+          funding: string | null
+          id: string
+          image_alt: string | null
+          image_path: string | null
+          is_featured: boolean
+          is_published: boolean
+          project_status: string
+          published_at: string | null
+          result_or_contribution: string | null
+          short_description: string | null
+          slug: string
+          sort_order: number
+          start_date: string | null
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "projects"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never

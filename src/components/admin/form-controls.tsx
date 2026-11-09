@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, Eye, EyeOff, Info } from "lucide-react";
+import { AlertCircle, CheckCircle2, ChevronDown, Eye, EyeOff, Info } from "lucide-react";
 import { useState, type ComponentProps, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils/cn";
@@ -71,6 +71,59 @@ export function TextInput({ className, ...props }: ComponentProps<"input">) {
   return <input className={cn(inputClasses, className)} {...props} />;
 }
 
+/** Lista de opções nativa (acessível por teclado e leitores de tela). */
+export function Select({ className, children, ...props }: ComponentProps<"select">) {
+  return (
+    <div className="relative">
+      <select className={cn(inputClasses, "appearance-none pr-11", className)} {...props}>
+        {children}
+      </select>
+      <ChevronDown
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 right-4 my-auto size-4 text-muted-foreground"
+      />
+    </div>
+  );
+}
+
+/**
+ * Caixa de seleção com rótulo e descrição clicáveis (área de toque ≥ 44px).
+ * A descrição é associada por `aria-describedby`.
+ */
+export function Checkbox({
+  id,
+  label,
+  description,
+  className,
+  ...props
+}: Omit<ComponentProps<"input">, "type" | "id"> & {
+  id: string;
+  label: ReactNode;
+  description?: ReactNode;
+}) {
+  return (
+    <div className={cn("flex items-start gap-3", className)}>
+      <input
+        id={id}
+        type="checkbox"
+        aria-describedby={description ? `${id}-description` : undefined}
+        className="mt-0.5 size-5 shrink-0 cursor-pointer accent-primary disabled:cursor-not-allowed"
+        {...props}
+      />
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <label htmlFor={id} className="cursor-pointer text-label">
+          {label}
+        </label>
+        {description && (
+          <p id={`${id}-description`} className="text-caption text-muted-foreground">
+            {description}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /** Texto de múltiplas linhas (redimensionável na vertical). */
 export function TextArea({ className, ...props }: ComponentProps<"textarea">) {
   return (
@@ -114,6 +167,7 @@ const tones = {
   error: { icon: AlertCircle, classes: "border-danger/30 bg-danger-soft text-danger" },
   success: { icon: CheckCircle2, classes: "border-secondary/30 bg-secondary-soft text-secondary" },
   info: { icon: Info, classes: "border-primary/20 bg-primary-soft text-primary" },
+  warning: { icon: AlertCircle, classes: "border-earth/30 bg-earth-soft text-earth" },
 } as const;
 
 /**

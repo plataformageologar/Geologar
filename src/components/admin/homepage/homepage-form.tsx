@@ -4,7 +4,6 @@ import Image from "next/image";
 import { ImageIcon } from "lucide-react";
 import { useActionState, useEffect, useRef, useState, type ReactNode } from "react";
 
-import { Button } from "@/components/ui/button";
 import { saveHomepage, type HomepageSaveState } from "@/lib/admin/actions";
 import {
   homepageFields,
@@ -16,7 +15,8 @@ import {
 } from "@/lib/admin/homepage";
 import { countCharacters, LINK_MAX_LENGTH } from "@/lib/admin/validation";
 
-import { describedBy, Field, FormMessage, FormSection, TextArea, TextInput } from "../form-controls";
+import { describedBy, Field, FormSection, TextArea, TextInput } from "../form-controls";
+import { FailureAction, SaveBar, useUnsavedChangesWarning } from "../save-bar";
 
 type HomepageFormProps = {
   initialValues: HomepageFormValues;
@@ -106,13 +106,7 @@ export function HomepageForm({ initialValues, initialUpdatedAt, hasImage, imageS
     if (state.status === "error" && state.fieldErrors) focusFirstError(state.fieldErrors);
   }, [state]);
 
-  // Aviso do navegador ao recarregar ou fechar a aba com alterações pendentes.
-  useEffect(() => {
-    if (!dirty) return;
-    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
+  useUnsavedChangesWarning(dirty);
 
   function update(field: HomepageField, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -292,61 +286,17 @@ export function HomepageForm({ initialValues, initialUpdatedAt, hasImage, imageS
         </FormSection>
       </fieldset>
 
-      <div className="sticky bottom-0 z-10 -mx-4 flex flex-col gap-3 border-t border-border bg-background/95 px-4 py-4 backdrop-blur-sm sm:mx-0 sm:rounded-2xl sm:border sm:px-5">
-        {message && (
-          <FormMessage tone={message.tone}>
-            {message.text}
-            {state.status === "error" && state.reason === "session" && clientMessage === null && (
-              <>
-                {" "}
-                <a
-                  href="/admin/login?next=/admin/homepage"
-                  target="_blank"
-                  rel="noopener"
-                  className="font-semibold underline underline-offset-2"
-                >
-                  Entrar em nova aba
-                </a>
-              </>
-            )}
-            {state.status === "error" && state.reason === "conflict" && clientMessage === null && (
-              <>
-                {" "}
-                <button
-                  type="button"
-                  onClick={() => window.location.reload()}
-                  className="font-semibold underline underline-offset-2"
-                >
-                  Recarregar página
-                </button>
-              </>
-            )}
-          </FormMessage>
-        )}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-body-sm text-muted-foreground" aria-live="polite">
-            {pending ? (
-              "Salvando alterações…"
-            ) : dirty ? (
-              <span className="inline-flex items-center gap-2 font-semibold text-earth">
-                <span aria-hidden="true" className="size-2 rounded-full bg-earth" />
-                Alterações não salvas
-              </span>
-            ) : (
-              "Nenhuma alteração pendente"
-            )}
-          </p>
-          <div className="grid grid-cols-2 gap-3 sm:flex">
-            {/* Em telas estreitas os dois botões dividem a linha (barra fixa mais baixa). */}
-            <Button type="button" variant="secondary" onClick={cancel} disabled={!dirty || pending}>
-              Cancelar alterações
-            </Button>
-            <Button type="submit" disabled={!dirty || pending}>
-              {pending ? "Salvando…" : "Salvar alterações"}
-            </Button>
-          </div>
-        </div>
-      </div>
+      <SaveBar
+        message={message}
+        messageAction={
+          state.status === "error" && clientMessage === null ? (
+            <FailureAction reason={state.reason} loginNext="/admin/homepage" />
+          ) : null
+        }
+        pending={pending}
+        dirty={dirty}
+        onCancel={cancel}
+      />
     </form>
   );
 }

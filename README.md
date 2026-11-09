@@ -167,6 +167,14 @@ novo conteúdo na próxima requisição, sem build nem deploy.
 - Testes de RLS: `npx supabase test db` (local) ou `npx supabase test db --remote`
   (transação desfeita no final).
 
+**`/admin/linhas-de-pesquisa`** e **`/admin/projetos`**: listagem, cadastro,
+edição, publicação, destaque, ordem e slug; projetos com busca, filtros e
+paginação, e vínculo N:N com linhas de pesquisa. Novos registros começam como
+rascunho; só administradores excluem, e apenas rascunhos sem vínculos. O
+projeto e seus vínculos são salvos numa única transação (`save_project`).
+Políticas e permissões na migration
+`20261109161944_enable_research_lines_projects_cms.sql`.
+
 Detalhes em [`docs/cms.md`](docs/cms.md).
 
 ## Supabase

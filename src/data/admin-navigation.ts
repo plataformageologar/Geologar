@@ -30,8 +30,8 @@ export const adminNavigation: AdminNavSection[] = [
     title: "Conteúdo",
     items: [
       { id: "homepage", label: "Homepage", href: "/admin/homepage" },
-      { id: "research-lines", label: "Linhas de pesquisa" },
-      { id: "projects", label: "Projetos" },
+      { id: "research-lines", label: "Linhas de pesquisa", href: "/admin/linhas-de-pesquisa" },
+      { id: "projects", label: "Projetos", href: "/admin/projetos" },
       { id: "publications", label: "Publicações" },
       { id: "institutions", label: "Instituições" },
     ],

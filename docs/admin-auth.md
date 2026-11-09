@@ -16,6 +16,8 @@ somente leitura para `anon` e `authenticated`.
 | `/admin/acesso-negado`    | sessão válida           | Conta autenticada sem vínculo ativo                       |
 | `/admin`                  | vínculo ativo           | Visão geral: contagens reais do conteúdo publicado        |
 | `/admin/homepage`         | vínculo ativo           | CMS: edição da homepage (ver [`cms.md`](cms.md))           |
+| `/admin/linhas-de-pesquisa` (+ `/novo`, `/[id]/editar`) | vínculo ativo | CMS: linhas de pesquisa; excluir só `admin` |
+| `/admin/projetos` (+ `/novo`, `/[id]/editar`) | vínculo ativo | CMS: projetos e vínculos com linhas; excluir só `admin` |
 | `/admin/perfil`           | vínculo ativo           | E-mail, papel e identificador da conta                    |
 
 O rodapé do site tem um link discreto "Área restrita" para `/admin/login`.

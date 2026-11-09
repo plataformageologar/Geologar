@@ -54,3 +54,18 @@ export function safeExternalUrl(value: string | null): string | null {
     return null;
   }
 }
+
+const dateTimeFormatter = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "America/Sao_Paulo",
+});
+
+/** Data e hora de um `timestamptz` no horário de Brasília (ex.: 09/11/2026, 13:44). */
+export function formatAdminDateTime(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "—" : dateTimeFormatter.format(date);
+}

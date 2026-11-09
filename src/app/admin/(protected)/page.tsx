@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, PanelsTopLeft } from "lucide-react";
+import { ArrowRight, FlaskConical, Layers, PanelsTopLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { adminNavigation } from "@/data/admin-navigation";
@@ -14,6 +14,31 @@ export const metadata: Metadata = {
 };
 
 const numberFormat = new Intl.NumberFormat("pt-BR");
+
+// Módulos do CMS disponíveis.
+const managedModules = [
+  {
+    href: "/admin/homepage",
+    icon: PanelsTopLeft,
+    title: "Homepage",
+    description: "Textos institucionais e botões da página inicial.",
+    action: "Editar homepage",
+  },
+  {
+    href: "/admin/linhas-de-pesquisa",
+    icon: Layers,
+    title: "Linhas de pesquisa",
+    description: "Cadastro, publicação, destaques e ordem das áreas de pesquisa.",
+    action: "Gerenciar linhas",
+  },
+  {
+    href: "/admin/projetos",
+    icon: FlaskConical,
+    title: "Projetos",
+    description: "Projetos de pesquisa, situação, publicação e linhas relacionadas.",
+    action: "Gerenciar projetos",
+  },
+];
 
 // Módulos do CMS ainda não implementados (itens sem página na navegação).
 const plannedModules = adminNavigation.flatMap((section) =>
@@ -34,29 +59,31 @@ export default async function AdminDashboardPage() {
         </p>
       </div>
 
-      <section
-        aria-labelledby="gerenciar-homepage-title"
-        className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-6 sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div className="flex items-start gap-4">
-          <span
-            aria-hidden="true"
-            className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary"
-          >
-            <PanelsTopLeft className="size-5" />
-          </span>
-          <div className="flex flex-col gap-1">
-            <h2 id="gerenciar-homepage-title" className="text-h4 font-sans">
-              Gerenciar homepage
-            </h2>
-            <p className="text-body-sm text-muted-foreground">
-              Edite os textos institucionais e os botões da página inicial.
-            </p>
-          </div>
-        </div>
-        <Button href="/admin/homepage" withArrow className="self-start sm:self-center">
-          Editar homepage
-        </Button>
+      <section aria-labelledby="gerenciar-title" className="flex flex-col gap-4">
+        <h2 id="gerenciar-title" className="text-h3">
+          Gerenciar conteúdo
+        </h2>
+        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {managedModules.map((module) => (
+            <li key={module.href} className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-6">
+              <div className="flex items-start gap-4">
+                <span
+                  aria-hidden="true"
+                  className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary"
+                >
+                  <module.icon className="size-5" />
+                </span>
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-h4 font-sans">{module.title}</h3>
+                  <p className="text-body-sm text-muted-foreground">{module.description}</p>
+                </div>
+              </div>
+              <Button href={module.href} withArrow className="mt-auto self-start">
+                {module.action}
+              </Button>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section aria-labelledby="conteudo-publicado-title" className="flex flex-col gap-4">

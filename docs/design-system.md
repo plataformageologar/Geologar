@@ -147,9 +147,22 @@ fundo suave com curvas de nível e ícone — decorativo (`aria-hidden`).
   (bloco com título) e `FormMessage` (`error` com `role="alert"`; `success` e
   `info` com `role="status"`). Campos com 48px de altura mínima; inválidos com
   borda e anel `danger` (`aria-invalid`), nunca só pela cor: o erro tem texto.
-- Formulários do CMS terminam com uma barra fixa no rodapé da tela: estado
-  ("Alterações não salvas", em `earth`), "Cancelar alterações" e "Salvar
-  alterações" (desabilitados sem alterações ou durante o envio).
+- Formulários do CMS terminam com uma barra fixa no rodapé da tela
+  (`SaveBar`): estado ("Alterações não salvas", em `earth`), "Cancelar
+  alterações" e "Salvar alterações" (desabilitados sem alterações ou durante o
+  envio).
+- `Select` (nativo, ícone de seta) e `Checkbox` (rótulo + descrição ligada por
+  `aria-describedby`); `FormMessage` também tem o tom `warning` (`earth`), usado
+  no aviso de troca de slug de conteúdo publicado.
+- Selos (`status-badges.tsx`): Publicado/Rascunho, Destaque e situação do
+  projeto, sempre com texto (e ícone), nunca só cor.
+- Listagens do CMS: tabela a partir de `xl` e cartões abaixo disso, com as
+  mesmas ações; botões repetidos ("Editar", "Excluir") recebem o título do
+  registro em `sr-only`.
+- Exclusão: `<dialog>` nativo modal, foco inicial em "Cancelar", fundo
+  `deep/60`, botão destrutivo `danger` com texto "Excluir permanentemente".
+- Seleção múltipla (linhas de pesquisa do projeto): `fieldset` com checkboxes
+  nativos em cartões, busca a partir de 8 opções, sem biblioteca externa.
 
 ### Ícones
 

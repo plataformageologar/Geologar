@@ -7,6 +7,8 @@ este documento descreve o estado definido por:
 - `20261103141529_initial_geologar_content_schema.sql` (conteúdo)
 - `20261103190445_admin_memberships.sql` (autorização administrativa)
 - `20261109152838_enable_homepage_cms_updates.sql` (escrita da homepage pelo CMS)
+- `20261109161944_enable_research_lines_projects_cms.sql` (CMS de linhas de
+  pesquisa e projetos: políticas, constraints, FKs e `save_project`)
 
 As migrations `20261103154631_initial_homepage_content.sql` e
 `20261103183909_homepage_links_to_internal_pages.sql` apenas inserem e ajustam
@@ -160,8 +162,10 @@ Todos os campos aceitam `NULL`. A tabela nasce vazia.
 
 ### `research_lines`
 
-Linhas de pesquisa. `slug` único. Nasce vazia — as linhas previstas serão
-cadastradas quando o conteúdo for validado.
+Linhas de pesquisa. `slug` único. Constraints da Etapa 7.2:
+`research_lines_title_not_blank`, `research_lines_slug_length` (≤ 160) e
+`research_lines_sort_order_nonnegative`. Gerenciada pelo CMS
+(ver [`cms.md`](cms.md#linhas-de-pesquisa-adminlinhas-de-pesquisa)).
 
 ### `projects`
 
@@ -169,7 +173,17 @@ Projetos de pesquisa. `project_status` aceita `ongoing` ou `completed` via
 constraint `projects_status_check` (para novos status, altere apenas essa
 constraint numa nova migration). `end_date` não pode ser anterior a
 `start_date`. As linhas de pesquisa ficam em `project_research_lines`, não
-nesta tabela.
+nesta tabela. Mesmas constraints de título, slug e ordem das linhas de pesquisa
+(`projects_title_not_blank`, `projects_slug_length`,
+`projects_sort_order_nonnegative`).
+
+**`public.save_project(...)`** (Etapa 7.2) grava o projeto e seus vínculos com
+linhas de pesquisa numa única transação. `p_id` nulo cria; preenchido atualiza
+somente se `updated_at` for igual a `p_expected_updated_at`. Erros próprios:
+`GL404` (projeto inexistente), `GL409` (alterado por outra pessoa); `42501`
+sem papel admin/editor; `22023` para lista de linhas inválida (nulos,
+duplicatas ou mais de 100). É `SECURITY INVOKER` (respeita RLS) e só
+`authenticated` pode executá-la.
 
 ### `publications`
 
@@ -220,10 +234,23 @@ Vínculo administrativo de uma conta do Supabase Auth. Sem registro (ou com
 ### Relações N:N
 
 `project_research_lines`, `publication_projects` e `publication_research_lines`
-usam chave primária composta pelos dois IDs, mais `created_at`. As FKs usam
-`ON DELETE CASCADE`: excluir uma entidade remove apenas os **vínculos**, nunca a
-entidade do outro lado. Há índice no segundo ID de cada relação (o primeiro é
-coberto pela PK).
+usam chave primária composta pelos dois IDs, mais `created_at`. Há índice no
+segundo ID de cada relação (o primeiro é coberto pela PK).
+
+Comportamento na exclusão (desde a Etapa 7.2):
+
+| FK                                                  | `ON DELETE` |
+| --------------------------------------------------- | ----------- |
+| `project_research_lines.project_id`                 | `RESTRICT`  |
+| `project_research_lines.research_line_id`           | `RESTRICT`  |
+| `publication_projects.project_id`                   | `RESTRICT`  |
+| `publication_research_lines.research_line_id`       | `RESTRICT`  |
+| `publication_projects.publication_id`               | `CASCADE`   |
+| `publication_research_lines.publication_id`         | `CASCADE`   |
+
+Linha de pesquisa ou projeto com vínculos não pode ser excluído (erro `23503`):
+os vínculos precisam ser desfeitos antes. Excluir uma publicação continua
+removendo apenas os vínculos dela.
 
 ## Regras de conteúdo
 
@@ -248,8 +275,8 @@ e instituições; `sort_order` também existe em categorias e redes sociais.
 
 Obrigatórios e únicos em `research_lines`, `projects`, `publications` e
 `institution_categories`. O banco valida o formato: apenas `a-z`, `0-9` e
-hífens simples entre palavras (`^[a-z0-9]+(-[a-z0-9]+)*$`). A geração do slug
-fica a cargo do futuro CMS.
+hífens simples entre palavras (`^[a-z0-9]+(-[a-z0-9]+)*$`). O CMS gera o slug
+a partir do título (linhas de pesquisa e projetos limitados a 160 caracteres).
 
 ### Imagens
 
@@ -274,8 +301,8 @@ Todas as tabelas têm `created_at` (relações N:N só `created_at`) e
 
 ### Row Level Security
 
-RLS está habilitado em **todas** as 12 tabelas. Existem apenas políticas de
-`SELECT`. Nas 11 tabelas de conteúdo, para os papéis `anon` e `authenticated`:
+RLS está habilitado em **todas** as 12 tabelas. Políticas públicas de
+`SELECT` nas 11 tabelas de conteúdo, para os papéis `anon` e `authenticated`:
 
 | Tabela                                       | Condição de leitura                      |
 | -------------------------------------------- | ---------------------------------------- |
@@ -290,34 +317,45 @@ não tem nenhum privilégio.
 
 ### Escrita
 
-`anon` não escreve em nenhuma tabela. Para `authenticated`, a única escrita
-liberada é o **UPDATE de `homepage_content`** (CMS, Etapa 7.1):
+`anon` não escreve em nenhuma tabela. Para `authenticated`, as escritas
+liberadas exigem vínculo ativo em `admin_memberships` (`user_id = auth.uid()`)
+e se limitam a:
 
-- `GRANT UPDATE` apenas nas colunas editoriais (textos e botões; não inclui
-  `id`, `created_at`, `updated_at` nem `hero_image_path`);
-- policy *"Active admins and editors can update homepage content"*:
-  `USING` e `WITH CHECK` exigem vínculo ativo em `admin_memberships` com papel
-  `admin` ou `editor` (`user_id = auth.uid()`).
+| Tabela                   | Operação | Quem          | Colunas / condição                                   |
+| ------------------------ | -------- | ------------- | ---------------------------------------------------- |
+| `homepage_content`       | UPDATE   | admin, editor | 13 colunas editoriais (Etapa 7.1)                    |
+| `research_lines`         | INSERT   | admin, editor | `title`, `slug`, descrições, `sort_order`, `is_featured`, `is_published` |
+| `research_lines`         | UPDATE   | admin, editor | as mesmas + `image_alt`                              |
+| `research_lines`         | DELETE   | admin         | somente `is_published = false`                       |
+| `projects`               | INSERT   | admin, editor | colunas editoriais (sem `id`, datas de controle, `published_at`, `image_path`) |
+| `projects`               | UPDATE   | admin, editor | as mesmas + `image_alt`                              |
+| `projects`               | DELETE   | admin         | somente `is_published = false`                       |
+| `project_research_lines` | INSERT, DELETE | admin, editor | `project_id`, `research_line_id`               |
 
-Nas demais tabelas não há políticas de `INSERT`, `UPDATE` ou `DELETE`, e os
-privilégios de escrita de `anon`/`authenticated` foram revogados (apenas
-`SELECT` é concedido). Testes em
-`supabase/tests/database/homepage_content_rls.test.sql`.
+Admin e editor também leem rascunhos de `research_lines`, `projects` e das três
+tabelas N:N (políticas *"CMS staff can read all …"*). As políticas usam a
+função `public.has_cms_role(text[])` (`SECURITY INVOKER`, `search_path` vazio,
+executável só por `authenticated`).
 
-Somente `service_role` (que ignora RLS) pode escrever, e essa chave deve ser
-usada exclusivamente em código de servidor. O mesmo vale para
-`admin_memberships`: nenhum usuário cria, altera ou promove o próprio vínculo;
-o primeiro administrador é vinculado pelo SQL Editor. As políticas de escrita
-das demais tabelas de conteúdo serão criadas módulo a módulo no CMS, sempre a
-partir do vínculo em `admin_memberships` (ver [`cms.md`](cms.md)).
+`id`, `created_at`, `updated_at`, `published_at` e `image_path` não recebem
+GRANT de escrita. `publications`, `institutions`, `institution_categories`,
+`social_links`, `site_settings`, `publication_projects` e
+`publication_research_lines` continuam sem escrita para `anon`/`authenticated`.
+Testes em `supabase/tests/database/homepage_content_rls.test.sql` e
+`supabase/tests/database/research_lines_projects_rls.test.sql`.
+
+`service_role` ignora RLS e não é usado pelo CMS. `admin_memberships` não tem
+escrita: nenhum usuário cria, altera ou promove o próprio vínculo; o primeiro
+administrador é vinculado pelo SQL Editor. As políticas das próximas tabelas
+serão criadas módulo a módulo (ver [`cms.md`](cms.md)).
 
 As funções de trigger usam `search_path` vazio e não podem ser executadas
 diretamente por `anon`/`authenticated`.
 
 ## Ainda não implementado
 
-- Políticas de escrita nas tabelas de conteúdo além de `homepage_content` e
-  gestão de usuários pelo painel.
+- Políticas de escrita em publicações, instituições, categorias, redes sociais
+  e configurações; gestão de usuários pelo painel.
 - Supabase Storage (buckets e políticas de arquivos).
 - Tabela de autores de publicações.
 - Formulário de contato (mensagens recebidas).
