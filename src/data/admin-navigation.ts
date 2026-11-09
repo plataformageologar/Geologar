@@ -29,7 +29,7 @@ export const adminNavigation: AdminNavSection[] = [
   {
     title: "Conteúdo",
     items: [
-      { id: "homepage", label: "Homepage" },
+      { id: "homepage", label: "Homepage", href: "/admin/homepage" },
       { id: "research-lines", label: "Linhas de pesquisa" },
       { id: "projects", label: "Projetos" },
       { id: "publications", label: "Publicações" },

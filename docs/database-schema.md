@@ -6,6 +6,7 @@ este documento descreve o estado definido por:
 
 - `20261103141529_initial_geologar_content_schema.sql` (conteúdo)
 - `20261103190445_admin_memberships.sql` (autorização administrativa)
+- `20261109152838_enable_homepage_cms_updates.sql` (escrita da homepage pelo CMS)
 
 As migrations `20261103154631_initial_homepage_content.sql` e
 `20261103183909_homepage_links_to_internal_pages.sql` apenas inserem e ajustam
@@ -289,25 +290,34 @@ não tem nenhum privilégio.
 
 ### Escrita
 
-Nenhuma escrita é permitida para `anon` ou `authenticated`:
+`anon` não escreve em nenhuma tabela. Para `authenticated`, a única escrita
+liberada é o **UPDATE de `homepage_content`** (CMS, Etapa 7.1):
 
-- não há políticas de `INSERT`, `UPDATE` ou `DELETE`;
-- além disso, os privilégios de escrita desses papéis foram revogados
-  (apenas `SELECT` é concedido).
+- `GRANT UPDATE` apenas nas colunas editoriais (textos e botões; não inclui
+  `id`, `created_at`, `updated_at` nem `hero_image_path`);
+- policy *"Active admins and editors can update homepage content"*:
+  `USING` e `WITH CHECK` exigem vínculo ativo em `admin_memberships` com papel
+  `admin` ou `editor` (`user_id = auth.uid()`).
+
+Nas demais tabelas não há políticas de `INSERT`, `UPDATE` ou `DELETE`, e os
+privilégios de escrita de `anon`/`authenticated` foram revogados (apenas
+`SELECT` é concedido). Testes em
+`supabase/tests/database/homepage_content_rls.test.sql`.
 
 Somente `service_role` (que ignora RLS) pode escrever, e essa chave deve ser
 usada exclusivamente em código de servidor. O mesmo vale para
 `admin_memberships`: nenhum usuário cria, altera ou promove o próprio vínculo;
 o primeiro administrador é vinculado pelo SQL Editor. As políticas de escrita
-do conteúdo serão criadas junto com o CMS, a partir do vínculo em
-`admin_memberships`.
+das demais tabelas de conteúdo serão criadas módulo a módulo no CMS, sempre a
+partir do vínculo em `admin_memberships` (ver [`cms.md`](cms.md)).
 
 As funções de trigger usam `search_path` vazio e não podem ser executadas
 diretamente por `anon`/`authenticated`.
 
 ## Ainda não implementado
 
-- Políticas de escrita no conteúdo (CMS) e gestão de usuários pelo painel.
+- Políticas de escrita nas tabelas de conteúdo além de `homepage_content` e
+  gestão de usuários pelo painel.
 - Supabase Storage (buckets e políticas de arquivos).
 - Tabela de autores de publicações.
 - Formulário de contato (mensagens recebidas).

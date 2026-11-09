@@ -7,24 +7,57 @@ import { cn } from "@/lib/utils/cn";
 
 const inputClasses =
   "min-h-12 w-full rounded-xl border border-border bg-surface px-4 text-body text-foreground " +
-  "placeholder:text-muted-foreground/70 aria-[invalid=true]:border-danger";
+  "placeholder:text-muted-foreground/70 aria-[invalid=true]:border-danger aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-danger " +
+  "disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted-foreground";
 
 type FieldProps = {
   id: string;
   label: string;
   /** Texto de apoio abaixo do campo (ex.: requisitos da senha). */
-  hint?: string;
+  hint?: ReactNode;
+  /** Mensagem de validação (associada ao campo por `id-error`). */
+  error?: string;
+  /** Exibe "Obrigatório" ao lado do rótulo. */
+  required?: boolean;
+  /** Contador de caracteres: valor atual e limite. */
+  count?: { current: number; max: number };
   children: ReactNode;
 };
 
-/** Rótulo visível associado ao campo, com texto de apoio opcional. */
-export function Field({ id, label, hint, children }: FieldProps) {
+/** Ids de texto de apoio e erro para o `aria-describedby` do campo. */
+export function describedBy(id: string, { hint, error }: { hint?: unknown; error?: unknown }) {
+  return [hint ? `${id}-hint` : null, error ? `${id}-error` : null].filter(Boolean).join(" ") || undefined;
+}
+
+/** Rótulo visível associado ao campo, com texto de apoio e erro opcionais. */
+export function Field({ id, label, hint, error, required, count, children }: FieldProps) {
+  const over = count ? count.current > count.max : false;
+
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-label">
-        {label}
-      </label>
+      <div className="flex items-baseline justify-between gap-3">
+        <label htmlFor={id} className="text-label">
+          {label}
+          {required && (
+            <span className="ml-2 text-caption font-normal text-muted-foreground">Obrigatório</span>
+          )}
+        </label>
+        {count && (
+          <span
+            aria-hidden="true"
+            className={cn("shrink-0 text-caption tabular-nums", over ? "font-semibold text-danger" : "text-muted-foreground")}
+          >
+            {count.current}/{count.max}
+          </span>
+        )}
+      </div>
       {children}
+      {error && (
+        <p id={`${id}-error`} className="flex items-start gap-1.5 text-caption font-semibold text-danger">
+          <AlertCircle aria-hidden="true" className="mt-px size-3.5 shrink-0" />
+          {error}
+        </p>
+      )}
       {hint && (
         <p id={`${id}-hint`} className="text-caption text-muted-foreground">
           {hint}
@@ -36,6 +69,16 @@ export function Field({ id, label, hint, children }: FieldProps) {
 
 export function TextInput({ className, ...props }: ComponentProps<"input">) {
   return <input className={cn(inputClasses, className)} {...props} />;
+}
+
+/** Texto de múltiplas linhas (redimensionável na vertical). */
+export function TextArea({ className, ...props }: ComponentProps<"textarea">) {
+  return (
+    <textarea
+      className={cn(inputClasses, "min-h-32 resize-y py-3 leading-relaxed", className)}
+      {...props}
+    />
+  );
 }
 
 /** Campo de senha com botão para mostrar/ocultar o texto digitado. */
@@ -96,5 +139,33 @@ export function FormMessage({
       <Icon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
       <p>{children}</p>
     </div>
+  );
+}
+
+/** Bloco de um formulário do CMS: título, descrição e campos. */
+export function FormSection({
+  id,
+  title,
+  description,
+  children,
+}: {
+  id: string;
+  title: string;
+  description?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      aria-labelledby={`${id}-title`}
+      className="flex flex-col gap-6 rounded-2xl border border-border bg-surface p-5 sm:p-7"
+    >
+      <div className="flex flex-col gap-1">
+        <h2 id={`${id}-title`} className="text-h4 font-sans">
+          {title}
+        </h2>
+        {description && <p className="text-body-sm text-muted-foreground">{description}</p>}
+      </div>
+      {children}
+    </section>
   );
 }

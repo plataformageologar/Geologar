@@ -15,6 +15,7 @@ somente leitura para `anon` e `authenticated`.
 | `/admin/nova-senha`       | sessão válida           | Definição de nova senha (após o link ou pelo perfil)      |
 | `/admin/acesso-negado`    | sessão válida           | Conta autenticada sem vínculo ativo                       |
 | `/admin`                  | vínculo ativo           | Visão geral: contagens reais do conteúdo publicado        |
+| `/admin/homepage`         | vínculo ativo           | CMS: edição da homepage (ver [`cms.md`](cms.md))           |
 | `/admin/perfil`           | vínculo ativo           | E-mail, papel e identificador da conta                    |
 
 O rodapé do site tem um link discreto "Área restrita" para `/admin/login`.
@@ -110,6 +111,10 @@ Tabela `public.admin_memberships` (detalhes em
   outro valor (URL externa, `//`, `..`, query) cai em `/admin`.
 - Logout: `signOut({ scope: "local" })` encerra a sessão deste navegador,
   apaga os cookies e redireciona para `/admin/login?saida=1`.
+- O proxy não redireciona requisições de Server Action (`POST` com cabeçalho
+  `Next-Action`): cada action verifica a sessão e responde com erro
+  estruturado, o que permite ao formulário manter o texto quando a sessão
+  expira.
 - Server Actions só aceitam `POST` da mesma origem (proteção do Next.js
   contra CSRF); os cookies `SameSite=Lax` não são enviados em `POST` de
   outros sites.

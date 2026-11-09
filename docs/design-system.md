@@ -140,10 +140,16 @@ fundo suave com curvas de nível e ícone — decorativo (`aria-hidden`).
   links; o item atual recebe `aria-current="page"`.
 - `AuthCard`: cartão centralizado sobre `surface-muted` com curvas de nível,
   usado no login, recuperação, nova senha e acesso negado.
-- Formulários (`form-controls.tsx`): `Field` (rótulo + dica ligada por
-  `aria-describedby`), `TextInput`, `PasswordInput` (botão mostrar/ocultar com
-  `aria-pressed`) e `FormMessage` (`error` com `role="alert"`; `success` e
-  `info` com `role="status"`). Campos com 44px de altura mínima.
+- Formulários (`form-controls.tsx`): `Field` (rótulo, indicação
+  "Obrigatório", contador de caracteres, erro com ícone e dica — ligados ao
+  campo por `aria-describedby` via `describedBy()`), `TextInput`, `TextArea`,
+  `PasswordInput` (botão mostrar/ocultar com `aria-pressed`), `FormSection`
+  (bloco com título) e `FormMessage` (`error` com `role="alert"`; `success` e
+  `info` com `role="status"`). Campos com 48px de altura mínima; inválidos com
+  borda e anel `danger` (`aria-invalid`), nunca só pela cor: o erro tem texto.
+- Formulários do CMS terminam com uma barra fixa no rodapé da tela: estado
+  ("Alterações não salvas", em `earth`), "Cancelar alterações" e "Salvar
+  alterações" (desabilitados sem alterações ou durante o envio).
 
 ### Ícones
 

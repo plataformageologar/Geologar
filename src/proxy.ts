@@ -44,8 +44,12 @@ export async function proxy(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const authenticated = Boolean(data?.claims.sub);
   const { pathname } = request.nextUrl;
+  // Server Actions verificam a sessão por conta própria e respondem com um
+  // erro estruturado (ex.: sessão expirada) sem descartar o formulário; um
+  // redirecionamento aqui quebraria a resposta da action.
+  const isServerAction = request.method === "POST" && request.headers.has("next-action");
 
-  if (!authenticated && !PUBLIC_ADMIN_PATHS.has(pathname)) {
+  if (!authenticated && !PUBLIC_ADMIN_PATHS.has(pathname) && !isServerAction) {
     const loginUrl = new URL("/admin/login", request.url);
     if (pathname !== "/admin") loginUrl.searchParams.set("next", pathname);
 

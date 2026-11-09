@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, PanelsTopLeft } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { adminNavigation } from "@/data/admin-navigation";
 import { adminRoleLabels, requireAdminAccess } from "@/lib/auth/access";
 import { getPublishedContentCounts } from "@/lib/queries/admin";
@@ -32,6 +33,31 @@ export default async function AdminDashboardPage() {
           está conectado como <strong className="font-semibold text-foreground">{adminRoleLabels[access.role]}</strong>.
         </p>
       </div>
+
+      <section
+        aria-labelledby="gerenciar-homepage-title"
+        className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-6 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div className="flex items-start gap-4">
+          <span
+            aria-hidden="true"
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary"
+          >
+            <PanelsTopLeft className="size-5" />
+          </span>
+          <div className="flex flex-col gap-1">
+            <h2 id="gerenciar-homepage-title" className="text-h4 font-sans">
+              Gerenciar homepage
+            </h2>
+            <p className="text-body-sm text-muted-foreground">
+              Edite os textos institucionais e os botões da página inicial.
+            </p>
+          </div>
+        </div>
+        <Button href="/admin/homepage" withArrow className="self-start sm:self-center">
+          Editar homepage
+        </Button>
+      </section>
 
       <section aria-labelledby="conteudo-publicado-title" className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">

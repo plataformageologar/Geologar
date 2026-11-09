@@ -23,7 +23,7 @@ export function AboutNetwork({ content, pillars }: AboutNetworkProps) {
             title={content.about_title}
           />
           {content.about_description && (
-            <p className="mt-6 text-body-lg text-muted-foreground">
+            <p className="mt-6 whitespace-pre-line text-body-lg text-muted-foreground">
               {content.about_description}
             </p>
           )}

@@ -4,9 +4,10 @@ Rede de Pesquisa em Geociências — Recursos Naturais e Sustentabilidade.
 
 Portal institucional da GeoLogar. Nesta fase o repositório contém a homepage
 e as páginas públicas (A Rede, Pesquisa, Projetos, Publicações, Instituições e
-Contato), integradas ao Supabase (leitura pública via RLS), e a fundação da
-área administrativa (`/admin`: login, autorização por papel e painel inicial).
-A edição de conteúdo (CMS) será implementada nas próximas etapas.
+Contato), integradas ao Supabase (leitura pública via RLS), e a área
+administrativa (`/admin`: login, autorização por papel, painel e o primeiro
+módulo do CMS, a edição da homepage). Os demais módulos do CMS virão nas
+próximas etapas.
 
 ## Stack
 
@@ -73,7 +74,8 @@ src/
     ui/                 Design system: Button, Badge, Container, SectionHeading, CardMedia,
                         PageHeader, Breadcrumb, EmptyState, Pagination, TextLink, RichText
     layout/             Header, menu mobile, NavLink (item ativo), Footer, logotipo e PublicShell
-    admin/              Barra lateral, cabeçalho, cartão de login e formulários do painel
+    admin/              Barra lateral, cabeçalho, cartão de login e controles de formulário do painel
+      homepage/         Formulário do módulo Homepage do CMS
     home/               Seções da homepage
     research/ projects/ publications/ institutions/ network/
                         Cards e listas compartilhados entre homepage e páginas internas
@@ -81,6 +83,7 @@ src/
     site.ts             Navegação, pilares e fallbacks do conteúdo essencial
     admin-navigation.ts Módulos do painel administrativo
   lib/
+    admin/              CMS: campos editáveis, validação e Server Actions de gravação
     auth/               Autorização administrativa, Server Actions de login e redirecionamentos seguros
     queries/            Consultas de conteúdo (públicas e contagens do painel)
     supabase/           Clientes Supabase (navegador, servidor e público)
@@ -93,6 +96,7 @@ supabase/
   migrations/           Migrations SQL versionadas
 docs/
   admin-auth.md         Autenticação, autorização e primeiro administrador
+  cms.md                CMS: módulo Homepage, validação, salvamento e RLS de escrita
   database-schema.md    Modelo de dados
   deployment.md         Deploy no Cloudflare Workers e checklist de produção
   design-system.md      Tokens, tipografia, componentes e breakpoints
@@ -148,6 +152,22 @@ em `admin_memberships` (papéis `admin` e `editor`), verificado a cada
 requisição. Não há usuário padrão: o primeiro administrador é criado no painel
 do Supabase e vinculado por SQL. Fluxos, cookies, configuração de Redirect
 URLs e passo a passo em [`docs/admin-auth.md`](docs/admin-auth.md).
+
+### CMS
+
+Primeiro módulo funcional: **`/admin/homepage`**, para administradores e
+editores ativos. Edita os textos e botões da homepage (banner, apresentação da
+rede e chamada para cooperação); ao salvar, o site público passa a exibir o
+novo conteúdo na próxima requisição, sem build nem deploy.
+
+- A gravação usa a sessão do próprio usuário: a Server Action confere vínculo,
+  valida os campos e detecta edição simultânea; o banco aplica a policy de
+  UPDATE da migration `20261109152838_enable_homepage_cms_updates.sql`
+  (somente campos editoriais, somente `admin`/`editor` ativos).
+- Testes de RLS: `npx supabase test db` (local) ou `npx supabase test db --remote`
+  (transação desfeita no final).
+
+Detalhes em [`docs/cms.md`](docs/cms.md).
 
 ## Supabase
 

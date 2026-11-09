@@ -83,7 +83,7 @@ export function Hero({ content, eyebrow }: HeroProps) {
             {hero_title}
           </h1>
           {hero_description && (
-            <p className="max-w-2xl text-body-lg text-deep-foreground/90">
+            <p className="max-w-2xl whitespace-pre-line text-body-lg text-deep-foreground/90">
               {hero_description}
             </p>
           )}

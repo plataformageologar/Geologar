@@ -35,7 +35,7 @@ export function CooperationCta({ content }: CooperationCtaProps) {
               {cooperation_title}
             </h2>
             {cooperation_description && (
-              <p className="text-body-lg text-primary-foreground/90">
+              <p className="whitespace-pre-line text-body-lg text-primary-foreground/90">
                 {cooperation_description}
               </p>
             )}
