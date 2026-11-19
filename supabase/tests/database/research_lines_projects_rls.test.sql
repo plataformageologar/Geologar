@@ -76,7 +76,7 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$ select public.save_project(null, null, 'anon', 'tst-anon', null, null, null, 'ongoing',
+  $$ select public.save_project(null, null, 'anon', 'tst-anon', null, null, null, null, 'ongoing',
        null, null, null, null, null, null, 0, false, false, '{}') $$,
   '42501', null, 'anon não executa save_project'
 );
@@ -105,7 +105,7 @@ with changed as (
 select is((select count(*)::int from changed), 0, 'usuário sem vínculo não atualiza (0 linhas)');
 
 select throws_ok(
-  $$ select public.save_project(null, null, 'comum', 'tst-comum', null, null, null, 'ongoing',
+  $$ select public.save_project(null, null, 'comum', 'tst-comum', null, null, null, null, 'ongoing',
        null, null, null, null, null, null, 0, false, false, '{}') $$,
   '42501', null, 'usuário sem vínculo não salva projetos'
 );
@@ -177,8 +177,10 @@ select isnt(
 );
 
 select throws_ok(
-  $$ update public.research_lines set image_path = '/x.jpg' where slug = 'tst-nova-linha' $$,
-  '42501', null, 'editor não altera image_path'
+  $$ update public.research_lines
+     set image_path = 'uploads/99999999-9999-4999-8999-999999999999.png', image_alt = 'x'
+     where slug = 'tst-nova-linha' $$,
+  'GL422', null, 'editor não associa imagem inexistente na biblioteca (Etapa 8)'
 );
 
 select throws_ok(
@@ -216,7 +218,7 @@ select is(
 insert into ids
 select 'p1', id, updated_at
 from public.save_project(
-  null, null, 'Projeto (teste)', 'tst-projeto', 'Resumo', null, null, 'ongoing',
+  null, null, 'Projeto (teste)', 'tst-projeto', 'Resumo', null, null, null, 'ongoing',
   '2025-01-10', null, 'Coordenação', null, null, 'https://example.org/projeto', 0, false, false,
   array['c2000000-0000-4000-8000-000000000001', 'c2000000-0000-4000-8000-000000000002']::uuid[]
 );
@@ -238,7 +240,7 @@ select is(
 update ids set version = (
   select updated_at from public.save_project(
     (select id from ids where name = 'p1'), (select version from ids where name = 'p1'),
-    'Projeto (teste)', 'tst-projeto', 'Resumo', null, null, 'completed',
+    'Projeto (teste)', 'tst-projeto', 'Resumo', null, null, null, 'completed',
     '2025-01-10', '2025-12-20', 'Coordenação', null, 'Resultado', null, 0, true, false,
     array['c2000000-0000-4000-8000-000000000002']::uuid[]
   )
@@ -259,7 +261,7 @@ select is(
 );
 
 select throws_ok(
-  format($$ select public.save_project(%L, '2000-01-01', 'Velho', 'tst-projeto', null, null, null,
+  format($$ select public.save_project(%L, '2000-01-01', 'Velho', 'tst-projeto', null, null, null, null,
     'ongoing', null, null, null, null, null, null, 0, false, false, '{}') $$,
     (select id from ids where name = 'p1')),
   'GL409', null, 'versão desatualizada é recusada (edição simultânea)'
@@ -267,7 +269,7 @@ select throws_ok(
 
 select throws_ok(
   format($$ select public.save_project(%L, %L, 'Título que não deve ficar', 'tst-projeto', null, null,
-    null, 'ongoing', null, null, null, null, null, null, 0, false, false,
+    null, null, 'ongoing', null, null, null, null, null, null, 0, false, false,
     array['c2000000-0000-4000-8000-0000000000ff']::uuid[]) $$,
     (select id from ids where name = 'p1'), (select version from ids where name = 'p1')),
   '23503', null, 'linha de pesquisa inexistente é recusada (FK)'
@@ -280,7 +282,7 @@ select is(
 );
 
 select throws_ok(
-  format($$ select public.save_project(%L, %L, 'Projeto (teste)', 'tst-projeto', null, null, null,
+  format($$ select public.save_project(%L, %L, 'Projeto (teste)', 'tst-projeto', null, null, null, null,
     'ongoing', null, null, null, null, null, null, 0, false, false,
     array['c2000000-0000-4000-8000-000000000001', 'c2000000-0000-4000-8000-000000000001']::uuid[]) $$,
     (select id from ids where name = 'p1'), (select version from ids where name = 'p1')),
@@ -288,21 +290,21 @@ select throws_ok(
 );
 
 select throws_ok(
-  format($$ select public.save_project(%L, %L, 'Projeto (teste)', 'tst-projeto', null, null, null,
+  format($$ select public.save_project(%L, %L, 'Projeto (teste)', 'tst-projeto', null, null, null, null,
     'ongoing', '2025-05-01', '2025-01-01', null, null, null, null, 0, false, false, '{}') $$,
     (select id from ids where name = 'p1'), (select version from ids where name = 'p1')),
   '23514', null, 'data de término anterior ao início é recusada'
 );
 
 select throws_ok(
-  format($$ select public.save_project(%L, %L, 'Projeto (teste)', 'tst-projeto', null, null, null,
+  format($$ select public.save_project(%L, %L, 'Projeto (teste)', 'tst-projeto', null, null, null, null,
     'draft', null, null, null, null, null, null, 0, false, false, '{}') $$,
     (select id from ids where name = 'p1'), (select version from ids where name = 'p1')),
   '23514', null, 'situação fora do schema (draft) é recusada'
 );
 
 select throws_ok(
-  $$ select public.save_project(null, null, 'Outro', 'tst-projeto', null, null, null, 'ongoing',
+  $$ select public.save_project(null, null, 'Outro', 'tst-projeto', null, null, null, null, 'ongoing',
        null, null, null, null, null, null, 0, false, false, '{}') $$,
   '23505', null, 'slug de projeto duplicado é recusado'
 );
@@ -353,7 +355,7 @@ select is((select count(*)::int from removed), 1, 'admin exclui linha em rascunh
 
 -- Desvincula (via save_project) e então exclui o projeto.
 select lives_ok(
-  format($$ select public.save_project(%L, %L, 'Projeto (teste)', 'tst-projeto', null, null, null,
+  format($$ select public.save_project(%L, %L, 'Projeto (teste)', 'tst-projeto', null, null, null, null,
     'ongoing', null, null, null, null, null, null, 0, false, false, '{}') $$,
     (select id from ids where name = 'p1'), (select version from ids where name = 'p1')),
   'admin remove todos os vínculos do projeto'

@@ -1,8 +1,6 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ImageIcon } from "lucide-react";
 import { startTransition, useActionState, useEffect, useRef, useState, type ReactNode } from "react";
 
 import {
@@ -20,6 +18,7 @@ import {
 import { countCharacters } from "@/lib/admin/validation";
 
 import { Checkbox, describedBy, Field, FormSection, TextArea, TextInput } from "../form-controls";
+import { MediaField } from "../media/media-field";
 import { buildFormData, FailureAction, SaveBar, useUnsavedChangesWarning } from "../save-bar";
 import { SlugField } from "../slug-field";
 
@@ -29,8 +28,6 @@ type ResearchLineFormProps = {
   initialValues: ResearchLineFormValues;
   /** Versão carregada (edição simultânea); `null` no cadastro. */
   initialUpdatedAt: string | null;
-  hasImage: boolean;
-  imageSrc: string | null;
 };
 
 const fieldOrder: ResearchLineField[] = [
@@ -38,6 +35,7 @@ const fieldOrder: ResearchLineField[] = [
   "slug",
   "short_description",
   "description",
+  "image_path",
   "image_alt",
   "sort_order",
   "is_featured",
@@ -74,8 +72,6 @@ export function ResearchLineForm({
   recordId,
   initialValues,
   initialUpdatedAt,
-  hasImage,
-  imageSrc,
 }: ResearchLineFormProps) {
   const router = useRouter();
   const isNew = recordId === null;
@@ -142,7 +138,9 @@ export function ResearchLineForm({
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending || submitting.current) return;
-    const { errors: found } = parseResearchLineValues(values, { hasImage });
+    const { errors: found } = parseResearchLineValues(values, {
+      currentImagePath: isNew ? null : saved.values.image_path || null,
+    });
     if (rejectedSlugs.includes(values.slug.trim().toLowerCase())) {
       found.slug = "Este slug já está em uso por outra linha de pesquisa. Escolha outro.";
     }
@@ -241,27 +239,24 @@ export function ResearchLineForm({
         <FormSection
           id="imagem"
           title="Imagem"
-          description="O envio de imagens estará disponível na biblioteca de mídia (próxima etapa)."
+          description="Exibida no card e no topo da página da linha de pesquisa. Sem imagem, o site usa a ilustração padrão do portal."
         >
-          {imageSrc ? (
-            <div className="relative aspect-[16/7] overflow-hidden rounded-xl border border-border bg-surface-muted">
-              <Image src={imageSrc} alt="" fill sizes="(min-width: 768px) 42rem, 100vw" className="object-cover" />
-            </div>
-          ) : (
-            <div className="flex items-start gap-3 rounded-xl border border-dashed border-border bg-surface-muted/60 p-4 text-body-sm text-muted-foreground">
-              <ImageIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
-              <p>
-                {hasImage
-                  ? "Há uma imagem cadastrada, mas a pré-visualização ainda não está disponível."
-                  : "Nenhuma imagem cadastrada: os cards usam a ilustração padrão do portal."}
-              </p>
-            </div>
-          )}
-          {hasImage &&
-            textField("image_alt", "Texto alternativo da imagem", {
+          <MediaField
+            id="image_path"
+            label="Imagem da linha de pesquisa"
+            value={values.image_path}
+            onChange={(value) => update("image_path", value)}
+            error={errors.image_path}
+            hint="Recomendado: JPEG ou WebP horizontal (16:9), com pelo menos 1600 × 900 px e até 5 MB."
+            emptyText="Nenhuma imagem selecionada: os cards usam a ilustração padrão do portal."
+            canUpload
+            disabled={pending}
+          >
+            {textField("image_alt", "Texto alternativo da imagem", {
               required: true,
               hint: "Descreva a imagem para quem usa leitores de tela.",
             })}
+          </MediaField>
         </FormSection>
 
         <FormSection

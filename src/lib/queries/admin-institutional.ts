@@ -4,7 +4,7 @@ import { isUuid } from "@/lib/admin/validation";
 import { createClient } from "@/lib/supabase/server";
 
 import { ilikeAny, type AdminResult } from "./admin-content";
-import { logQueryError, resolveImageSrc } from "./shared";
+import { logQueryError } from "./shared";
 
 /**
  * Leituras do CMS de instituições, categorias, informações institucionais e
@@ -82,8 +82,6 @@ export type InstitutionForEdit = {
   record: InstitutionRecord;
   updatedAt: string;
   publishedAt: string | null;
-  hasLogo: boolean;
-  logoSrc: string | null;
 };
 
 export async function getInstitutionForEdit(id: string): Promise<AdminResult<InstitutionForEdit | null>> {
@@ -102,7 +100,7 @@ export async function getInstitutionForEdit(id: string): Promise<AdminResult<Ins
   }
   if (!data) return { status: "ready", data: null };
 
-  const { id: institutionId, logo_path, updated_at, published_at, ...record } = data;
+  const { id: institutionId, updated_at, published_at, ...record } = data;
   return {
     status: "ready",
     data: {
@@ -110,8 +108,6 @@ export async function getInstitutionForEdit(id: string): Promise<AdminResult<Ins
       record,
       updatedAt: updated_at,
       publishedAt: published_at,
-      hasLogo: logo_path !== null,
-      logoSrc: resolveImageSrc(logo_path),
     },
   };
 }
@@ -162,10 +158,6 @@ export const categoryEditColumns = "id, name, slug, description, sort_order, upd
 export type SiteSettingsForEdit = {
   record: SiteSettingsRecord;
   updatedAt: string;
-  logoSrc: string | null;
-  faviconSrc: string | null;
-  hasLogo: boolean;
-  hasFavicon: boolean;
 };
 
 export const siteSettingsEditColumns =
@@ -183,7 +175,7 @@ export async function getSiteSettingsForEdit(): Promise<AdminResult<SiteSettings
   if (!data) return { status: "ready", data: null };
 
   // O id não sai daqui: a gravação lê o registro único direto do banco.
-  const { logo_path, favicon_path, updated_at, ...rest } = data;
+  const { updated_at, ...rest } = data;
   const record: SiteSettingsRecord = {
     site_name: rest.site_name,
     institutional_name: rest.institutional_name,
@@ -195,16 +187,14 @@ export async function getSiteSettingsForEdit(): Promise<AdminResult<SiteSettings
     city: rest.city,
     state: rest.state,
     country: rest.country,
+    logo_path: rest.logo_path,
+    favicon_path: rest.favicon_path,
   };
   return {
     status: "ready",
     data: {
       record,
       updatedAt: updated_at,
-      logoSrc: resolveImageSrc(logo_path),
-      faviconSrc: resolveImageSrc(favicon_path),
-      hasLogo: logo_path !== null,
-      hasFavicon: favicon_path !== null,
     },
   };
 }

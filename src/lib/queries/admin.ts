@@ -1,7 +1,7 @@
 import { homepageFields, type HomepageRecord } from "@/lib/admin/homepage";
 import { createClient } from "@/lib/supabase/server";
 
-import { logQueryError, resolveImageSrc } from "./shared";
+import { logQueryError } from "./shared";
 
 export type ContentCount = {
   id: "research_lines" | "projects" | "publications" | "institutions";
@@ -39,7 +39,7 @@ export async function getPublishedContentCounts(): Promise<ContentCount[]> {
   );
 }
 
-export const homepageEditColumns = [...homepageFields, "hero_image_path", "updated_at"].join(", ");
+export const homepageEditColumns = [...homepageFields, "updated_at"].join(", ");
 
 export type HomepageForEdit =
   | {
@@ -47,9 +47,6 @@ export type HomepageForEdit =
       record: HomepageRecord;
       /** Versão carregada, usada para detectar edições simultâneas. */
       updatedAt: string;
-      /** Imagem atual já resolvida para exibição (somente leitura nesta etapa). */
-      imageSrc: string | null;
-      hasImage: boolean;
     }
   | { status: "missing" }
   | { status: "error" };
@@ -64,7 +61,7 @@ export async function getHomepageForEdit(): Promise<HomepageForEdit> {
   const { data, error } = await supabase
     .from("homepage_content")
     .select(homepageEditColumns)
-    .maybeSingle<HomepageRecord & { hero_image_path: string | null; updated_at: string }>();
+    .maybeSingle<HomepageRecord & { updated_at: string }>();
 
   if (error) {
     logQueryError("homepage_content (CMS)", error);
@@ -72,12 +69,6 @@ export async function getHomepageForEdit(): Promise<HomepageForEdit> {
   }
   if (!data) return { status: "missing" };
 
-  const { hero_image_path, updated_at, ...record } = data;
-  return {
-    status: "ready",
-    record,
-    updatedAt: updated_at,
-    imageSrc: resolveImageSrc(hero_image_path),
-    hasImage: hero_image_path !== null,
-  };
+  const { updated_at, ...record } = data;
+  return { status: "ready", record, updatedAt: updated_at };
 }

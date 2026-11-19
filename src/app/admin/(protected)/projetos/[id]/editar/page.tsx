@@ -66,8 +66,6 @@ export default async function EditProjectPage({
         recordId={project.id}
         initialValues={toProjectFormValues(project.record, project.researchLineIds)}
         initialUpdatedAt={project.updatedAt}
-        hasImage={project.hasImage}
-        imageSrc={project.imageSrc}
         researchLines={lines.data}
       />
     </div>

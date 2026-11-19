@@ -3,6 +3,7 @@
 import { refresh } from "next/cache";
 
 import { getAdminAccess } from "@/lib/auth/access";
+import { MEDIA_MISSING_MESSAGE } from "@/lib/media/references";
 import { categoryEditColumns, institutionEditColumns } from "@/lib/queries/admin-institutional";
 import { createClient } from "@/lib/supabase/server";
 
@@ -54,6 +55,7 @@ const editableFields = [
   "name",
   "acronym",
   "description",
+  "logo_path",
   "logo_alt",
   "website_url",
   "city",
@@ -70,6 +72,9 @@ function institutionFailure(
   status: number,
 ): FailureState<InstitutionField> {
   const reason = classifyDatabaseError(scope, error, status);
+  if (reason === "media-missing") {
+    return fail("validation", ENTITY, { fieldErrors: { logo_path: MEDIA_MISSING_MESSAGE } });
+  }
   if (reason === "has-dependencies") {
     // FK institutions_category_id_fkey: a categoria foi excluída nesse meio-tempo.
     return fail("validation", ENTITY, {
@@ -110,19 +115,17 @@ export async function saveInstitution(
       return fail(classifyDatabaseError("leitura de institution_categories", categories.error, categories.status), ENTITY);
     }
 
-    const hasLogo = current?.logo_path != null;
     const { data, errors } = parseInstitutionValues(readInstitutionForm(formData), {
-      hasLogo,
+      currentLogoPath: current?.logo_path ?? null,
       knownCategoryIds: new Set(categories.data.map((category) => category.id)),
     });
     if (Object.keys(errors).length > 0) return fail("validation", ENTITY, { fieldErrors: errors });
 
-    // Sem logotipo, o texto alternativo não é gravado (upload: Etapa 8).
-    const { logo_alt, ...withoutAlt } = data;
-    const fieldsToSave = hasLogo ? { ...withoutAlt, logo_alt } : withoutAlt;
+    // Logotipo e texto alternativo são gravados juntos (sem logotipo, alt = null).
+    const fieldsToSave = data;
 
     if (current === null) {
-      const created = await supabase.from("institutions").insert(withoutAlt).select("id").single();
+      const created = await supabase.from("institutions").insert(fieldsToSave).select("id").single();
       if (created.error) return institutionFailure("inclusão em institutions", created.error, created.status);
       return { status: "created", id: created.data.id, published: data.is_published };
     }
@@ -190,7 +193,7 @@ export async function setInstitutionPublished(
 
     if (publish) {
       const values = { ...toInstitutionFormValues(read.data), is_published: true };
-      const { errors } = parseInstitutionValues(values, { hasLogo: read.data.logo_path !== null });
+      const { errors } = parseInstitutionValues(values, { currentLogoPath: read.data.logo_path });
       if (Object.keys(errors).length > 0) {
         return fail("validation", ENTITY, {
           message: `Para publicar “${read.data.name}”, abra a edição e corrija os campos destacados.`,

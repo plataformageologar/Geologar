@@ -1,3 +1,4 @@
+import { parseImageReference } from "@/lib/media/references";
 import type { Tables } from "@/types/database.types";
 
 import {
@@ -49,6 +50,7 @@ export type ProjectRecord = Pick<
   | "slug"
   | "short_description"
   | "description"
+  | "image_path"
   | "image_alt"
   | "project_status"
   | "start_date"
@@ -67,6 +69,8 @@ export type ProjectFormValues = {
   slug: string;
   short_description: string;
   description: string;
+  /** Referência da imagem (objeto da biblioteca ou caminho local legado). */
+  image_path: string;
   image_alt: string;
   project_status: string;
   start_date: string;
@@ -90,6 +94,7 @@ export const emptyProjectValues: ProjectFormValues = {
   slug: "",
   short_description: "",
   description: "",
+  image_path: "",
   image_alt: "",
   project_status: "",
   start_date: "",
@@ -113,6 +118,7 @@ export function toProjectFormValues(
     slug: record.slug,
     short_description: record.short_description ?? "",
     description: record.description ?? "",
+    image_path: record.image_path ?? "",
     image_alt: record.image_alt ?? "",
     project_status: record.project_status,
     start_date: record.start_date ?? "",
@@ -138,6 +144,7 @@ export function readProjectForm(formData: FormData): ProjectFormValues {
     slug: text("slug"),
     short_description: text("short_description"),
     description: text("description"),
+    image_path: text("image_path"),
     image_alt: text("image_alt"),
     project_status: text("project_status"),
     start_date: text("start_date"),
@@ -162,12 +169,17 @@ function isProjectStatus(value: string): value is ProjectStatusValue {
 /**
  * Normaliza e valida. `knownLineIds` (opcional, no servidor) recusa linhas
  * que não existem; o banco também recusa (FK) dentro da mesma transação.
+ * `currentImagePath`: imagem gravada no registro (aceita sem alteração).
  */
 export function parseProjectValues(
   values: ProjectFormValues,
-  { hasImage, knownLineIds }: { hasImage: boolean; knownLineIds?: Set<string> },
+  { currentImagePath, knownLineIds }: { currentImagePath: string | null; knownLineIds?: Set<string> },
 ): { data: ProjectRecord; researchLineIds: string[]; errors: ProjectFieldErrors } {
   const errors: ProjectFieldErrors = {};
+
+  const image = parseImageReference(values.image_path, currentImagePath);
+  if (image.error) errors.image_path = image.error;
+  const hasImage = image.value !== null;
 
   const text = (field: keyof typeof projectTextRules, required = false) => {
     const rule: TextRule = projectTextRules[field];
@@ -223,6 +235,7 @@ export function parseProjectValues(
     slug: slug ?? "",
     short_description: shortDescription,
     description: text("description"),
+    image_path: image.value,
     image_alt: hasImage ? text("image_alt", true) : null,
     project_status: status,
     start_date: startError ? null : startDate,

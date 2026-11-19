@@ -67,8 +67,6 @@ export default async function EditResearchLinePage({
         recordId={line.id}
         initialValues={toResearchLineFormValues(line.record)}
         initialUpdatedAt={line.updatedAt}
-        hasImage={line.hasImage}
-        imageSrc={line.imageSrc}
       />
     </div>
   );

@@ -1,3 +1,4 @@
+import { parseImageReference } from "@/lib/media/references";
 import type { Tables } from "@/types/database.types";
 
 import {
@@ -11,8 +12,8 @@ import {
 
 /**
  * Campos de `research_lines` editáveis pelo CMS. Devem coincidir com os
- * GRANTs da migration enable_research_lines_projects_cms (image_path,
- * published_at, id e datas ficam de fora).
+ * GRANTs das migrations enable_research_lines_projects_cms e
+ * enable_media_library (published_at, id e datas ficam de fora).
  */
 export const researchLineTextRules = {
   title: { max: 160, required: true },
@@ -27,6 +28,7 @@ export type ResearchLineRecord = Pick<
   | "slug"
   | "short_description"
   | "description"
+  | "image_path"
   | "image_alt"
   | "sort_order"
   | "is_featured"
@@ -39,6 +41,8 @@ export type ResearchLineFormValues = {
   slug: string;
   short_description: string;
   description: string;
+  /** Referência da imagem (objeto da biblioteca ou caminho local legado). */
+  image_path: string;
   image_alt: string;
   sort_order: string;
   is_featured: boolean;
@@ -53,6 +57,7 @@ export const emptyResearchLineValues: ResearchLineFormValues = {
   slug: "",
   short_description: "",
   description: "",
+  image_path: "",
   image_alt: "",
   sort_order: "0",
   is_featured: false,
@@ -66,6 +71,7 @@ export function toResearchLineFormValues(record: ResearchLineRecord): ResearchLi
     slug: record.slug,
     short_description: record.short_description ?? "",
     description: record.description ?? "",
+    image_path: record.image_path ?? "",
     image_alt: record.image_alt ?? "",
     sort_order: String(record.sort_order),
     is_featured: record.is_featured,
@@ -84,6 +90,7 @@ export function readResearchLineForm(formData: FormData): ResearchLineFormValues
     slug: text("slug"),
     short_description: text("short_description"),
     description: text("description"),
+    image_path: text("image_path"),
     image_alt: text("image_alt"),
     sort_order: text("sort_order"),
     is_featured: formData.get("is_featured") === "on",
@@ -92,15 +99,20 @@ export function readResearchLineForm(formData: FormData): ResearchLineFormValues
 }
 
 /**
- * Normaliza e valida. `hasImage`: o texto alternativo só existe (e é
- * obrigatório, pela constraint research_lines_image_alt) com imagem.
+ * Normaliza e valida. O texto alternativo só existe (e é obrigatório, pela
+ * constraint research_lines_image_alt) com imagem. `currentImagePath`: imagem
+ * gravada no registro (aceita sem alteração).
  * Para publicar, a descrição curta também é exigida: é o texto dos cards.
  */
 export function parseResearchLineValues(
   values: ResearchLineFormValues,
-  { hasImage }: { hasImage: boolean },
+  { currentImagePath }: { currentImagePath: string | null },
 ): { data: ResearchLineRecord; errors: ResearchLineFieldErrors } {
   const errors: ResearchLineFieldErrors = {};
+
+  const image = parseImageReference(values.image_path, currentImagePath);
+  if (image.error) errors.image_path = image.error;
+  const hasImage = image.value !== null;
 
   const text = (field: keyof typeof researchLineTextRules, required = false) => {
     const rule: TextRule = researchLineTextRules[field];
@@ -128,6 +140,7 @@ export function parseResearchLineValues(
     slug: slug ?? "",
     short_description: shortDescription,
     description: text("description"),
+    image_path: image.value,
     image_alt: hasImage ? text("image_alt", true) : null,
     sort_order: sortOrder.value,
     is_featured: values.is_featured,

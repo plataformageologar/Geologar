@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import { ImageIcon } from "lucide-react";
 import { useActionState, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { saveHomepage, type HomepageSaveState } from "@/lib/admin/actions";
@@ -16,20 +14,20 @@ import {
 import { countCharacters, LINK_MAX_LENGTH } from "@/lib/admin/validation";
 
 import { describedBy, Field, FormSection, TextArea, TextInput } from "../form-controls";
+import { MediaField } from "../media/media-field";
 import { FailureAction, SaveBar, useUnsavedChangesWarning } from "../save-bar";
 
 type HomepageFormProps = {
   initialValues: HomepageFormValues;
   /** Versão do registro carregado (detecção de edição simultânea). */
   initialUpdatedAt: string;
-  hasImage: boolean;
-  imageSrc: string | null;
 };
 
 // Ordem visual dos campos (foco no primeiro erro).
 const fieldOrder: HomepageField[] = [
   "hero_title",
   "hero_description",
+  "hero_image_path",
   "hero_image_alt",
   "hero_primary_cta_label",
   "hero_primary_cta_href",
@@ -73,7 +71,7 @@ function focusFirstError(errors: HomepageFieldErrors) {
  * falha ao salvar nunca apaga o que foi digitado. A validação aqui é apenas
  * para retorno imediato; a definitiva acontece na Server Action.
  */
-export function HomepageForm({ initialValues, initialUpdatedAt, hasImage, imageSrc }: HomepageFormProps) {
+export function HomepageForm({ initialValues, initialUpdatedAt }: HomepageFormProps) {
   const [values, setValues] = useState(initialValues);
   const [saved, setSaved] = useState({ values: initialValues, updatedAt: initialUpdatedAt });
   const [errors, setErrors] = useState<HomepageFieldErrors>({});
@@ -124,7 +122,9 @@ export function HomepageForm({ initialValues, initialUpdatedAt, hasImage, imageS
       event.preventDefault();
       return;
     }
-    const { errors: found } = parseHomepageValues(values, { hasImage });
+    const { errors: found } = parseHomepageValues(values, {
+      currentImagePath: saved.values.hero_image_path || null,
+    });
     if (Object.keys(found).length > 0) {
       event.preventDefault();
       setErrors(found);
@@ -230,30 +230,23 @@ export function HomepageForm({ initialValues, initialUpdatedAt, hasImage, imageS
           {textField("hero_title", "Título principal")}
           {textField("hero_description", "Descrição", { rows: 3 })}
 
-          <div className="flex flex-col gap-3">
-            <p className="text-label">Imagem de fundo</p>
-            {imageSrc ? (
-              <div className="relative aspect-[16/7] overflow-hidden rounded-xl border border-border bg-surface-muted">
-                <Image src={imageSrc} alt="" fill sizes="(min-width: 768px) 42rem, 100vw" className="object-cover" />
-              </div>
-            ) : (
-              <div className="flex items-start gap-3 rounded-xl border border-dashed border-border bg-surface-muted/60 p-4 text-body-sm text-muted-foreground">
-                <ImageIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
-                <p>
-                  {hasImage
-                    ? "Há uma imagem cadastrada, mas a pré-visualização ainda não está disponível."
-                    : "Nenhuma imagem cadastrada: o banner usa o fundo padrão com curvas de nível."}
-                </p>
-              </div>
-            )}
-            <p className="text-caption text-muted-foreground">
-              Gerenciamento de imagens disponível em uma próxima etapa.
-            </p>
-            {hasImage &&
-              textField("hero_image_alt", "Texto alternativo da imagem", {
-                hint: "Descreva a imagem para quem usa leitores de tela.",
-              })}
-          </div>
+          <MediaField
+            id="hero_image_path"
+            name="hero_image_path"
+            label="Imagem de fundo"
+            value={values.hero_image_path}
+            onChange={(value) => update("hero_image_path", value)}
+            error={errors.hero_image_path}
+            hint="Recomendado: JPEG ou WebP horizontal e ampla (ex.: 2400 × 1200 px), até 5 MB. O título fica sobre a imagem; prefira fotos sem texto."
+            emptyText="Nenhuma imagem selecionada: o banner usa o fundo padrão com curvas de nível."
+            aspect="aspect-[16/7] max-w-2xl"
+            canUpload
+            disabled={pending}
+          >
+            {textField("hero_image_alt", "Texto alternativo da imagem", {
+              hint: "Descreva a imagem para quem usa leitores de tela.",
+            })}
+          </MediaField>
 
           {ctaFields("Botão principal", "hero_primary_cta_label", "hero_primary_cta_href")}
           {ctaFields("Botão secundário", "hero_secondary_cta_label", "hero_secondary_cta_href")}

@@ -25,8 +25,6 @@ export default async function NewResearchLinePage() {
         recordId={null}
         initialValues={emptyResearchLineValues}
         initialUpdatedAt={null}
-        hasImage={false}
-        imageSrc={null}
       />
     </div>
   );

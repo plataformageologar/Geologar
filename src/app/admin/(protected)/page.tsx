@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Building2, FlaskConical, Layers, PanelsTopLeft, Settings, Share2 } from "lucide-react";
+import { ArrowRight, BookOpen, Building2, FlaskConical, Images, Layers, PanelsTopLeft, Settings, Share2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { adminNavigation } from "@/data/admin-navigation";
 import { adminRoleLabels, requireAdminAccess } from "@/lib/auth/access";
 import { getPublishedContentCounts } from "@/lib/queries/admin";
+import { countMedia } from "@/lib/queries/admin-media";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,13 @@ const managedModules = [
     action: "Gerenciar instituições",
   },
   {
+    href: "/admin/midias",
+    icon: Images,
+    title: "Biblioteca de mídia",
+    description: "Imagens enviadas para o portal: envio, consulta, uso e exclusão segura.",
+    action: "Abrir biblioteca",
+  },
+  {
     href: "/admin/configuracoes",
     icon: Settings,
     title: "Informações institucionais",
@@ -75,7 +83,7 @@ const plannedModules = adminNavigation.flatMap((section) =>
 
 export default async function AdminDashboardPage() {
   const access = await requireAdminAccess();
-  const counts = await getPublishedContentCounts();
+  const [counts, mediaTotal] = await Promise.all([getPublishedContentCounts(), countMedia()]);
 
   return (
     <div className="flex flex-col gap-10">
@@ -104,6 +112,15 @@ export default async function AdminDashboardPage() {
                 <div className="flex flex-col gap-1">
                   <h3 className="text-h4 font-sans">{module.title}</h3>
                   <p className="text-body-sm text-muted-foreground">{module.description}</p>
+                  {module.href === "/admin/midias" && (
+                    <p className="text-body-sm font-semibold text-foreground">
+                      {mediaTotal === null
+                        ? "Contagem de arquivos indisponível no momento."
+                        : mediaTotal === 1
+                          ? "1 arquivo na biblioteca"
+                          : `${numberFormat.format(mediaTotal)} arquivos na biblioteca`}
+                    </p>
+                  )}
                 </div>
               </div>
               <Button href={module.href} withArrow className="mt-auto self-start">

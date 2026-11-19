@@ -3,7 +3,7 @@ import type { ResearchLineRecord } from "@/lib/admin/research-lines";
 import { isUuid } from "@/lib/admin/validation";
 import { createClient } from "@/lib/supabase/server";
 
-import { logQueryError, resolveImageSrc } from "./shared";
+import { logQueryError } from "./shared";
 
 /**
  * Leituras do CMS para linhas de pesquisa e projetos, sempre com a sessão do
@@ -61,8 +61,6 @@ export type ResearchLineForEdit = {
   record: ResearchLineRecord;
   updatedAt: string;
   publishedAt: string | null;
-  hasImage: boolean;
-  imageSrc: string | null;
 };
 
 /** `null`: id inválido ou registro inexistente (a página responde 404). */
@@ -84,7 +82,7 @@ export async function getResearchLineForEdit(
   }
   if (!data) return { status: "ready", data: null };
 
-  const { image_path, updated_at, published_at, id: lineId, ...record } = data;
+  const { updated_at, published_at, id: lineId, ...record } = data;
   return {
     status: "ready",
     data: {
@@ -92,8 +90,6 @@ export async function getResearchLineForEdit(
       record,
       updatedAt: updated_at,
       publishedAt: published_at,
-      hasImage: image_path !== null,
-      imageSrc: resolveImageSrc(image_path),
     },
   };
 }
@@ -208,8 +204,6 @@ export type ProjectForEdit = {
   researchLineIds: string[];
   updatedAt: string;
   publishedAt: string | null;
-  hasImage: boolean;
-  imageSrc: string | null;
 };
 
 export async function getProjectForEdit(id: string): Promise<AdminResult<ProjectForEdit | null>> {
@@ -229,7 +223,6 @@ export async function getProjectForEdit(id: string): Promise<AdminResult<Project
   if (!data) return { status: "ready", data: null };
 
   const {
-    image_path,
     updated_at,
     published_at,
     id: projectId,
@@ -244,8 +237,6 @@ export async function getProjectForEdit(id: string): Promise<AdminResult<Project
       researchLineIds: project_research_lines.map((link) => link.research_line_id),
       updatedAt: updated_at,
       publishedAt: published_at,
-      hasImage: image_path !== null,
-      imageSrc: resolveImageSrc(image_path),
     },
   };
 }

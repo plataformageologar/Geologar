@@ -108,10 +108,11 @@ select is(
 );
 
 select throws_ok(
-  $$ update public.homepage_content set hero_image_path = '/imagem.jpg' $$,
-  '42501',
+  $$ update public.homepage_content
+     set hero_image_path = 'https://example.test/imagem.jpg', hero_image_alt = 'x' $$,
+  '23514',
   null,
-  'editor não altera hero_image_path (fora dos campos liberados)'
+  'editor não grava URL externa como imagem do banner (Etapa 8)'
 );
 
 reset role;

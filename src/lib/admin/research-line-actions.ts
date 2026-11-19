@@ -3,6 +3,7 @@
 import { refresh } from "next/cache";
 
 import { getAdminAccess, type AdminRole } from "@/lib/auth/access";
+import { MEDIA_MISSING_MESSAGE } from "@/lib/media/references";
 import { researchLineEditColumns } from "@/lib/queries/admin-content";
 import { createClient } from "@/lib/supabase/server";
 
@@ -63,6 +64,7 @@ const editableFields = [
   "slug",
   "short_description",
   "description",
+  "image_path",
   "image_alt",
   "sort_order",
   "is_featured",
@@ -96,18 +98,18 @@ export async function saveResearchLine(
     }
 
     // Validação definitiva no servidor.
-    const hasImage = current?.image_path != null;
-    const { data, errors } = parseResearchLineValues(readResearchLineForm(formData), { hasImage });
+    const { data, errors } = parseResearchLineValues(readResearchLineForm(formData), {
+      currentImagePath: current?.image_path ?? null,
+    });
     if (Object.keys(errors).length > 0) return fail("validation", ENTITY, { fieldErrors: errors });
 
-    // Sem imagem, o texto alternativo não é gravado (upload: Etapa 8).
-    const { image_alt, ...withoutAlt } = data;
-    const fieldsToSave = hasImage ? { ...withoutAlt, image_alt } : withoutAlt;
+    // Imagem e texto alternativo são gravados juntos (sem imagem, alt = null).
+    const fieldsToSave = data;
 
     if (current === null) {
       const created = await supabase
         .from("research_lines")
-        .insert(withoutAlt)
+        .insert(fieldsToSave)
         .select("id")
         .single();
       if (created.error) return saveFailure("inclusão em research_lines", created.error, created.status);
@@ -176,6 +178,9 @@ function saveFailure(
       fieldErrors: { slug: "Este slug já está em uso por outra linha de pesquisa. Escolha outro." },
     });
   }
+  if (reason === "media-missing") {
+    return fail("validation", ENTITY, { fieldErrors: { image_path: MEDIA_MISSING_MESSAGE } });
+  }
   return fail(reason, ENTITY);
 }
 
@@ -204,7 +209,7 @@ export async function setResearchLinePublished(
     if (publish) {
       // Mesmas regras do formulário: só publica um registro completo.
       const values = { ...toResearchLineFormValues(read.data), is_published: true };
-      const { errors } = parseResearchLineValues(values, { hasImage: read.data.image_path !== null });
+      const { errors } = parseResearchLineValues(values, { currentImagePath: read.data.image_path });
       if (Object.keys(errors).length > 0) {
         return fail("validation", ENTITY, {
           message: `Para publicar “${read.data.title}”, abra a edição e complete os campos obrigatórios (${errors.short_description ? "descrição curta" : "campos destacados"}).`,

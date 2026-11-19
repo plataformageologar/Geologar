@@ -3,6 +3,7 @@
 import { refresh } from "next/cache";
 
 import { getAdminAccess } from "@/lib/auth/access";
+import { MEDIA_MISSING_MESSAGE } from "@/lib/media/references";
 import { siteSettingsEditColumns } from "@/lib/queries/admin-institutional";
 import { createClient } from "@/lib/supabase/server";
 
@@ -52,11 +53,14 @@ export async function saveSiteSettings(
 
     const supabase = await createClient();
     // O id vem do banco, nunca do navegador.
-    const read = await supabase.from("site_settings").select("id, updated_at").maybeSingle();
+    const read = await supabase.from("site_settings").select("id, updated_at, logo_path, favicon_path").maybeSingle();
     if (read.error) return fail(classifyDatabaseError("leitura de site_settings", read.error, read.status), ENTITY);
     if (!read.data) return fail("not-found", ENTITY);
 
-    const { data, errors } = parseSiteSettingsValues(readSiteSettingsForm(formData));
+    const { data, errors } = parseSiteSettingsValues(readSiteSettingsForm(formData), {
+      logoPath: read.data.logo_path,
+      faviconPath: read.data.favicon_path,
+    });
     if (Object.keys(errors).length > 0) return fail("validation", ENTITY, { fieldErrors: errors });
 
     if (formText(formData, "updated_at") !== read.data.updated_at) return fail("conflict", ENTITY);
@@ -69,7 +73,15 @@ export async function saveSiteSettings(
       .select(siteSettingsEditColumns)
       .maybeSingle();
     if (saved.error) {
-      return fail(classifyDatabaseError("gravação de site_settings", saved.error, saved.status), ENTITY);
+      const reason = classifyDatabaseError("gravação de site_settings", saved.error, saved.status);
+      if (reason === "media-missing") {
+        // Arquivo excluído da biblioteca entre a seleção e o envio.
+        const fieldErrors: Partial<Record<SiteSettingsField, string>> = {};
+        if (data.logo_path !== read.data.logo_path) fieldErrors.logo_path = MEDIA_MISSING_MESSAGE;
+        if (data.favicon_path !== read.data.favicon_path) fieldErrors.favicon_path = MEDIA_MISSING_MESSAGE;
+        return fail("validation", ENTITY, { fieldErrors });
+      }
+      return fail(reason, ENTITY);
     }
     if (!saved.data) {
       const after = await supabase.from("site_settings").select("updated_at").maybeSingle();

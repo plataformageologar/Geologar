@@ -50,8 +50,6 @@ export default async function AdminHomepagePage() {
         <HomepageForm
           initialValues={toFormValues(homepage.record)}
           initialUpdatedAt={homepage.updatedAt}
-          hasImage={homepage.hasImage}
-          imageSrc={homepage.imageSrc}
         />
       )}
 

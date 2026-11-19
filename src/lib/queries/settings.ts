@@ -11,7 +11,7 @@ async function fetchSiteSettings() {
   const { data, error } = await createPublicClient()
     .from("site_settings")
     .select(
-      "site_name, institutional_name, short_description, contact_email, contact_phone, address, city, state, country",
+      "site_name, institutional_name, short_description, contact_email, contact_phone, address, city, state, country, logo_path, favicon_path",
     )
     .maybeSingle();
 

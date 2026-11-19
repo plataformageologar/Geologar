@@ -5,7 +5,10 @@ criou a base do CMS e o primeiro módulo: **edição da homepage**. A Etapa 7.2
 adicionou **linhas de pesquisa**, **projetos** e o relacionamento entre eles.
 A Etapa 7.3 completou o conteúdo institucional: **publicações**,
 **instituições** (com **categorias**), **informações institucionais**
-(`site_settings`) e **redes sociais**. Todos os itens da navegação do painel
+(`site_settings`) e **redes sociais**. A Etapa 8 adicionou a **biblioteca de
+mídia** (Supabase Storage) e o campo de imagem em homepage, linhas de
+pesquisa, projetos, instituições e configurações — ver
+[`media-library.md`](media-library.md). Todos os itens da navegação do painel
 têm página.
 
 Autenticação, papéis e sessão: ver [`admin-auth.md`](admin-auth.md).
@@ -53,6 +56,14 @@ src/lib/admin/publication-actions.ts | institution-actions.ts | site-settings-ac
 src/lib/queries/admin-publications.ts | admin-institutional.ts
 supabase/migrations/20261109175247_enable_publications_institutions_settings_cms.sql
 supabase/tests/database/publications_institutions_settings_rls.test.sql
+
+src/app/admin/(protected)/midias/                    Biblioteca de mídia
+src/components/admin/media/                          MediaBrowser, MediaUploader, MediaPicker, MediaField
+src/lib/admin/media-actions.ts                       Server Actions da biblioteca
+src/lib/media/                                       Configuração, verificação de arquivo e referências
+src/lib/queries/admin-media.ts                       list_media e media_usage
+supabase/migrations/20261119120000_enable_media_library.sql
+supabase/tests/database/media_library_rls.test.sql
 ```
 
 Padrão dos módulos: página protegida com `requireAdminAccess()`, leitura com a
@@ -294,7 +305,8 @@ permissão do usuário logado e passa pelas mesmas políticas de RLS.
   o formulário desabilitado).
 - Seções: Identificação (nome do site obrigatório, nome institucional, slogan,
   descrição curta), Contato (e-mail validado; telefone gravado como digitado),
-  Localização e Identidade visual (logotipo e favicon somente leitura).
+  Localização e Identidade visual (logotipo do cabeçalho e favicon, pela
+  biblioteca de mídia; vazios, o site usa os arquivos oficiais do código).
 - Atualiza o registro existente (nunca cria nem usa upsert), com verificação
   de versão. Se o registro não existir, a página mostra um aviso e não oferece
   formulário: a recuperação é feita pela equipe técnica, como na homepage.
@@ -327,6 +339,18 @@ permissão do usuário logado e passa pelas mesmas políticas de RLS.
   exige papel `admin` e `is_published = false`, e as FKs das relações usam
   `ON DELETE RESTRICT` do lado da linha/projeto (a verificação de FK ignora
   RLS, então um vínculo invisível também bloqueia a exclusão).
+
+## Imagens (Etapa 8)
+
+Homepage (imagem de fundo do banner), linhas de pesquisa, projetos,
+instituições (logotipo) e configurações (logotipo do cabeçalho e favicon) usam
+o campo `MediaField`: selecionar, substituir ou remover uma imagem da
+biblioteca só altera o formulário; o banco muda ao salvar, com imagem e texto
+alternativo na mesma gravação (projetos: dentro de `save_project`). Remover a
+imagem nunca exclui o arquivo. Uma imagem excluída da biblioteca entre a
+seleção e o salvamento é recusada pelo banco (`GL422`) e o campo mostra o
+erro. Detalhes, permissões, exclusão segura e o passo a passo "Como adicionar
+uma imagem a um projeto" em [`media-library.md`](media-library.md).
 
 ## Permissões e RLS (Etapa 7.2)
 
@@ -399,11 +423,12 @@ preencha os demais campos pelo CMS.
 
 ## Limitações atuais
 
-- Sem upload de imagens (Storage), rich text, histórico de versões ou
-  agendamento. A homepage não tem rascunho.
+- Sem rich text, histórico de versões ou agendamento. A homepage não tem
+  rascunho.
 - Sem redirecionamento de slugs antigos.
 - Ordenação por número (`sort_order`), sem arrastar e soltar.
-- Sem envio de logotipos, favicon ou imagens (Etapa 8).
+- Imagens sem recorte ou compressão no navegador (ver
+  [`media-library.md`](media-library.md#limitações)).
 - Publicações não têm página individual; o slug fica reservado.
 - Sem confirmação ao sair pela navegação interna com alterações pendentes.
 - Testes de ponta a ponta com login real são manuais (ver
@@ -411,4 +436,5 @@ preencha os demais campos pelo CMS.
 
 ## Próximos módulos
 
-- **8** Supabase Storage e biblioteca de mídia (imagens, logotipos e favicon).
+- Etapa 8 concluída: Supabase Storage e biblioteca de mídia
+  ([`media-library.md`](media-library.md)). Próximas etapas a definir.

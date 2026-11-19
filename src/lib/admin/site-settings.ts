@@ -1,10 +1,12 @@
+import { parseImageReference } from "@/lib/media/references";
 import type { Tables } from "@/types/database.types";
 
 import { normalizeText, validateEmail, validatePhone, validateText, type TextRule } from "./validation";
 
 /**
  * Campos de `site_settings` editáveis pelo CMS (somente administradores).
- * logo_path e favicon_path ficam fora até a biblioteca de mídia.
+ * logo_path e favicon_path guardam referências da biblioteca de mídia;
+ * vazios, o site usa o logotipo e o ícone oficiais incluídos no código.
  */
 export const siteSettingsTextRules = {
   site_name: { max: 80, required: true },
@@ -28,6 +30,8 @@ export const siteSettingsFields = [
   "city",
   "state",
   "country",
+  "logo_path",
+  "favicon_path",
 ] as const;
 
 export type SiteSettingsField = (typeof siteSettingsFields)[number];
@@ -50,12 +54,23 @@ export function readSiteSettingsForm(formData: FormData): SiteSettingsFormValues
   ) as SiteSettingsFormValues;
 }
 
-/** Normaliza e valida; dados de contato são gravados como informados. */
-export function parseSiteSettingsValues(values: SiteSettingsFormValues): {
+/**
+ * Normaliza e valida; dados de contato são gravados como informados.
+ * `current`: logotipo e favicon gravados (aceitos sem alteração).
+ */
+export function parseSiteSettingsValues(
+  values: SiteSettingsFormValues,
+  current: { logoPath: string | null; faviconPath: string | null },
+): {
   data: SiteSettingsRecord;
   errors: SiteSettingsFieldErrors;
 } {
   const errors: SiteSettingsFieldErrors = {};
+
+  const logo = parseImageReference(values.logo_path, current.logoPath);
+  if (logo.error) errors.logo_path = logo.error;
+  const favicon = parseImageReference(values.favicon_path, current.faviconPath);
+  if (favicon.error) errors.favicon_path = favicon.error;
   const text = (field: keyof typeof siteSettingsTextRules) => {
     const rule: TextRule = siteSettingsTextRules[field];
     const value = normalizeText(values[field], rule.multiline);
@@ -83,6 +98,8 @@ export function parseSiteSettingsValues(values: SiteSettingsFormValues): {
     city: text("city"),
     state: text("state"),
     country: text("country"),
+    logo_path: logo.value,
+    favicon_path: favicon.value,
   };
   return { data, errors };
 }

@@ -66,8 +66,6 @@ export default async function EditInstitutionPage({
         initialValues={toInstitutionFormValues(institution.record)}
         initialUpdatedAt={institution.updatedAt}
         categories={categories.data.map(({ id: categoryId, name }) => ({ id: categoryId, name }))}
-        hasLogo={institution.hasLogo}
-        logoSrc={institution.logoSrc}
         canManageCategories={access.role === "admin"}
       />
     </div>

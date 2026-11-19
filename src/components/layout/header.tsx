@@ -8,14 +8,16 @@ import { SiteLogo } from "./site-logo";
 type HeaderProps = {
   navigation: NavItem[];
   institutionalName: string | null;
+  /** Logotipo configurado no CMS; `null` usa o arquivo oficial do código. */
+  logoSrc: string | null;
 };
 
-export function Header({ navigation, institutionalName }: HeaderProps) {
+export function Header({ navigation, institutionalName, logoSrc }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-surface">
       <Container className="relative flex h-[var(--header-height)] items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <SiteLogo />
+          <SiteLogo src={logoSrc} />
           {institutionalName && (
             <p className="hidden max-w-[15rem] border-l border-border pl-4 text-caption leading-snug text-muted-foreground xl:block">
               {institutionalName}

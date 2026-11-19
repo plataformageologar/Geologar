@@ -16,6 +16,8 @@ export type SiteSettings = Pick<
   | "city"
   | "state"
   | "country"
+  | "logo_path"
+  | "favicon_path"
 >;
 
 export type HomepageContent = Omit<

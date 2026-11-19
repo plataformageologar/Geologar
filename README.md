@@ -64,8 +64,9 @@ código; quando for, deve ser lida apenas em código de servidor.
 
 ```
 public/patterns/        Padrão vetorial de curvas de nível
+public/brand/           Favicon oficial (fallback do favicon configurável)
 src/
-  app/                  Rotas (App Router), layout raiz, CSS global e favicon
+  app/                  Rotas (App Router), layout raiz (metadados e favicon) e CSS global
     (public)/           Site público (layout com cabeçalho e rodapé)
     admin/              Área administrativa: (auth) login/recuperação, (protected) painel
     auth/callback/      Retorno dos links de e-mail do Supabase Auth
@@ -77,6 +78,7 @@ src/
     layout/             Header, menu mobile, NavLink (item ativo), Footer, logotipo e PublicShell
     admin/              Barra lateral, cabeçalho, cartão de login e controles de formulário do painel
       homepage/         Formulário do módulo Homepage do CMS
+      media/            Biblioteca de mídia: grade, envio, seletor e campo de imagem
     home/               Seções da homepage
     research/ projects/ publications/ institutions/ network/
                         Cards e listas compartilhados entre homepage e páginas internas
@@ -86,6 +88,7 @@ src/
   lib/
     admin/              CMS: campos editáveis, validação e Server Actions de gravação
     auth/               Autorização administrativa, Server Actions de login e redirecionamentos seguros
+    media/              Bucket, limites, verificação de arquivos e referências de imagem
     queries/            Consultas de conteúdo (públicas e contagens do painel)
     supabase/           Clientes Supabase (navegador, servidor e público)
     utils/              Utilitários (datas, DOI, links externos, parâmetros de URL)
@@ -101,6 +104,7 @@ docs/
   database-schema.md    Modelo de dados
   deployment.md         Deploy no Cloudflare Workers e checklist de produção
   design-system.md      Tokens, tipografia, componentes e breakpoints
+  media-library.md      Biblioteca de mídia (Supabase Storage), imagens e exclusão segura
   public-pages.md       Rotas, filtros, consultas e regras das páginas públicas
 ```
 
@@ -185,13 +189,23 @@ metadados; redes sociais ativas no rodapé. Categorias, configurações e redes
 sociais são editadas só por administradores. Políticas na migration
 `20261109175247_enable_publications_institutions_settings_cms.sql`.
 
+**`/admin/midias`** (Biblioteca de mídia): envio de imagens JPEG, PNG e WebP
+(até 5 MB) direto para o bucket público `geologar-media` do Supabase Storage,
+busca, filtro de arquivos sem uso, cópia da URL e exclusão segura (somente
+admin, somente arquivos sem uso). Os formulários de homepage, linhas de
+pesquisa, projetos, instituições e configurações (logotipo e favicon) escolhem
+imagens da biblioteca. Migration `20261119120000_enable_media_library.sql`;
+detalhes e o guia "Como adicionar uma imagem a um projeto" em
+[`docs/media-library.md`](docs/media-library.md).
+
 Detalhes em [`docs/cms.md`](docs/cms.md).
 
 ## Supabase
 
 O projeto usa o Supabase para banco de dados (PostgreSQL com Row Level
-Security) e autenticação da área administrativa (Supabase Auth); o
-armazenamento de arquivos virá nas próximas etapas. O modelo
+Security), autenticação da área administrativa (Supabase Auth) e
+armazenamento das imagens do portal (Supabase Storage, bucket
+`geologar-media`). O modelo
 de dados está documentado em [`docs/database-schema.md`](docs/database-schema.md).
 
 Clientes disponíveis (tipados com `Database`):

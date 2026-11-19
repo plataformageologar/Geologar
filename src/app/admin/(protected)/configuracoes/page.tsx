@@ -47,10 +47,6 @@ export default async function SiteSettingsPage() {
         <SiteSettingsForm
           initialValues={toSiteSettingsFormValues(result.data.record)}
           initialUpdatedAt={result.data.updatedAt}
-          logoSrc={result.data.logoSrc}
-          faviconSrc={result.data.faviconSrc}
-          hasLogo={result.data.hasLogo}
-          hasFavicon={result.data.hasFavicon}
           readOnly={readOnly}
         />
       )}

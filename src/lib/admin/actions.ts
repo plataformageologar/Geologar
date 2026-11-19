@@ -3,6 +3,7 @@
 import type { PostgrestError } from "@supabase/supabase-js";
 
 import { getAdminAccess, type AdminRole } from "@/lib/auth/access";
+import { MEDIA_MISSING_MESSAGE } from "@/lib/media/references";
 import { homepageEditColumns } from "@/lib/queries/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -62,6 +63,8 @@ function databaseFailure(scope: string, error: PostgrestError, status: number): 
   if (status === 0 || !error.code) return fail("connection");
   if (status === 401 || error.code.startsWith("PGRST3")) return fail("session");
   if (error.code === "42501") return fail("forbidden");
+  // Imagem excluída da biblioteca entre a seleção e o envio (trigger).
+  if (error.code === "GL422") return fail("validation", { hero_image_path: MEDIA_MISSING_MESSAGE });
   return fail("unexpected");
 }
 
@@ -97,7 +100,7 @@ export async function saveHomepage(
       homepageFields.map((field) => [field, readText(formData, field)]),
     ) as HomepageFormValues;
     const { data: patch, errors } = parseHomepageValues(values, {
-      hasImage: current.data.hero_image_path !== null,
+      currentImagePath: current.data.hero_image_path,
     });
     if (Object.keys(errors).length > 0) return fail("validation", errors);
 

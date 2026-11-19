@@ -121,6 +121,18 @@ Antes de qualquer mudança, validar com `npm run preview`:
 - **Cache Components**: só reativar quando Next.js/OpenNext suportarem
   oficialmente esse modo no runtime do Workers.
 
+## Imagens remotas (Supabase Storage)
+
+As imagens da biblioteca de mídia vêm do bucket público `geologar-media`.
+`next.config.ts` libera em `images.remotePatterns` **somente** o host do
+projeto (lido de `NEXT_PUBLIC_SUPABASE_URL` no build) e o caminho
+`/storage/v1/object/public/geologar-media/uploads/**` — sem curingas de host.
+No Worker, `/_next/image` busca a imagem e a otimiza com o binding `IMAGES`
+já declarado em `wrangler.jsonc`; nenhum binding, R2, KV ou Cloudflare Images
+novo foi adicionado. O envio de arquivos vai direto do navegador ao Storage
+(URL assinada), sem passar pelo Worker. Como o host entra no build, trocar o
+projeto Supabase exige um novo build. Ver [`media-library.md`](media-library.md).
+
 ## Proxy e área administrativa
 
 `src/proxy.ts` (antigo *middleware*) renova a sessão do Supabase Auth nas rotas
@@ -142,7 +154,10 @@ Redirect URLs, cadastro público) em [`admin-auth.md`](admin-auth.md).
 - [ ] Páginas internas (`/rede`, `/pesquisa`, `/projetos`, `/publicacoes`,
       `/instituicoes`, `/contato`) em `200`; slug inexistente em `404`.
 - [ ] Assets `/_next/static/*` com `Cache-Control: public,max-age=31536000,immutable`.
-- [ ] Logotipo (`/_next/image`) carregando.
+- [ ] Logotipo (`/_next/image`) carregando; favicon em `/brand/favicon.png`
+      (ou o configurado no CMS).
+- [ ] Imagens da biblioteca (`/storage/v1/object/public/geologar-media/…`)
+      carregando via `/_next/image` (binding `IMAGES`).
 - [ ] Sem erros no console nem falhas de hidratação; menu mobile funcionando.
 - [ ] Nenhuma chave secreta no HTML/JS publicado.
 - [ ] `GET /admin` sem sessão em `307` para `/admin/login`, com

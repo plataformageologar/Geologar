@@ -1,3 +1,4 @@
+import { parseImageReference } from "@/lib/media/references";
 import type { Tables } from "@/types/database.types";
 
 import {
@@ -14,8 +15,7 @@ import {
 
 /**
  * Campos de `institutions` editáveis pelo CMS (GRANTs da migration
- * enable_publications_institutions_settings_cms). logo_path fica fora: o
- * envio de logotipos chega com a biblioteca de mídia.
+ * enable_publications_institutions_settings_cms e enable_media_library).
  */
 export const institutionTextRules = {
   name: { max: 300, required: true },
@@ -33,6 +33,7 @@ export type InstitutionRecord = Pick<
   | "name"
   | "acronym"
   | "description"
+  | "logo_path"
   | "logo_alt"
   | "website_url"
   | "city"
@@ -48,6 +49,8 @@ export type InstitutionFormValues = {
   name: string;
   acronym: string;
   description: string;
+  /** Referência do logotipo (objeto da biblioteca ou caminho local legado). */
+  logo_path: string;
   logo_alt: string;
   website_url: string;
   city: string;
@@ -66,6 +69,7 @@ export const emptyInstitutionValues: InstitutionFormValues = {
   name: "",
   acronym: "",
   description: "",
+  logo_path: "",
   logo_alt: "",
   website_url: "",
   city: "",
@@ -82,6 +86,7 @@ export function toInstitutionFormValues(record: InstitutionRecord): InstitutionF
     name: record.name,
     acronym: record.acronym ?? "",
     description: record.description ?? "",
+    logo_path: record.logo_path ?? "",
     logo_alt: record.logo_alt ?? "",
     website_url: record.website_url ?? "",
     city: record.city ?? "",
@@ -103,6 +108,7 @@ export function readInstitutionForm(formData: FormData): InstitutionFormValues {
     name: text("name"),
     acronym: text("acronym"),
     description: text("description"),
+    logo_path: text("logo_path"),
     logo_alt: text("logo_alt"),
     website_url: text("website_url"),
     city: text("city"),
@@ -115,15 +121,20 @@ export function readInstitutionForm(formData: FormData): InstitutionFormValues {
 }
 
 /**
- * `hasLogo`: o texto alternativo só existe (e é obrigatório, pela constraint
- * institutions_logo_alt) quando há logotipo. `knownCategoryIds` (servidor)
+ * O texto alternativo só existe (e é obrigatório, pela constraint
+ * institutions_logo_alt) quando há logotipo. `currentLogoPath`: logotipo
+ * gravado no registro (aceito sem alteração). `knownCategoryIds` (servidor)
  * recusa categorias inexistentes; a FK também recusa.
  */
 export function parseInstitutionValues(
   values: InstitutionFormValues,
-  { hasLogo, knownCategoryIds }: { hasLogo: boolean; knownCategoryIds?: Set<string> },
+  { currentLogoPath, knownCategoryIds }: { currentLogoPath: string | null; knownCategoryIds?: Set<string> },
 ): { data: InstitutionRecord; errors: InstitutionFieldErrors } {
   const errors: InstitutionFieldErrors = {};
+
+  const logo = parseImageReference(values.logo_path, currentLogoPath);
+  if (logo.error) errors.logo_path = logo.error;
+  const hasLogo = logo.value !== null;
 
   const text = (field: keyof typeof institutionTextRules, required = false) => {
     const rule: TextRule = institutionTextRules[field];
@@ -150,6 +161,7 @@ export function parseInstitutionValues(
     name: text("name") ?? "",
     acronym: text("acronym"),
     description: text("description"),
+    logo_path: logo.value,
     logo_alt: hasLogo ? text("logo_alt", true) : null,
     website_url: websiteUrl,
     city: text("city"),

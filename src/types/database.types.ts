@@ -562,6 +562,37 @@ export type Database = {
     }
     Functions: {
       has_cms_role: { Args: { allowed_roles: string[] }; Returns: boolean }
+      is_media_object_name: { Args: { value: string }; Returns: boolean }
+      is_valid_image_reference: { Args: { value: string }; Returns: boolean }
+      list_media: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+          p_unused_only?: boolean
+        }
+        Returns: {
+          created_at: string
+          height: number
+          mime_type: string
+          name: string
+          original_name: string
+          size_bytes: number
+          total_count: number
+          usage_count: number
+          width: number
+        }[]
+      }
+      lock_media_object: { Args: { p_name: string }; Returns: undefined }
+      media_object_deletable: { Args: { p_name: string }; Returns: boolean }
+      media_usage: {
+        Args: { p_name: string }
+        Returns: {
+          entity: string
+          label: string
+          record_id: string
+        }[]
+      }
       save_project: {
         Args: {
           p_coordination: string
@@ -572,6 +603,7 @@ export type Database = {
           p_funding: string
           p_id: string
           p_image_alt: string
+          p_image_path: string
           p_is_featured: boolean
           p_is_published: boolean
           p_project_status: string

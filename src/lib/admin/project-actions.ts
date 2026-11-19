@@ -3,6 +3,7 @@
 import { refresh } from "next/cache";
 
 import { getAdminAccess, type AdminRole } from "@/lib/auth/access";
+import { MEDIA_MISSING_MESSAGE } from "@/lib/media/references";
 import { projectEditColumns } from "@/lib/queries/admin-content";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database.types";
@@ -59,6 +60,8 @@ const comparedFields = [
   "slug",
   "short_description",
   "description",
+  "image_path",
+  "image_alt",
   "project_status",
   "start_date",
   "end_date",
@@ -81,6 +84,9 @@ function saveFailure(
     return fail(reason, ENTITY, {
       fieldErrors: { slug: "Este slug já está em uso por outro projeto. Escolha outro." },
     });
+  }
+  if (reason === "media-missing") {
+    return fail("validation", ENTITY, { fieldErrors: { image_path: MEDIA_MISSING_MESSAGE } });
   }
   if (reason === "has-dependencies") {
     // FK de project_research_lines: uma linha selecionada deixou de existir.
@@ -124,9 +130,8 @@ export async function saveProject(
     const lines = await supabase.from("research_lines").select("id").limit(1000);
     if (lines.error) return fail(classifyDatabaseError("leitura de research_lines", lines.error, lines.status), ENTITY);
 
-    const hasImage = current?.image_path != null;
     const { data, researchLineIds, errors } = parseProjectValues(readProjectForm(formData), {
-      hasImage,
+      currentImagePath: current?.image_path ?? null,
       knownLineIds: new Set(lines.data.map((line) => line.id)),
     });
     if (Object.keys(errors).length > 0) return fail("validation", ENTITY, { fieldErrors: errors });
@@ -142,6 +147,7 @@ export async function saveProject(
       p_slug: data.slug,
       p_short_description: data.short_description,
       p_description: data.description,
+      p_image_path: data.image_path,
       p_image_alt: data.image_alt,
       p_project_status: data.project_status,
       p_start_date: data.start_date,
@@ -178,7 +184,6 @@ export async function saveProject(
     const persistedLines = row.project_research_lines.map((link) => link.research_line_id).sort();
     const confirmed =
       comparedFields.every((field) => row[field] === data[field]) &&
-      (!hasImage || row.image_alt === data.image_alt) &&
       persistedLines.join() === researchLineIds.join();
     if (!confirmed) {
       console.error("[cms] Valores de projects devolvidos pelo banco diferem dos enviados.");
@@ -231,7 +236,7 @@ export async function setProjectPublished(
         ),
         is_published: true,
       };
-      const { errors } = parseProjectValues(values, { hasImage: read.data.image_path !== null });
+      const { errors } = parseProjectValues(values, { currentImagePath: read.data.image_path });
       if (Object.keys(errors).length > 0) {
         return fail("validation", ENTITY, {
           message: `Para publicar “${read.data.title}”, abra a edição e complete os campos obrigatórios (${errors.short_description ? "descrição curta" : "campos destacados"}).`,

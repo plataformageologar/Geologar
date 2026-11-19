@@ -345,9 +345,9 @@ with changed as (
 select is((select count(*)::int from changed), 1, 'editor muda a categoria e publica a instituição');
 
 select throws_ok(
-  $$ update public.institutions set logo_path = '/logo.png', logo_alt = 'Logo'
+  $$ update public.institutions set logo_path = '/imagens/../logo.png', logo_alt = 'Logo'
      where name = 'Nova instituição (teste)' $$,
-  '42501', null, 'editor não altera logo_path'
+  '23514', null, 'logo_path com ".." é recusado (Etapa 8)'
 );
 
 select throws_ok(
@@ -406,8 +406,8 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$ update public.site_settings set logo_path = '/logo.png' $$,
-  '42501', null, 'admin não altera logo_path de site_settings'
+  $$ update public.site_settings set logo_path = 'https://example.test/logo.png' $$,
+  '23514', null, 'URL externa não é aceita como logotipo institucional (Etapa 8)'
 );
 
 select throws_ok(

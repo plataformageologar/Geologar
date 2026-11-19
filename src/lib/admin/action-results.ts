@@ -17,6 +17,7 @@ export type RecordFailure =
   | "duplicate-slug"
   | "published"
   | "has-dependencies"
+  | "media-missing"
   | "connection"
   | "unexpected";
 
@@ -40,7 +41,8 @@ export type Entity =
   | "institution"
   | "institution-category"
   | "social-link"
-  | "site-settings";
+  | "site-settings"
+  | "media";
 
 /** Gênero gramatical, para mensagens como "foi excluída"/"foi excluído". */
 export type Gender = "f" | "m";
@@ -81,6 +83,12 @@ export const entityNouns: Record<Entity, { the: string; a: string; gender: Gende
     a: "um link de rede social",
     gender: "m",
     notFound: "Não encontramos o link: ele pode ter sido excluído. Recarregue a página.",
+  },
+  media: {
+    the: "a imagem",
+    a: "uma imagem",
+    gender: "f",
+    notFound: "Não encontramos a imagem: ela pode ter sido excluída. Recarregue a biblioteca.",
   },
   "site-settings": {
     the: "as informações institucionais",
@@ -125,6 +133,8 @@ export function failureMessage(reason: RecordFailure, entity: Entity): string {
       return "Conteúdos publicados não podem ser excluídos. Despublique antes de excluir.";
     case "has-dependencies":
       return "Este registro tem vínculos e não pode ser excluído.";
+    case "media-missing":
+      return "A imagem selecionada não está mais na biblioteca (pode ter sido excluída). Escolha outra imagem.";
     case "connection":
       return "Não foi possível conectar ao banco de dados. Verifique sua conexão e tente novamente; nada foi perdido.";
     case "unexpected":
@@ -169,6 +179,8 @@ export function classifyDatabaseError(
       return "conflict";
     case "GL404":
       return "not-found";
+    case "GL422":
+      return "media-missing";
     case "23514":
     case "22003":
     case "22023":

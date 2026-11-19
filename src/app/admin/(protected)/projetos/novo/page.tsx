@@ -34,8 +34,6 @@ export default async function NewProjectPage() {
           recordId={null}
           initialValues={emptyProjectValues}
           initialUpdatedAt={null}
-          hasImage={false}
-          imageSrc={null}
           researchLines={lines.data}
         />
       )}

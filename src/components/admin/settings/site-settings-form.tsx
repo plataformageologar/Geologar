@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import { ImageIcon } from "lucide-react";
 import { startTransition, useActionState, useEffect, useRef, useState, type ReactNode } from "react";
 
 import {
@@ -16,15 +14,12 @@ import { saveSiteSettings, type SiteSettingsSaveState } from "@/lib/admin/site-s
 import { countCharacters, EMAIL_MAX_LENGTH } from "@/lib/admin/validation";
 
 import { describedBy, Field, FormSection, TextArea, TextInput } from "../form-controls";
+import { MediaField } from "../media/media-field";
 import { buildFormData, FailureAction, SaveBar, useUnsavedChangesWarning } from "../save-bar";
 
 type SiteSettingsFormProps = {
   initialValues: SiteSettingsFormValues;
   initialUpdatedAt: string;
-  logoSrc: string | null;
-  faviconSrc: string | null;
-  hasLogo: boolean;
-  hasFavicon: boolean;
   /** Editores consultam; somente administradores salvam. */
   readOnly: boolean;
 };
@@ -57,10 +52,6 @@ const phoneHint = "Opcional. Gravado exatamente como digitado (ex.: +55 41 3360-
 export function SiteSettingsForm({
   initialValues,
   initialUpdatedAt,
-  logoSrc,
-  faviconSrc,
-  hasLogo,
-  hasFavicon,
   readOnly,
 }: SiteSettingsFormProps) {
   const [values, setValues] = useState(initialValues);
@@ -107,7 +98,10 @@ export function SiteSettingsForm({
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (readOnly || pending || submitting.current) return;
-    const { errors: found } = parseSiteSettingsValues(values);
+    const { errors: found } = parseSiteSettingsValues(values, {
+      logoPath: saved.values.logo_path || null,
+      faviconPath: saved.values.favicon_path || null,
+    });
     if (Object.keys(found).length > 0) {
       setErrors(found);
       setClientMessage("Revise os campos destacados antes de salvar.");
@@ -241,34 +235,36 @@ export function SiteSettingsForm({
         <FormSection
           id="identidade-visual"
           title="Identidade visual"
-          description="Logotipo e ícone oficiais do portal, exibidos sem alterações."
+          description="Logotipo do cabeçalho e ícone do navegador (favicon). Vazios, o portal usa os arquivos oficiais incluídos no código do site."
         >
-          <div className="grid gap-6 md:grid-cols-2">
-            {(
-              [
-                { label: "Logotipo", src: logoSrc, has: hasLogo, empty: "Nenhum logotipo cadastrado no banco." },
-                { label: "Favicon", src: faviconSrc, has: hasFavicon, empty: "Nenhum favicon cadastrado no banco." },
-              ] as const
-            ).map((item) => (
-              <div key={item.label} className="flex flex-col gap-3">
-                <p className="text-label">{item.label}</p>
-                {item.src ? (
-                  <div className="relative h-28 w-full overflow-hidden rounded-xl border border-border bg-white">
-                    <Image src={item.src} alt="" fill sizes="20rem" className="object-contain p-4" />
-                  </div>
-                ) : (
-                  <div className="flex items-start gap-3 rounded-xl border border-dashed border-border bg-surface-muted/60 p-4 text-body-sm text-muted-foreground">
-                    <ImageIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
-                    <p>{item.has ? "Arquivo cadastrado, mas a pré-visualização ainda não está disponível." : item.empty}</p>
-                  </div>
-                )}
-              </div>
-            ))}
+          <div className="grid gap-8 lg:grid-cols-2">
+            <MediaField
+              id="logo_path"
+              label="Logotipo do cabeçalho"
+              value={values.logo_path}
+              onChange={(value) => update("logo_path", value)}
+              error={errors.logo_path}
+              hint="Somente o arquivo oficial, sem alterações: PNG ou WebP horizontal com fundo transparente (altura mínima de 112 px)."
+              emptyText="Usando o logotipo oficial incluído no código do site."
+              fit="contain"
+              aspect="aspect-[3/1] max-w-md"
+              canUpload={!readOnly}
+              disabled={readOnly || pending}
+            />
+            <MediaField
+              id="favicon_path"
+              label="Favicon"
+              value={values.favicon_path}
+              onChange={(value) => update("favicon_path", value)}
+              error={errors.favicon_path}
+              hint="PNG quadrado, de preferência 512 × 512 px. Os navegadores podem levar algum tempo para trocar o ícone salvo em cache."
+              emptyText="Usando o ícone oficial incluído no código do site."
+              fit="contain"
+              aspect="aspect-square max-w-40"
+              canUpload={!readOnly}
+              disabled={readOnly || pending}
+            />
           </div>
-          <p className="text-caption text-muted-foreground">
-            Somente leitura. Hoje o portal exibe o logotipo e o ícone oficiais incluídos no código do site; a
-            troca pelo CMS chega com a biblioteca de mídia, em uma próxima etapa.
-          </p>
         </FormSection>
       </fieldset>
 

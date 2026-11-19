@@ -60,6 +60,9 @@ export const fallbackSiteSettings: SiteSettings = {
   city: null,
   state: null,
   country: null,
+  // Vazios: o site usa o logotipo e o ícone oficiais incluídos no código.
+  logo_path: null,
+  favicon_path: null,
 };
 
 /**

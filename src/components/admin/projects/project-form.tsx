@@ -1,8 +1,6 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ImageIcon } from "lucide-react";
 import { startTransition, useActionState, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { saveProject, type ProjectSaveState } from "@/lib/admin/project-actions";
@@ -18,6 +16,7 @@ import { countCharacters, LINK_MAX_LENGTH, slugify } from "@/lib/admin/validatio
 import type { ResearchLineOption } from "@/lib/queries/admin-content";
 
 import { Checkbox, describedBy, Field, FormSection, Select, TextArea, TextInput } from "../form-controls";
+import { MediaField } from "../media/media-field";
 import { buildFormData, FailureAction, SaveBar, useUnsavedChangesWarning } from "../save-bar";
 import { SlugField } from "../slug-field";
 import { ResearchLinePicker } from "./research-line-picker";
@@ -27,8 +26,6 @@ type ProjectFormProps = {
   recordId: string | null;
   initialValues: ProjectFormValues;
   initialUpdatedAt: string | null;
-  hasImage: boolean;
-  imageSrc: string | null;
   researchLines: ResearchLineOption[];
 };
 
@@ -48,6 +45,7 @@ const fieldOrder: ProjectField[] = [
   "is_featured",
   "sort_order",
   "external_url",
+  "image_path",
   "image_alt",
 ];
 
@@ -86,8 +84,6 @@ export function ProjectForm({
   recordId,
   initialValues,
   initialUpdatedAt,
-  hasImage,
-  imageSrc,
   researchLines,
 }: ProjectFormProps) {
   const router = useRouter();
@@ -152,7 +148,9 @@ export function ProjectForm({
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending || submitting.current) return;
-    const { errors: found } = parseProjectValues(values, { hasImage });
+    const { errors: found } = parseProjectValues(values, {
+      currentImagePath: isNew ? null : saved.values.image_path || null,
+    });
     if (rejectedSlugs.includes(values.slug.trim().toLowerCase())) {
       found.slug = "Este slug já está em uso por outro projeto. Escolha outro.";
     }
@@ -397,27 +395,24 @@ export function ProjectForm({
         <FormSection
           id="imagem"
           title="Imagem"
-          description="O envio de imagens estará disponível na biblioteca de mídia (próxima etapa)."
+          description="Exibida nos cards e no topo da página do projeto. Sem imagem, o site usa a ilustração padrão do portal."
         >
-          {imageSrc ? (
-            <div className="relative aspect-[16/7] overflow-hidden rounded-xl border border-border bg-surface-muted">
-              <Image src={imageSrc} alt="" fill sizes="(min-width: 768px) 42rem, 100vw" className="object-cover" />
-            </div>
-          ) : (
-            <div className="flex items-start gap-3 rounded-xl border border-dashed border-border bg-surface-muted/60 p-4 text-body-sm text-muted-foreground">
-              <ImageIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
-              <p>
-                {hasImage
-                  ? "Há uma imagem cadastrada, mas a pré-visualização ainda não está disponível."
-                  : "Nenhuma imagem cadastrada: os cards usam a ilustração padrão do portal."}
-              </p>
-            </div>
-          )}
-          {hasImage &&
-            textField("image_alt", "Texto alternativo da imagem", {
+          <MediaField
+            id="image_path"
+            label="Imagem do projeto"
+            value={values.image_path}
+            onChange={(value) => update("image_path", value)}
+            error={errors.image_path}
+            hint="Recomendado: JPEG ou WebP horizontal (16:9), com pelo menos 1600 × 900 px e até 5 MB."
+            emptyText="Nenhuma imagem selecionada: os cards usam a ilustração padrão do portal."
+            canUpload
+            disabled={pending}
+          >
+            {textField("image_alt", "Texto alternativo da imagem", {
               required: true,
               hint: "Descreva a imagem para quem usa leitores de tela.",
             })}
+          </MediaField>
         </FormSection>
       </fieldset>
 

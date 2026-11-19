@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { footerNavigation, mainNavigation } from "@/data/site";
 import { getActiveSocialLinks, getSiteSettings } from "@/lib/queries/settings";
+import { resolveImageSrc } from "@/lib/queries/shared";
 
 import { Footer } from "./footer";
 import { Header } from "./header";
@@ -22,7 +23,11 @@ export async function PublicShell({ children }: { children: ReactNode }) {
       >
         Pular para o conteúdo
       </a>
-      <Header navigation={mainNavigation} institutionalName={settings.institutional_name} />
+      <Header
+        navigation={mainNavigation}
+        institutionalName={settings.institutional_name}
+        logoSrc={resolveImageSrc(settings.logo_path)}
+      />
       <main id="conteudo" tabIndex={-1} className="flex-1 focus:outline-none">
         {children}
       </main>

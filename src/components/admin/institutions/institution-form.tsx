@@ -1,9 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ImageIcon } from "lucide-react";
 import { startTransition, useActionState, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { saveInstitution, type InstitutionSaveState } from "@/lib/admin/institution-actions";
@@ -17,6 +15,7 @@ import {
 import { countCharacters, LINK_MAX_LENGTH } from "@/lib/admin/validation";
 
 import { Checkbox, describedBy, Field, FormMessage, FormSection, Select, TextArea, TextInput } from "../form-controls";
+import { MediaField } from "../media/media-field";
 import { buildFormData, FailureAction, SaveBar, useUnsavedChangesWarning } from "../save-bar";
 
 export type CategoryOption = { id: string; name: string };
@@ -27,8 +26,6 @@ type InstitutionFormProps = {
   initialValues: InstitutionFormValues;
   initialUpdatedAt: string | null;
   categories: CategoryOption[];
-  hasLogo: boolean;
-  logoSrc: string | null;
   /** Somente administradores gerenciam categorias. */
   canManageCategories: boolean;
 };
@@ -45,6 +42,7 @@ const fieldOrder: InstitutionField[] = [
   "is_published",
   "is_featured",
   "sort_order",
+  "logo_path",
   "logo_alt",
 ];
 
@@ -77,8 +75,6 @@ export function InstitutionForm({
   initialValues,
   initialUpdatedAt,
   categories,
-  hasLogo,
-  logoSrc,
   canManageCategories,
 }: InstitutionFormProps) {
   const router = useRouter();
@@ -131,7 +127,9 @@ export function InstitutionForm({
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending || submitting.current) return;
-    const { errors: found } = parseInstitutionValues(values, { hasLogo });
+    const { errors: found } = parseInstitutionValues(values, {
+      currentLogoPath: isNew ? null : saved.values.logo_path || null,
+    });
     if (Object.keys(found).length > 0) {
       setErrors(found);
       setClientMessage("Revise os campos destacados antes de salvar.");
@@ -156,7 +154,7 @@ export function InstitutionForm({
     options: { hint?: ReactNode; rows?: number; autoComplete?: string; className?: string } = {},
   ) {
     const rule: { max: number; required?: boolean; multiline?: boolean } = institutionTextRules[field];
-    const required = rule.required || (field === "logo_alt" && hasLogo);
+    const required = rule.required || (field === "logo_alt" && values.logo_path !== "");
     const control = {
       id: field,
       name: field,
@@ -330,30 +328,23 @@ export function InstitutionForm({
           title="Identidade visual"
           description="Logotipo oficial da instituição, exibido sem alterações."
         >
-          <div className="flex flex-col gap-3">
-            <p className="text-label">Logotipo</p>
-            {logoSrc ? (
-              <div className="relative h-32 w-full max-w-sm overflow-hidden rounded-xl border border-border bg-white p-4">
-                <Image src={logoSrc} alt="" fill sizes="24rem" className="object-contain p-4" />
-              </div>
-            ) : (
-              <div className="flex items-start gap-3 rounded-xl border border-dashed border-border bg-surface-muted/60 p-4 text-body-sm text-muted-foreground">
-                <ImageIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
-                <p>
-                  {hasLogo
-                    ? "Há um logotipo cadastrado, mas a pré-visualização ainda não está disponível."
-                    : "Nenhum logotipo cadastrado: o site mostra o nome (ou a sigla) da instituição."}
-                </p>
-              </div>
-            )}
-            <p className="text-caption text-muted-foreground">
-              O envio de logotipos chega com a biblioteca de mídia, em uma próxima etapa.
-            </p>
-            {hasLogo &&
-              textField("logo_alt", "Texto alternativo do logotipo", {
-                hint: "Obrigatório quando há logotipo. Normalmente “Logotipo da/do” seguido do nome.",
-              })}
-          </div>
+          <MediaField
+            id="logo_path"
+            label="Logotipo"
+            value={values.logo_path}
+            onChange={(value) => update("logo_path", value)}
+            error={errors.logo_path}
+            hint="Use o arquivo oficial, de preferência PNG ou WebP com fundo transparente. O logotipo é exibido inteiro, sem corte nem alteração de cores."
+            emptyText="Nenhum logotipo selecionado: o site mostra o nome (ou a sigla) da instituição."
+            fit="contain"
+            aspect="aspect-[5/2] max-w-sm"
+            canUpload
+            disabled={pending}
+          >
+            {textField("logo_alt", "Texto alternativo do logotipo", {
+              hint: "Obrigatório quando há logotipo. Normalmente “Logotipo da/do” seguido do nome.",
+            })}
+          </MediaField>
         </FormSection>
       </fieldset>
 

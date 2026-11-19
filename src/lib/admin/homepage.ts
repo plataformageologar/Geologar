@@ -1,11 +1,12 @@
+import { parseImageReference } from "@/lib/media/references";
 import type { Tables } from "@/types/database.types";
 
 import { normalizeText, validateCta, validateText, type TextRule } from "./validation";
 
 /**
  * Campos de `homepage_content` editáveis pelo CMS. Devem coincidir com o
- * GRANT UPDATE da migration enable_homepage_cms_updates; `hero_image_path`
- * fica de fora até a etapa do Storage.
+ * GRANT UPDATE das migrations enable_homepage_cms_updates e
+ * enable_media_library (hero_image_path).
  */
 export const homepageTextRules = {
   hero_title: { max: 160, required: true },
@@ -26,13 +27,18 @@ export const homepageLinkFields = [
   "cooperation_cta_href",
 ] as const;
 
+/** Referência da imagem de fundo (objeto da biblioteca ou caminho local legado). */
+export const homepageImageField = "hero_image_path";
+
 export type HomepageField =
   | keyof typeof homepageTextRules
-  | (typeof homepageLinkFields)[number];
+  | (typeof homepageLinkFields)[number]
+  | typeof homepageImageField;
 
 export const homepageFields = [
   ...(Object.keys(homepageTextRules) as (keyof typeof homepageTextRules)[]),
   ...homepageLinkFields,
+  homepageImageField,
 ] as HomepageField[];
 
 /** Registro como gravado no banco (campos opcionais podem ser `null`). */
@@ -56,16 +62,21 @@ const ctas = [
 ] as const;
 
 /**
- * Normaliza e valida os valores enviados. `hasImage` indica se o registro
- * tem imagem: só então o texto alternativo é editável (e obrigatório, pela
- * constraint homepage_content_hero_image_alt).
+ * Normaliza e valida os valores enviados. O texto alternativo só existe (e
+ * é obrigatório, pela constraint homepage_content_hero_image_alt) com imagem.
+ * `currentImagePath`: imagem gravada no registro (aceita sem alteração).
  */
 export function parseHomepageValues(
   values: HomepageFormValues,
-  { hasImage }: { hasImage: boolean },
+  { currentImagePath }: { currentImagePath: string | null },
 ): { data: HomepageRecord; errors: HomepageFieldErrors } {
   const errors: HomepageFieldErrors = {};
   const data = {} as HomepageRecord;
+
+  const image = parseImageReference(values.hero_image_path ?? "", currentImagePath);
+  if (image.error) errors.hero_image_path = image.error;
+  const hasImage = image.value !== null;
+  data.hero_image_path = image.value;
 
   for (const [field, rule] of Object.entries(homepageTextRules) as [
     keyof typeof homepageTextRules,
@@ -89,6 +100,7 @@ export function parseHomepageValues(
     if (ctaErrors.href) errors[hrefField] = ctaErrors.href;
   }
 
-  if (!hasImage) delete (data as Partial<HomepageRecord>).hero_image_alt;
+  // Imagem e texto alternativo são gravados juntos (sem imagem, alt = null).
+  if (!hasImage) data.hero_image_alt = null;
   return { data, errors };
 }

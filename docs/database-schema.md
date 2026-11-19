@@ -285,9 +285,16 @@ a partir do título (linhas de pesquisa e projetos limitados a 160 caracteres).
 
 ### Imagens
 
-Caminhos de imagem (`image_path`, `hero_image_path`, `logo_path`) exigem o
-texto alternativo correspondente (`image_alt`, `hero_image_alt`, `logo_alt`).
-O upload (Supabase Storage) ainda não foi implementado.
+Colunas de imagem (`homepage_content.hero_image_path`,
+`research_lines.image_path`, `projects.image_path`, `institutions.logo_path`,
+`site_settings.logo_path` e `favicon_path`) guardam uma referência relativa ao
+bucket `geologar-media` (`uploads/<uuid>.<jpg|png|webp>`), um caminho local
+legado começando com `/` ou `null` — nunca URLs (constraint
+`*_path_format` → `is_valid_image_reference`). O trigger `*_media_references`
+confere que o objeto existe no Storage (erro `GL422`). Com imagem, o texto
+alternativo correspondente (`image_alt`, `hero_image_alt`, `logo_alt`) é
+obrigatório. Bucket, políticas e exclusão segura em
+[`media-library.md`](media-library.md).
 
 ### URLs
 
@@ -328,22 +335,19 @@ e se limitam a:
 
 | Tabela                   | Operação | Quem          | Colunas / condição                                   |
 | ------------------------ | -------- | ------------- | ---------------------------------------------------- |
-| `homepage_content`       | UPDATE   | admin, editor | 13 colunas editoriais (Etapa 7.1)                    |
-| `research_lines`         | INSERT   | admin, editor | `title`, `slug`, descrições, `sort_order`, `is_featured`, `is_published` |
-| `research_lines`         | UPDATE   | admin, editor | as mesmas + `image_alt`                              |
+| `homepage_content`       | UPDATE   | admin, editor | 13 colunas editoriais (Etapa 7.1) + `hero_image_path` (Etapa 8) |
+| `research_lines`         | INSERT, UPDATE | admin, editor | `title`, `slug`, descrições, `image_path`, `image_alt`, `sort_order`, `is_featured`, `is_published` |
 | `research_lines`         | DELETE   | admin         | somente `is_published = false`                       |
-| `projects`               | INSERT   | admin, editor | colunas editoriais (sem `id`, datas de controle, `published_at`, `image_path`) |
-| `projects`               | UPDATE   | admin, editor | as mesmas + `image_alt`                              |
+| `projects`               | INSERT, UPDATE | admin, editor | colunas editoriais, incluindo `image_path` e `image_alt` (sem `id`, datas de controle, `published_at`) |
 | `projects`               | DELETE   | admin         | somente `is_published = false`                       |
 | `project_research_lines` | INSERT, DELETE | admin, editor | `project_id`, `research_line_id`               |
 | `publications`           | INSERT, UPDATE | admin, editor | colunas editoriais (sem `id`, datas de controle, `published_at`) |
 | `publications`           | DELETE   | admin         | somente `is_published = false`                       |
 | `publication_projects`, `publication_research_lines` | INSERT, DELETE | admin, editor | os dois IDs     |
-| `institutions`           | INSERT   | admin, editor | colunas editoriais (sem `logo_path`, `logo_alt`)     |
-| `institutions`           | UPDATE   | admin, editor | as mesmas + `logo_alt`                               |
+| `institutions`           | INSERT, UPDATE | admin, editor | colunas editoriais, incluindo `logo_path` e `logo_alt` |
 | `institutions`           | DELETE   | admin         | somente `is_published = false`                       |
 | `institution_categories` | INSERT, UPDATE, DELETE | admin | `name`, `slug`, `description`, `sort_order`  |
-| `site_settings`          | UPDATE   | admin         | 10 colunas textuais (sem `logo_path`, `favicon_path`) |
+| `site_settings`          | UPDATE   | admin         | 10 colunas textuais + `logo_path`, `favicon_path`    |
 | `social_links`           | INSERT, UPDATE, DELETE | admin | `platform`, `label`, `url`, `sort_order`, `is_active` |
 
 Admin e editor também leem rascunhos de `research_lines`, `projects`,
@@ -352,12 +356,24 @@ tabelas N:N (políticas *"CMS staff can read all …"*). As políticas usam a
 função `public.has_cms_role(text[])` (`SECURITY INVOKER`, `search_path` vazio,
 executável só por `authenticated`).
 
-`id`, `created_at`, `updated_at`, `published_at`, `image_path`, `logo_path` e
-`favicon_path` não recebem GRANT de escrita. `site_settings` não tem INSERT nem
-DELETE (registro único). Testes em
+`id`, `created_at`, `updated_at` e `published_at` não recebem GRANT de
+escrita. `site_settings` não tem INSERT nem DELETE (registro único). Testes em
 `supabase/tests/database/homepage_content_rls.test.sql`,
-`research_lines_projects_rls.test.sql` e
-`publications_institutions_settings_rls.test.sql`.
+`research_lines_projects_rls.test.sql`,
+`publications_institutions_settings_rls.test.sql` e
+`media_library_rls.test.sql`.
+
+### Storage (Etapa 8)
+
+Bucket público `geologar-media` (JPEG/PNG/WebP, 5 MB). Políticas em
+`storage.objects`, restritas ao bucket: SELECT para admin/editor ativos,
+INSERT para admin/editor ativos com nome `uploads/<uuid>.<ext>`, DELETE só
+para admin e só de arquivos sem uso (`media_object_deletable`), nenhuma
+policy de UPDATE. Funções (todas `SECURITY INVOKER`, `search_path` vazio):
+`is_media_object_name`, `is_valid_image_reference`, `lock_media_object`,
+`media_usage`, `media_object_deletable`, `list_media` e o trigger
+`check_media_references`. `save_project` ganhou o parâmetro `p_image_path`.
+Detalhes em [`media-library.md`](media-library.md).
 
 `service_role` ignora RLS e não é usado pelo CMS. `admin_memberships` não tem
 escrita: nenhum usuário cria, altera ou promove o próprio vínculo; o primeiro
@@ -370,7 +386,6 @@ diretamente por `anon`/`authenticated`.
 ## Ainda não implementado
 
 - Gestão de usuários pelo painel.
-- Supabase Storage (buckets e políticas de arquivos).
 - Tabela de autores de publicações.
 - Formulário de contato (mensagens recebidas).
 - Conteúdo inicial: linhas de pesquisa, categorias, instituições, projetos,

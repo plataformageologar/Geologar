@@ -35,8 +35,6 @@ export default async function NewInstitutionPage() {
           initialValues={emptyInstitutionValues}
           initialUpdatedAt={null}
           categories={categories.data.map(({ id, name }) => ({ id, name }))}
-          hasLogo={false}
-          logoSrc={null}
           canManageCategories={access.role === "admin"}
         />
       )}

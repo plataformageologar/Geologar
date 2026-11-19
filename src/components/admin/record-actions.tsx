@@ -26,7 +26,7 @@ import { FormMessage } from "./form-controls";
 type RecordAction = (state: RecordActionState, data: FormData) => Promise<RecordActionState>;
 
 /** Entidades com ações na listagem (site_settings é um registro único). */
-export type ListEntity = Exclude<Entity, "site-settings">;
+export type ListEntity = Exclude<Entity, "site-settings" | "media">;
 
 const actions: Record<ListEntity, { toggle?: RecordAction; remove: RecordAction }> = {
   "research-line": { toggle: setResearchLinePublished, remove: deleteResearchLine },

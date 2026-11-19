@@ -1,3 +1,5 @@
+import { isLocalImagePath, isMediaObjectName, mediaPublicUrl } from "@/lib/media/config";
+
 /**
  * Utilitários comuns às funções de leitura de conteúdo público.
  */
@@ -49,18 +51,17 @@ export function byEditorialOrder(
 }
 
 /**
- * Converte um caminho de imagem do banco em `src` utilizável pelo next/image.
- *
- * Nesta etapa só são aceitos arquivos locais de `public/` (iniciados por "/").
- * O Supabase Storage ainda não foi configurado; valores em outro formato são
- * ignorados para não quebrar a página.
+ * Converte uma referência de imagem do banco em `src` para o next/image:
+ * - arquivo local de `public/` ("/images/x.jpg") → o próprio caminho;
+ * - objeto da biblioteca ("uploads/<uuid>.webp") → URL pública do bucket
+ *   geologar-media no projeto Supabase configurado (nunca um host do banco);
+ * - vazio ou formato inválido → `null` (a página usa o fallback visual).
  */
 export function resolveImageSrc(path: string | null): string | null {
   if (!path) return null;
-  if (path.startsWith("/") && !path.startsWith("//")) return path;
+  if (isLocalImagePath(path)) return path;
+  if (isMediaObjectName(path)) return mediaPublicUrl(path);
 
-  if (process.env.NODE_ENV === "development") {
-    console.warn(`[imagens] Caminho ignorado (Storage ainda não configurado): ${path}`);
-  }
+  console.warn("[imagens] Referência de imagem inválida ignorada.");
   return null;
 }
