@@ -120,7 +120,7 @@ export function toProjectFormValues(
     description: record.description ?? "",
     image_path: record.image_path ?? "",
     image_alt: record.image_alt ?? "",
-    project_status: record.project_status,
+    project_status: record.project_status ?? "",
     start_date: record.start_date ?? "",
     end_date: record.end_date ?? "",
     coordination: record.coordination ?? "",
@@ -199,8 +199,15 @@ export function parseProjectValues(
     errors.short_description = "Preencha a descrição curta para publicar.";
   }
 
-  const status = values.project_status;
-  if (!isProjectStatus(status)) errors.project_status = "Selecione a situação do projeto.";
+  // Situação: opcional em rascunho ("A confirmar"), obrigatória para publicar.
+  let status: ProjectStatusValue | null = null;
+  if (values.project_status === "") {
+    if (values.is_published) errors.project_status = "Selecione a situação do projeto para publicar.";
+  } else if (isProjectStatus(values.project_status)) {
+    status = values.project_status;
+  } else {
+    errors.project_status = "Selecione uma situação válida.";
+  }
 
   const startDate = normalizeText(values.start_date);
   const endDate = normalizeText(values.end_date);

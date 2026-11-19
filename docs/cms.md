@@ -200,7 +200,7 @@ Publicar/Despublicar, Excluir). Abaixo de 1280 px a tabela vira cartões.
 
 Listagem paginada no servidor (10 por página) com busca por título e filtros
 de publicação (Todos/Publicados/Rascunhos) e situação (Todos/Em andamento/
-Concluídos). Os filtros usam GET (`?busca=&publicacao=&situacao=&pagina=`) e
+Concluídos/A confirmar). Os filtros usam GET (`?busca=&publicacao=&situacao=&pagina=`) e
 funcionam sem JavaScript; página fora do intervalo responde 404.
 
 | Campo                    | Regra                                                          |
@@ -209,13 +209,19 @@ funcionam sem JavaScript; página fora do intervalo responde 404.
 | `slug`                   | igual às linhas de pesquisa                                    |
 | `short_description`      | até 400; obrigatória para publicar                             |
 | `description`            | até 10000                                                      |
-| `project_status`         | obrigatório: `ongoing` (Em andamento) ou `completed` (Concluído) |
+| `project_status`         | `ongoing` (Em andamento) ou `completed` (Concluído); obrigatório para publicar. Em rascunho pode ficar "A confirmar" (`null`) |
 | `start_date`/`end_date`  | opcionais, `AAAA-MM-DD` entre 1900 e 2100; término ≥ início    |
 | `coordination`, `funding` | até 1000 cada                                                 |
 | `result_or_contribution` | até 4000                                                       |
 | `external_url`           | `http(s)://` com domínio, sem usuário/senha                    |
 | linhas de pesquisa       | seleção múltipla (até 100), sem duplicatas, só linhas existentes |
 | `sort_order`, `is_featured`, `is_published`, imagem | como nas linhas de pesquisa |
+
+A situação "A confirmar" (Etapa 8.5) existe para preparar projetos ainda não
+validados sem atribuir uma situação fictícia. O formulário, a Server Action e
+o banco (constraint `projects_published_status`) recusam publicar sem
+situação; um projeto publicado não volta a ficar sem situação. Na listagem,
+o selo mostra "A confirmar".
 
 ## Relacionamento projeto ↔ linha de pesquisa
 
@@ -421,6 +427,24 @@ values ('Geociências conectando território, ciência e sociedade');
 O índice `homepage_content_singleton` impede um segundo registro. Depois,
 preencha os demais campos pelo CMS.
 
+## Prévia de demonstração (`/admin/demonstracao`)
+
+Página para revisar a homepage com a equipe GeoLogar antes da publicação
+definitiva (menu "Prévia de demonstração"). Reaproveita os componentes do
+site público e acrescenta só aqui:
+
+- os **rascunhos de projeto** (até 6, por ordem), sem link para detalhe;
+- **notas por seção** — "No site público", "Rascunho (não público)" ou
+  "Pendente" — com o que falta;
+- **espaços reservados** para publicações e instituições enquanto não houver
+  registros publicados.
+
+Segurança: o proxy redireciona visitantes sem sessão para o login e marca a
+resposta como `private, no-store`; a página chama `requireAdminAccess()`; os
+rascunhos são lidos com a sessão do usuário (RLS libera apenas admin/editor
+ativos); o layout `/admin` aplica `noindex, nofollow`. A prévia não grava
+nada. Pendências do cliente em [`content-handover.md`](content-handover.md).
+
 ## Limitações atuais
 
 - Sem rich text, histórico de versões ou agendamento. A homepage não tem
@@ -437,4 +461,7 @@ preencha os demais campos pelo CMS.
 ## Próximos módulos
 
 - Etapa 8 concluída: Supabase Storage e biblioteca de mídia
-  ([`media-library.md`](media-library.md)). Próximas etapas a definir.
+  ([`media-library.md`](media-library.md)).
+- Etapa 8.5 concluída: população inicial de demonstração e prévia protegida
+  ([`initial-content-manifest.md`](initial-content-manifest.md)).
+- Etapa 9: formulário de contato funcional e recursos complementares.

@@ -11,6 +11,7 @@ export type AdminNavItem = {
     | "publications"
     | "institutions"
     | "media"
+    | "demo"
     | "site-settings"
     | "social-links"
     | "profile";
@@ -37,6 +38,10 @@ export const adminNavigation: AdminNavSection[] = [
       { id: "institutions", label: "Instituições", href: "/admin/instituicoes" },
       { id: "media", label: "Biblioteca de mídia", href: "/admin/midias" },
     ],
+  },
+  {
+    title: "Revisão",
+    items: [{ id: "demo", label: "Prévia de demonstração", href: "/admin/demonstracao" }],
   },
   {
     title: "Configurações",

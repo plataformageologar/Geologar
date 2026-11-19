@@ -59,7 +59,7 @@ erDiagram
         uuid id PK
         text title
         text slug UK
-        text project_status "ongoing | completed"
+        text project_status "ongoing | completed | null (rascunho)"
         date start_date
         date end_date
         int sort_order
@@ -171,7 +171,11 @@ Linhas de pesquisa. `slug` único. Constraints da Etapa 7.2:
 
 Projetos de pesquisa. `project_status` aceita `ongoing` ou `completed` via
 constraint `projects_status_check` (para novos status, altere apenas essa
-constraint numa nova migration). `end_date` não pode ser anterior a
+constraint numa nova migration). Desde a Etapa 8.5 pode ser `null` em
+rascunhos ("A confirmar"); `projects_published_status` exige a situação em
+projetos publicados (migration
+`20261119180000_allow_project_drafts_without_status.sql`, testes em
+`supabase/tests/database/project_drafts.test.sql`). `end_date` não pode ser anterior a
 `start_date`. As linhas de pesquisa ficam em `project_research_lines`, não
 nesta tabela. Mesmas constraints de título, slug e ordem das linhas de pesquisa
 (`projects_title_not_blank`, `projects_slug_length`,

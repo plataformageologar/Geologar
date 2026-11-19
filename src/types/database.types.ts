@@ -242,7 +242,7 @@ export type Database = {
           image_path: string | null
           is_featured: boolean
           is_published: boolean
-          project_status: string
+          project_status: string | null
           published_at: string | null
           result_or_contribution: string | null
           short_description: string | null
@@ -264,7 +264,7 @@ export type Database = {
           image_path?: string | null
           is_featured?: boolean
           is_published?: boolean
-          project_status: string
+          project_status?: string | null
           published_at?: string | null
           result_or_contribution?: string | null
           short_description?: string | null
@@ -286,7 +286,7 @@ export type Database = {
           image_path?: string | null
           is_featured?: boolean
           is_published?: boolean
-          project_status?: string
+          project_status?: string | null
           published_at?: string | null
           result_or_contribution?: string | null
           short_description?: string | null
@@ -627,7 +627,7 @@ export type Database = {
           image_path: string | null
           is_featured: boolean
           is_published: boolean
-          project_status: string
+          project_status: string | null
           published_at: string | null
           result_or_contribution: string | null
           short_description: string | null

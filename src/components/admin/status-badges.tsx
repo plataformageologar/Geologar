@@ -1,4 +1,4 @@
-import { CheckCircle2, CircleOff, Clock, Flag, PencilLine, Star } from "lucide-react";
+import { CheckCircle2, CircleDashed, CircleOff, Clock, Flag, PencilLine, Star } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { projectStatusLabel } from "@/lib/admin/projects";
@@ -50,7 +50,15 @@ export function FeaturedBadge({ featured }: { featured: boolean }) {
 }
 
 /** Situação do projeto (`project_status`), independente da publicação. */
-export function ProjectStatusBadge({ status }: { status: string }) {
+export function ProjectStatusBadge({ status }: { status: string | null }) {
+  if (!status) {
+    return (
+      <Badge tone="neutral">
+        <CircleDashed aria-hidden="true" className="size-3.5" />
+        A confirmar
+      </Badge>
+    );
+  }
   const completed = status === "completed";
   const Icon = completed ? Flag : Clock;
   return (

@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { Lock } from "lucide-react";
+
 import { Container } from "@/components/ui/container";
 import type { NavItem } from "@/types/content";
 
@@ -25,7 +28,8 @@ export function Header({ navigation, institutionalName, logoSrc }: HeaderProps) 
           )}
         </div>
 
-        <nav aria-label="Principal" className="hidden lg:block">
+        <div className="hidden items-center gap-3 lg:flex">
+        <nav aria-label="Principal">
           <ul className="flex items-center gap-1">
             {navigation.map((item) => (
               <li key={item.href}>
@@ -40,6 +44,15 @@ export function Header({ navigation, institutionalName, logoSrc }: HeaderProps) 
             ))}
           </ul>
         </nav>
+          {/* Acesso secundário à área restrita: só o ícone até `xl`. */}
+          <Link
+            href="/admin/login"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full border border-border px-3 text-label text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary xl:px-4"
+          >
+            <Lock aria-hidden="true" className="size-4" />
+            <span className="sr-only xl:not-sr-only">Área restrita</span>
+          </Link>
+        </div>
 
         <MobileMenu navigation={navigation} />
       </Container>

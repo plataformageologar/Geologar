@@ -79,6 +79,13 @@ traço à esquerda (já embutido em `SectionHeading`).
   conteúdo da seção.
 - **Header**: altura `--header-height` (4.5rem), fixo no topo.
   `scroll-padding-top` evita que âncoras e elementos em foco fiquem sob ele.
+  Acesso secundário à área restrita: ícone com cadeado a partir de `lg`
+  (texto "Área restrita" a partir de `xl`) e item discreto no menu móvel.
+- **Rodapé**: faixa superior em camadas (`earth` → `secondary` → `primary`),
+  referência às rochas estratificadas. Sem canais de contato cadastrados, a
+  coluna "Contato" aponta para `/contato` em vez de exibir dados.
+- **Hero sem fotografia**: fundo `deep` com curvas de nível e gradientes
+  `primary`, `secondary` e um toque de `earth` no canto inferior.
 
 ### Breakpoints (padrão Tailwind)
 
@@ -87,7 +94,7 @@ traço à esquerda (já embutido em `SectionHeading`).
 | —       | < 640    | Uma coluna; botões do hero empilhados                |
 | `sm`    | ≥ 640    | Cards de linhas em 2 colunas; botões lado a lado     |
 | `md`    | ≥ 768    | Cards de projeto horizontais (tablet)                |
-| `lg`    | ≥ 1024   | Navegação completa; 3 colunas; pilares em 4 colunas  |
+| `lg`    | ≥ 1024   | Navegação completa e acesso à área restrita (ícone); 3 colunas; pilares em 4 colunas |
 | `xl`    | ≥ 1280   | "A Rede" em duas colunas; nome institucional no header |
 
 Verificado em 375, 390, 768, 1024, 1280 e 1440 px.

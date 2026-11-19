@@ -1,6 +1,7 @@
 "use client";
 
-import { Menu, X } from "lucide-react";
+import Link from "next/link";
+import { Lock, Menu, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 
 import type { NavItem } from "@/types/content";
@@ -67,6 +68,16 @@ export function MobileMenu({ navigation }: { navigation: NavItem[] }) {
               </NavLink>
             </li>
           ))}
+          <li className="py-3">
+            <Link
+              href="/admin/login"
+              onClick={() => setOpen(false)}
+              className="inline-flex min-h-11 items-center gap-2 text-label text-muted-foreground hover:text-primary"
+            >
+              <Lock aria-hidden="true" className="size-4" />
+              Área restrita
+            </Link>
+          </li>
         </ul>
       </nav>
     </div>

@@ -120,7 +120,8 @@ export const ADMIN_PROJECTS_PAGE_SIZE = 10;
 export type ProjectListFilters = {
   search?: string;
   published?: boolean;
-  status?: "ongoing" | "completed";
+  /** `unset`: rascunhos com situação "A confirmar" (`null`). */
+  status?: "ongoing" | "completed" | "unset";
   page: number;
 };
 
@@ -128,7 +129,8 @@ export type ProjectListItem = {
   id: string;
   title: string;
   slug: string;
-  project_status: string;
+  /** `null` em rascunhos com situação "A confirmar". */
+  project_status: string | null;
   is_published: boolean;
   is_featured: boolean;
   sort_order: number;
@@ -165,7 +167,8 @@ export async function getProjectsForAdmin(
     );
   if (filters.search) query = query.ilike("title", likePattern(filters.search));
   if (filters.published !== undefined) query = query.eq("is_published", filters.published);
-  if (filters.status) query = query.eq("project_status", filters.status);
+  if (filters.status === "unset") query = query.is("project_status", null);
+  else if (filters.status) query = query.eq("project_status", filters.status);
 
   const { data, error, count } = await query
     .order("sort_order")

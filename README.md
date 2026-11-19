@@ -68,7 +68,8 @@ public/brand/           Favicon oficial (fallback do favicon configurável)
 src/
   app/                  Rotas (App Router), layout raiz (metadados e favicon) e CSS global
     (public)/           Site público (layout com cabeçalho e rodapé)
-    admin/              Área administrativa: (auth) login/recuperação, (protected) painel
+    admin/              Área administrativa: (auth) login/recuperação, (protected) painel,
+                        (preview) prévia de demonstração
     auth/callback/      Retorno dos links de e-mail do Supabase Auth
   proxy.ts              Sessão do Supabase Auth nas rotas /admin
   assets/brand/         Logotipo oficial (importado via next/image)
@@ -80,6 +81,7 @@ src/
       homepage/         Formulário do módulo Homepage do CMS
       media/            Biblioteca de mídia: grade, envio, seletor e campo de imagem
     home/               Seções da homepage
+    demo/               Notas da prévia de demonstração (somente /admin/demonstracao)
     research/ projects/ publications/ institutions/ network/
                         Cards e listas compartilhados entre homepage e páginas internas
   data/
@@ -101,9 +103,11 @@ supabase/
 docs/
   admin-auth.md         Autenticação, autorização e primeiro administrador
   cms.md                CMS: módulos, validação, salvamento, exclusão e RLS de escrita
+  content-handover.md   Conteúdos que a equipe GeoLogar precisa fornecer ou aprovar
   database-schema.md    Modelo de dados
   deployment.md         Deploy no Cloudflare Workers e checklist de produção
   design-system.md      Tokens, tipografia, componentes e breakpoints
+  initial-content-manifest.md  Materiais de referência: o que foi importado, associado ou descartado
   media-library.md      Biblioteca de mídia (Supabase Storage), imagens e exclusão segura
   public-pages.md       Rotas, filtros, consultas e regras das páginas públicas
 ```
@@ -134,9 +138,10 @@ Regras:
 - **Falhas de banco** são registradas no log do servidor (`[supabase] ...`) e
   nunca exibidas ao visitante. Textos essenciais (hero, apresentação, contato e
   nome institucional) têm fallback em `src/data/site.ts`; listas viram vazias.
-- **Imagens**: os campos `*_path` aceitam por enquanto apenas caminhos locais
-  (`/...` em `public/`). Caminhos do Storage são ignorados até que os buckets
-  sejam configurados (`resolveImageSrc` em `src/lib/queries/shared.ts`).
+- **Imagens**: os campos `*_path` guardam objetos da biblioteca de mídia
+  (`uploads/<uuid>.<ext>` no bucket `geologar-media`) ou caminhos locais
+  legados (`/...`); `resolveImageSrc` (`src/lib/queries/shared.ts`) gera a
+  URL pública e ignora qualquer outro valor.
 - **Renderização sob demanda**: a homepage usa `dynamic = "force-dynamic"` e
   lê o banco a cada requisição, sem ISR. Dentro de uma mesma requisição as
   leituras são compartilhadas (`cache` do React), então layout e página não
@@ -198,7 +203,26 @@ imagens da biblioteca. Migration `20261119120000_enable_media_library.sql`;
 detalhes e o guia "Como adicionar uma imagem a um projeto" em
 [`docs/media-library.md`](docs/media-library.md).
 
+**`/admin/demonstracao`** (Prévia de demonstração): a homepage com os mesmos
+componentes do site, mais os rascunhos de projeto e notas sobre o que está
+publicado, em rascunho ou pendente. Exige login (admin ou editor), não é
+indexada e não altera nada.
+
 Detalhes em [`docs/cms.md`](docs/cms.md).
+
+### População inicial (Etapa 8.5)
+
+O conteúdo de demonstração foi preparado a partir da referência visual e do
+pacote de imagens recebidos em 19/11/2026: seis imagens provisórias nas
+linhas de pesquisa (recortes do mockup, publicados como demonstração) e três
+projetos em rascunho com situação "A confirmar"
+(migration `20261119180000_allow_project_drafts_without_status.sql`). Logotipos
+de instituições, publicações e contatos do mockup não foram usados. O que foi
+importado, de onde e por quê está em
+[`docs/initial-content-manifest.md`](docs/initial-content-manifest.md); o que
+a equipe precisa fornecer ou aprovar está em
+[`docs/content-handover.md`](docs/content-handover.md). Importado não
+significa aprovado.
 
 ## Supabase
 

@@ -6,7 +6,7 @@ import { Partners } from "@/components/home/partners";
 import { RecentPublications } from "@/components/home/recent-publications";
 import { ResearchLines } from "@/components/home/research-lines";
 import { pillars } from "@/data/site";
-import { getHomepageData, isLinkAvailable } from "@/lib/queries/homepage";
+import { getHomepageData, withAvailableHeroLinks } from "@/lib/queries/homepage";
 
 export const dynamic = "force-dynamic";
 
@@ -15,18 +15,7 @@ export default async function Home() {
     await getHomepageData();
 
   // CTAs que apontam para seções ainda sem conteúdo não são exibidos.
-  const heroContent = {
-    ...content,
-    hero_primary_cta_href:
-      content.hero_primary_cta_href && isLinkAvailable(content.hero_primary_cta_href, sections)
-        ? content.hero_primary_cta_href
-        : null,
-    hero_secondary_cta_href:
-      content.hero_secondary_cta_href &&
-      isLinkAvailable(content.hero_secondary_cta_href, sections)
-        ? content.hero_secondary_cta_href
-        : null,
-  };
+  const heroContent = withAvailableHeroLinks(content, sections);
 
   return (
     <>

@@ -31,6 +31,12 @@ values
   ('b8000000-0000-4000-8000-000000000003', 'editor', false);
 
 -- Objetos simulados (apenas metadados; nenhum arquivo real).
+-- Objetos reais já existentes no bucket (a biblioteca oficial não fica vazia
+-- depois da população inicial): as contagens abaixo somam esta base.
+create temporary table media_baseline as
+select count(*)::int as n from storage.objects where bucket_id = 'geologar-media';
+grant select on media_baseline to anon, authenticated;
+
 insert into storage.objects (bucket_id, name, metadata, user_metadata)
 values
   ('geologar-media', 'uploads/11111111-1111-4111-8111-111111111111.webp',
@@ -183,7 +189,7 @@ select pg_temp.act_as('b8000000-0000-4000-8000-000000000002');
 
 select is(
   (select count(*)::int from storage.objects where bucket_id = 'geologar-media'),
-  3,
+  (select n from media_baseline) + 3,
   'editor lista a biblioteca'
 );
 
@@ -331,18 +337,22 @@ select is(
 
 select is(
   (select total_count::int from public.list_media() limit 1),
-  4,
-  'list_media lista os quatro objetos'
+  (select n from media_baseline) + 4,
+  'list_media lista os quatro objetos de teste além dos existentes'
 );
 
 select is(
-  (select usage_count from public.list_media() where name = 'uploads/11111111-1111-4111-8111-111111111111.webp'),
+  (select usage_count from public.list_media(p_limit => 1000) where name = 'uploads/11111111-1111-4111-8111-111111111111.webp'),
   2,
   'list_media informa o número de usos'
 );
 
 select is(
-  (select count(*)::int from public.list_media(p_unused_only => true)),
+  (select count(*)::int from public.list_media(p_unused_only => true, p_limit => 1000)
+   where name in ('uploads/11111111-1111-4111-8111-111111111111.webp',
+                  'uploads/22222222-2222-4222-8222-222222222222.png',
+                  'uploads/33333333-3333-4333-8333-333333333333.jpg',
+                  'uploads/44444444-4444-4444-8444-444444444444.png')),
   1,
   'filtro "sem uso" retorna somente o arquivo não associado'
 );

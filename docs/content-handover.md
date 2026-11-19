@@ -1,0 +1,109 @@
+# Conteúdos a fornecer e validar — equipe GeoLogar
+
+Lista do que a equipe GeoLogar precisa fornecer ou aprovar para a publicação
+definitiva do portal. São dependências de conteúdo e de aprovação, não
+pendências de desenvolvimento: tudo abaixo pode ser preenchido pelo painel
+(`/admin`) sem novo deploy, salvo onde indicado.
+
+A prévia protegida **`/admin/demonstracao`** (menu "Prévia de demonstração",
+somente com login) mostra a homepage com os rascunhos e sinaliza, seção por
+seção, o que está publicado, em rascunho ou pendente. O detalhamento dos
+materiais recebidos está em
+[`initial-content-manifest.md`](initial-content-manifest.md).
+
+## Identidade visual
+
+- [ ] **Confirmar o logotipo oficial**, de preferência em arquivo vetorial
+      (SVG/PDF) ou PNG em alta resolução com fundo transparente. O site usa o
+      logotipo já versionado no código; as versões do mockup são um desenho
+      diferente e não foram adotadas. Se a versão oficial for outra, ela pode
+      ser enviada em Configurações → Identidade visual.
+- [ ] **Fotografias oficiais e direitos de uso**: para o banner principal (de
+      preferência ≥ 2000 px de largura, de pesquisas, equipes ou territórios
+      da rede) e para as seis linhas de pesquisa. As imagens atuais das linhas
+      são recortes de baixa resolução do mockup, publicados como demonstração
+      e a substituir.
+- [ ] Confirmar se o favicon atual (recorte do logotipo) é o desejado.
+
+## Institucional
+
+- [ ] Aprovar o texto do banner (título, descrição e botões).
+- [ ] Aprovar a apresentação da rede ("Uma rede para produzir e compartilhar
+      conhecimento") e os quatro pilares.
+- [ ] Aprovar a chamada para cooperação ("Vamos conectar conhecimento e novas
+      possibilidades").
+- [ ] Aprovar as seis linhas de pesquisa (títulos e descrições curtas) e, se
+      desejado, escrever a descrição completa de cada uma.
+
+## Projetos
+
+Três rascunhos foram preparados a partir da referência visual (somente nome,
+uma frase de descrição e imagem provisória): **DETEC BEGE – FASE II**,
+**ACV e Fluxo de Massas** e **EXPOGEO Virtual**. Para cada um:
+
+- [ ] Confirmar se o projeto existe com esse nome e se deve aparecer no site.
+- [ ] Descrição curta e descrição completa.
+- [ ] Situação (em andamento ou concluído) — hoje "A confirmar"; é
+      obrigatória para publicar.
+- [ ] Coordenação.
+- [ ] Período de execução.
+- [ ] Instituições participantes e financiamento, quando aplicável.
+- [ ] Resultado ou contribuição (com documentação; nenhum número de impacto
+      foi criado).
+- [ ] Linhas de pesquisa relacionadas.
+- [ ] Imagem oficial.
+- [ ] Indicar quais projetos ficam em destaque na homepage.
+
+## Publicações
+
+O cadastro é responsabilidade da equipe GeoLogar (Publicações → Nova
+publicação). As três referências do mockup não foram importadas.
+
+- [ ] Título completo (no idioma original).
+- [ ] Autores.
+- [ ] Ano.
+- [ ] Periódico ou veículo.
+- [ ] DOI e/ou link.
+- [ ] Projetos e linhas de pesquisa relacionados.
+
+## Instituições
+
+Nenhuma instituição foi cadastrada. A relação sugerida pelo mockup está no
+[manifesto](initial-content-manifest.md#instituições-sugeridas-pelo-mockup).
+
+- [ ] Confirmar os vínculos (a presença de um logotipo no mockup não confirma
+      parceria).
+- [ ] Definir as categorias (sugestão do briefing: universidades e
+      instituições de pesquisa; apoio institucional e financiamento;
+      parceiros empresariais; cooperação internacional).
+- [ ] Site oficial de cada instituição.
+- [ ] Logotipos oficiais e autorização de uso das marcas (os recortes do
+      mockup estão cortados ou deformados e não foram usados).
+
+## Contato
+
+- [ ] E-mail oficial.
+- [ ] Telefone, se houver atendimento oficial (o do mockup é incompleto).
+- [ ] Localização institucional validada.
+- [ ] Redes sociais ativas (endereços completos).
+- [ ] Endereço que receberá as mensagens do futuro formulário de contato
+      (Etapa 9).
+
+## Jurídico
+
+- [ ] Política de privacidade.
+- [ ] Termos de uso, quando aplicáveis.
+- [ ] Orientações sobre tratamento de dados do formulário de contato.
+
+Nenhum texto jurídico foi redigido: os links do mockup (termos, privacidade,
+mapa do site, acessibilidade) só serão criados com textos fornecidos ou
+validados pela equipe. Criar essas páginas exige uma etapa de
+desenvolvimento.
+
+## Administrativo
+
+- [ ] Responsáveis pela edição do conteúdo.
+- [ ] Contas autorizadas e papel de cada uma (administrador ou editor).
+- [ ] Responsável pela homologação.
+- [ ] Homologação de acessibilidade (o projeto aplica boas práticas, mas a
+      validação formal de conformidade é responsabilidade da GeoLogar).

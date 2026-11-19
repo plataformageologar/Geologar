@@ -35,6 +35,7 @@ const statusFilters = [
   { param: "", label: "Todos", value: undefined },
   { param: "em-andamento", label: "Em andamento", value: "ongoing" },
   { param: "concluidos", label: "Concluídos", value: "completed" },
+  { param: "a-confirmar", label: "A confirmar", value: "unset" },
 ] as const;
 
 const SEARCH_MAX_LENGTH = 100;

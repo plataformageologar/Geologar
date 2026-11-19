@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Lock, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Lock, Mail, MapPin, Phone } from "lucide-react";
 
 import logo from "@/assets/brand/geologar-logo-circle.png";
 import { Container } from "@/components/ui/container";
@@ -22,6 +22,8 @@ export function Footer({ settings, navigation, socialLinks }: FooterProps) {
 
   return (
     <footer className="on-dark bg-deep text-deep-foreground">
+      {/* Faixa em camadas (terra, verde, azul): referência às rochas estratificadas. */}
+      <div aria-hidden="true" className="h-1.5 bg-gradient-to-r from-earth via-secondary to-primary" />
       <Container className="grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-12 lg:py-20">
         <div className="flex flex-col gap-5 lg:col-span-5">
           <Image
@@ -54,6 +56,22 @@ export function Footer({ settings, navigation, socialLinks }: FooterProps) {
             ))}
           </ul>
         </nav>
+
+        {!hasContact && socialLinks.length === 0 && (
+          <div className="flex flex-col gap-4 lg:col-span-4">
+            <h2 className="font-sans text-label uppercase tracking-[0.12em] text-deep-muted">Contato</h2>
+            <p className="max-w-sm text-body-sm text-deep-muted">
+              Para conhecer a rede, propor projetos ou parcerias, fale com a equipe GeoLogar.
+            </p>
+            <Link
+              href="/contato"
+              className="inline-flex min-h-10 w-fit items-center gap-1.5 text-body-sm text-deep-foreground underline underline-offset-4 decoration-deep-muted/60 hover:decoration-deep-foreground"
+            >
+              Página de contato
+              <ArrowRight aria-hidden="true" className="size-4" />
+            </Link>
+          </div>
+        )}
 
         {(hasContact || socialLinks.length > 0) && (
           <div className="flex flex-col gap-8 lg:col-span-4">

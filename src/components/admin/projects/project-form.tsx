@@ -268,8 +268,8 @@ export function ProjectForm({
           <Field
             id="project_status"
             label="Situação do projeto"
-            required
-            hint="Independe da publicação: um projeto concluído pode estar publicado ou em rascunho."
+            required={values.is_published}
+            hint="Obrigatória para publicar. Em rascunho, deixe “A confirmar” enquanto a equipe não validar a situação."
             error={errors.project_status}
           >
             <Select
@@ -278,12 +278,10 @@ export function ProjectForm({
               value={values.project_status}
               onChange={(event) => update("project_status", event.target.value)}
               aria-invalid={errors.project_status ? true : undefined}
-              aria-required
+              aria-required={values.is_published || undefined}
               aria-describedby={describedBy("project_status", { hint: true, error: errors.project_status })}
             >
-              <option value="" disabled>
-                Selecione…
-              </option>
+              <option value="">A confirmar (somente rascunho)</option>
               {projectStatusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}

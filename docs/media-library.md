@@ -249,6 +249,20 @@ Para trocar, use **Substituir imagem**; para tirar a imagem do projeto, use
 biblioteca e pode ser excluído depois em **Biblioteca de mídia** (se não for
 usado em nenhum outro lugar).
 
+## População inicial (Etapa 8.5)
+
+Em 19/11/2026 a biblioteca recebeu 9 recortes provisórios da referência
+visual da homepage (6 de linhas de pesquisa e 3 de projetos), gerados por
+[`scripts/prepare-demo-media.mjs`](../scripts/prepare-demo-media.mjs) — só
+corte, sem redimensionar nem filtrar — e enviados pelo fluxo normal desta
+página. Os 32 arquivos restantes do pacote (banner com texto gravado, fatias
+da colagem, rodapé com contatos fictícios e logotipos cortados/deformados)
+não foram importados. A correspondência arquivo → registro, a qualidade e a
+situação de cada item estão em
+[`initial-content-manifest.md`](initial-content-manifest.md). Ao receber as
+fotografias oficiais, use **Substituir imagem** em cada registro; os recortes
+ficam sem uso e podem ser excluídos.
+
 ## Limitações
 
 - Sem recorte, rotação, compressão ou conversão no navegador: envie a imagem

@@ -59,7 +59,9 @@ export default async function ResearchLinePage({ params }: PageProps<"/pesquisa/
         <Container className="grid gap-10 pt-12 md:pt-16 lg:grid-cols-12 lg:gap-16">
           {line.description && <RichText text={line.description} className="lg:col-span-7" />}
           {line.image_path && (
-            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-surface-muted lg:col-span-5">
+            // Mesma proporção do card da linha (2:1): o enquadramento da
+            // homepage se repete aqui e a imagem não é ampliada além do card.
+            <div className="relative aspect-[2/1] overflow-hidden rounded-2xl bg-surface-muted lg:col-span-5">
               <Image
                 src={line.image_path}
                 alt={line.image_alt ?? ""}

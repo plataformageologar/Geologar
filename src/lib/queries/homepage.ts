@@ -72,3 +72,13 @@ export const getHomepageData = cache(async () => {
 export function isLinkAvailable(href: string, sections: Set<string>) {
   return !href.startsWith("/#") || sections.has(href.slice(2));
 }
+
+/** Textos do banner sem os CTAs que apontam para seções ausentes. */
+export function withAvailableHeroLinks(content: HomepageContent, sections: Set<string>): HomepageContent {
+  const available = (href: string | null) => (href && isLinkAvailable(href, sections) ? href : null);
+  return {
+    ...content,
+    hero_primary_cta_href: available(content.hero_primary_cta_href),
+    hero_secondary_cta_href: available(content.hero_secondary_cta_href),
+  };
+}

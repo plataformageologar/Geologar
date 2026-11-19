@@ -62,7 +62,7 @@ export function Hero({ content, eyebrow }: HeroProps) {
         <>
           <div
             aria-hidden="true"
-            className="absolute inset-0 -z-20 bg-[radial-gradient(ellipse_at_85%_30%,var(--primary)_0%,transparent_60%),radial-gradient(ellipse_at_10%_110%,var(--secondary)_0%,transparent_55%)] opacity-70"
+            className="absolute inset-0 -z-20 bg-[radial-gradient(ellipse_at_85%_30%,var(--primary)_0%,transparent_60%),radial-gradient(ellipse_at_10%_110%,var(--secondary)_0%,transparent_55%),radial-gradient(ellipse_at_100%_105%,var(--earth)_0%,transparent_35%)] opacity-70"
           />
           <div
             aria-hidden="true"

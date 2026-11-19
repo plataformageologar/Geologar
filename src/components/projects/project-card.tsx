@@ -22,7 +22,8 @@ type ProjectCardProps = {
  * Card de projeto. Em tablets fica horizontal; em telas largas, vertical.
  */
 export function ProjectCard({ project, href, headingLevel: Heading = "h3" }: ProjectCardProps) {
-  const status = projectStatusLabels[project.project_status];
+  // Rascunhos podem não ter situação definida ("A confirmar"): sem selo.
+  const status = project.project_status ? projectStatusLabels[project.project_status] : undefined;
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface md:flex-row lg:flex-col">

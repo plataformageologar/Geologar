@@ -34,7 +34,7 @@ export default async function ProjectPage({ params }: PageProps<"/projetos/[slug
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
 
-  const status = projectStatusLabels[project.project_status];
+  const status = project.project_status ? projectStatusLabels[project.project_status] : undefined;
   const period = formatPeriod(project.start_date, project.end_date);
   const externalUrl = safeExternalUrl(project.external_url);
 
