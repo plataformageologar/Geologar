@@ -1,0 +1,23 @@
+# Variáveis de runtime para o Worker local (`npm run preview` / `wrangler dev`).
+# Copie para `.dev.vars` (não versionado). Nunca coloque valores reais aqui.
+# Em produção, cadastre-as no painel do Cloudflare (Settings → Variables and
+# Secrets). Ver docs/contact-form.md.
+#
+# NÃO use `.env*` para estas chaves: o build do OpenNext embute `.env*` no Worker.
+
+# Formulário de contato: `true` para exibir o formulário.
+CONTACT_FORM_ENABLED=
+
+# Destinatário(s) definido(s) pela GeoLogar (separados por vírgula).
+CONTACT_TO_EMAIL=
+
+# Remetente em domínio verificado no Resend, ex.: GeoLogar <nao-responda@DOMINIO>
+CONTACT_FROM_EMAIL=
+
+# Secret: chave da API do Resend.
+RESEND_API_KEY=
+
+# Turnstile: chave pública do widget e secret (para testes locais, use as
+# chaves de teste públicas listadas em docs/contact-form.md).
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+TURNSTILE_SECRET_KEY=

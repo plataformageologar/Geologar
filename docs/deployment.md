@@ -17,17 +17,20 @@ converte o build do Next.js em um Worker.
 
 | Arquivo                         | Função                                                   |
 | ------------------------------- | -------------------------------------------------------- |
-| `wrangler.jsonc`                | Worker `geologar`, assets estáticos, imagens e autorreferência exigida pelo OpenNext |
+| `wrangler.jsonc`                | Worker `geologar`, assets estáticos, imagens, limite de envios do formulário de contato (`ratelimits`) e autorreferência exigida pelo OpenNext |
 | `open-next.config.ts`           | Configuração do adaptador (sem cache incremental)        |
 | `public/_headers`               | Cache longo (`immutable`) para `/_next/static/*`         |
-| `scripts/assert-no-secret-env.mjs` | Bloqueia deploy local se houver chave secreta em `.env*` |
+| `scripts/assert-no-secret-env.mjs` | Bloqueia deploy local se houver chave secreta (`SUPABASE_SECRET_KEY`, `RESEND_API_KEY`, `TURNSTILE_SECRET_KEY`) em `.env*` |
+| `.dev.vars.example`             | Modelo das variáveis de runtime para o Worker local (copiar para `.dev.vars`, não versionado) |
 
 Com `wrangler.jsonc` no repositório, o Wrangler considera o projeto já
 configurado e **não executa mais a configuração automática** (`@opennextjs/cloudflare
 migrate --force-install`, com versões `@latest`) a cada build.
 
 Não há R2, D1, KV nem Durable Objects: não são necessários enquanto a homepage
-for renderizada sob demanda (ver abaixo).
+for renderizada sob demanda (ver abaixo). O único binding adicional é o
+`CONTACT_RATE_LIMITER` (Rate Limiting do Workers, sem armazenamento), usado
+pelo formulário de contato.
 
 ## Configuração no painel do Cloudflare
 
@@ -65,12 +68,43 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 - Depois de alterar uma variável, dispare um novo build (*Deployments → Retry
   build*, ou um novo push na `main`).
 
+### Variáveis de runtime (formulário de contato)
+
+O formulário de `/contato` lê suas variáveis **em tempo de execução**, em
+*Workers & Pages → geologar → Settings → Variables and Secrets* (não na seção
+*Build*). Valores fornecidos pela GeoLogar; nunca no repositório, no
+`wrangler.jsonc` ou em `.env*`.
+
+| Variável | Tipo |
+|---|---|
+| `CONTACT_FORM_ENABLED` | Text (`true` ativa) |
+| `CONTACT_TO_EMAIL` | Text |
+| `CONTACT_FROM_EMAIL` | Text |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Text |
+| `RESEND_API_KEY` | **Secret** |
+| `TURNSTILE_SECRET_KEY` | **Secret** |
+
+- Sem todas elas (ou com `CONTACT_FORM_ENABLED` diferente de `true`), o
+  formulário não aparece e o site continua igual. Alterar esses valores não
+  exige novo build: vale para as próximas requisições.
+- `keep_vars: true` (`wrangler.jsonc`) preserva o que foi cadastrado no painel
+  a cada deploy.
+- Turnstile: o widget deve listar `geologar.plataformageologar.workers.dev`
+  (e o domínio oficial, quando houver).
+- Detalhes, testes e checklist de ativação em
+  [`contact-form.md`](contact-form.md).
+
 ## Desenvolvimento e testes locais
 
 ```bash
 npm run dev       # Next.js em modo desenvolvimento (Node.js)
 npm run preview   # build do OpenNext + Worker local no runtime do Cloudflare (workerd)
+npm test          # testes unitários (node --test), sem rede
 ```
+
+Variáveis de runtime do Worker local (formulário de contato) ficam em
+`.dev.vars` (modelo em `.dev.vars.example`, não versionado), que o Wrangler lê
+no `preview` e o build **não** embute no Worker.
 
 O `preview` (porta 8787) reproduz o ambiente de produção e é o teste que vale
 antes de qualquer mudança em cache, renderização ou dependências do servidor.
@@ -164,6 +198,11 @@ Redirect URLs, cadastro público) em [`admin-auth.md`](admin-auth.md).
       `Cache-Control: private, no-store`; `/admin/login` em `200`.
 - [ ] Login, painel, "Meu perfil" e "Sair" funcionando com uma conta vinculada.
 - [ ] Observability do Worker sem erros (*Workers → geologar → Logs*).
+- [ ] `/contato`: sem as variáveis do formulário, apenas canais/aviso vazio e
+      nenhum script do Turnstile; `POST /api/contact` em `503`.
+- [ ] Com o formulário ativado: envio real de teste recebido, token inválido
+      recusado e limite de envios funcionando (ver
+      [`contact-form.md`](contact-form.md#checklist-de-ativação)).
 
 ## Problemas comuns
 
@@ -174,6 +213,8 @@ Redirect URLs, cadastro público) em [`admin-auth.md`](admin-auth.md).
 | Site só com hero, A Rede e contato        | Variáveis `NEXT_PUBLIC_*` ausentes no build: cadastre e refaça o build |
 | Link de recuperação volta com "link inválido" | Aberto em outro navegador (PKCE) ou Redirect URL ausente no Supabase: ver [`admin-auth.md`](admin-auth.md) |
 | Login correto leva a "acesso negado"      | Conta sem registro ativo em `admin_memberships`   |
+| Formulário de contato não aparece        | Alguma variável de runtime ausente ou inválida, ou `CONTACT_FORM_ENABLED` diferente de `true` |
+| Envio sempre falha                        | Ver o código no log (`provider-auth`, `turnstile-hostname-mismatch`…) em [`contact-form.md`](contact-form.md#códigos-de-log) |
 
 ## Domínio oficial
 

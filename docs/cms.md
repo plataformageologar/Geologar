@@ -464,4 +464,5 @@ nada. Pendências do cliente em [`content-handover.md`](content-handover.md).
   ([`media-library.md`](media-library.md)).
 - Etapa 8.5 concluída: população inicial de demonstração e prévia protegida
   ([`initial-content-manifest.md`](initial-content-manifest.md)).
-- Etapa 9: formulário de contato funcional e recursos complementares.
+- Etapa 9 concluída: formulário de contato (desativado até a configuração
+  pela GeoLogar), sem gravação no banco ([`contact-form.md`](contact-form.md)).

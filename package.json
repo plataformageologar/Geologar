@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./tests/support/register.mjs --test \"tests/**/*.test.ts\"",
     "preview": "npm run build && opennextjs-cloudflare preview",
     "deploy": "node scripts/assert-no-secret-env.mjs && npm run build && opennextjs-cloudflare deploy",
     "upload": "node scripts/assert-no-secret-env.mjs && npm run build && opennextjs-cloudflare upload",

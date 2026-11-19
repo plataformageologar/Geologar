@@ -49,6 +49,13 @@ prefixo para segredos, e nunca coloque a chave secreta / `service_role` no
 frontend ou no repositório. A `SUPABASE_SECRET_KEY` ainda não é usada pelo
 código; quando for, deve ser lida apenas em código de servidor.
 
+As variáveis do formulário de contato (`CONTACT_FORM_ENABLED`,
+`CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `NEXT_PUBLIC_TURNSTILE_SITE_KEY`,
+`RESEND_API_KEY`, `TURNSTILE_SECRET_KEY`) são de **runtime** do Worker: no
+painel do Cloudflare em produção e em `.dev.vars` localmente (modelo em
+`.dev.vars.example`) — nunca em `.env*`. Ver
+[`docs/contact-form.md`](docs/contact-form.md).
+
 ## Scripts
 
 | Comando             | Descrição                                                 |
@@ -58,6 +65,7 @@ código; quando for, deve ser lida apenas em código de servidor.
 | `npm run start`     | Executa o build de produção localmente                    |
 | `npm run lint`      | ESLint (regras do Next.js + TypeScript)                   |
 | `npm run typecheck` | Gera os tipos de rotas (`next typegen`) e roda `tsc --noEmit` |
+| `npm test`          | Testes unitários do formulário de contato (`node --test`, sem rede) |
 | `npm run db:types`  | Regenera `src/types/database.types.ts` a partir do projeto Supabase vinculado |
 
 ## Estrutura
@@ -71,6 +79,7 @@ src/
     admin/              Área administrativa: (auth) login/recuperação, (protected) painel,
                         (preview) prévia de demonstração
     auth/callback/      Retorno dos links de e-mail do Supabase Auth
+    api/contact/        Envio do formulário de contato (POST)
   proxy.ts              Sessão do Supabase Auth nas rotas /admin
   assets/brand/         Logotipo oficial (importado via next/image)
   components/
@@ -81,6 +90,7 @@ src/
       homepage/         Formulário do módulo Homepage do CMS
       media/            Biblioteca de mídia: grade, envio, seletor e campo de imagem
     home/               Seções da homepage
+    contact/            Formulário de contato e widget do Turnstile
     demo/               Notas da prévia de demonstração (somente /admin/demonstracao)
     research/ projects/ publications/ institutions/ network/
                         Cards e listas compartilhados entre homepage e páginas internas
@@ -90,6 +100,7 @@ src/
   lib/
     admin/              CMS: campos editáveis, validação e Server Actions de gravação
     auth/               Autorização administrativa, Server Actions de login e redirecionamentos seguros
+    contact/            Formulário de contato: validação, Turnstile, e-mail (Resend) e limite de envios
     media/              Bucket, limites, verificação de arquivos e referências de imagem
     queries/            Consultas de conteúdo (públicas e contagens do painel)
     supabase/           Clientes Supabase (navegador, servidor e público)
@@ -97,12 +108,16 @@ src/
   types/
     content.ts          Formatos de conteúdo derivados do schema
     database.types.ts   Tipos do banco gerados pelo Supabase CLI (não editar)
+tests/
+  contact/              Testes unitários do formulário de contato
+  support/              Resolução de imports .ts para o node --test
 supabase/
   config.toml           Configuração do Supabase CLI (ambiente local)
   migrations/           Migrations SQL versionadas
 docs/
   admin-auth.md         Autenticação, autorização e primeiro administrador
   cms.md                CMS: módulos, validação, salvamento, exclusão e RLS de escrita
+  contact-form.md       Formulário de contato: segurança, variáveis, testes e ativação
   content-handover.md   Conteúdos que a equipe GeoLogar precisa fornecer ou aprovar
   database-schema.md    Modelo de dados
   deployment.md         Deploy no Cloudflare Workers e checklist de produção
@@ -223,6 +238,17 @@ importado, de onde e por quê está em
 a equipe precisa fornecer ou aprovar está em
 [`docs/content-handover.md`](docs/content-handover.md). Importado não
 significa aprovado.
+
+### Formulário de contato (Etapa 9)
+
+`/contato` tem um formulário (nome, e-mail, assunto fixo e mensagem) enviado
+por e-mail via Resend, protegido por Cloudflare Turnstile, honeypot, limite de
+5 envios/minuto por visitante (binding de Rate Limiting do Workers) e
+validação estrita no servidor (`/api/contact`). Nenhuma mensagem é gravada no
+banco. **Fica oculto até que as variáveis de runtime sejam configuradas**
+com os dados da GeoLogar; até lá a página mostra só os canais publicados.
+Detalhes, testes e checklist de ativação em
+[`docs/contact-form.md`](docs/contact-form.md).
 
 ## Supabase
 

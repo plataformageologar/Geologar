@@ -19,7 +19,7 @@ administrativa (`/admin`) tem layout próprio.
 | `/projetos/[slug]`  | `src/app/(public)/projetos/[slug]/page.tsx`    | Projeto, ficha técnica, linhas, publicações e projetos relacionados |
 | `/publicacoes`      | `src/app/(public)/publicacoes/page.tsx`        | Publicações por ano, busca, filtros por ano e linha (20/página)    |
 | `/instituicoes`     | `src/app/(public)/instituicoes/page.tsx`       | Instituições agrupadas pelas categorias cadastradas                |
-| `/contato`          | `src/app/(public)/contato/page.tsx`            | Canais reais de `site_settings` e `social_links` (sem formulário)  |
+| `/contato`          | `src/app/(public)/contato/page.tsx`            | Canais reais de `site_settings` e `social_links`; formulário de contato quando configurado ([`contact-form.md`](contact-form.md)) |
 | 404                 | `src/app/not-found.tsx`, `src/app/(public)/not-found.tsx` | Página não encontrada, com links de retorno (URL inexistente / `notFound()` de uma página) |
 | erro                | `src/app/(public)/error.tsx`                   | Falha temporária de carregamento, com "Tentar novamente"           |
 

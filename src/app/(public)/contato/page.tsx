@@ -3,10 +3,12 @@ import { ArrowUpRight, Mail, MapPin, Phone } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { ContactForm } from "@/components/contact/contact-form";
 import { Container } from "@/components/ui/container";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { TextLink } from "@/components/ui/text-link";
+import { getContactConfig } from "@/lib/contact/config";
 import { getHomepageContent } from "@/lib/queries/homepage";
 import { getContactChannels } from "@/lib/queries/settings";
 import { safeExternalUrl } from "@/lib/utils/format";
@@ -15,7 +17,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Contato",
-  description: "Canais oficiais de contato da GeoLogar.",
+  description: "Fale com a GeoLogar: formulário e canais oficiais de contato.",
 };
 
 function Channel({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: ReactNode }) {
@@ -52,6 +54,56 @@ export default async function ContactPage() {
     return url ? [{ ...link, url }] : [];
   });
   const hasChannels = Boolean(email || phone || address || location || socials.length > 0);
+  // O formulário só aparece com a configuração completa (docs/contact-form.md);
+  // sem ela, a página continua só com os canais publicados.
+  const { config } = getContactConfig();
+
+  const channels = (
+    <ul className={config ? "grid gap-4" : "grid gap-6 md:grid-cols-2 lg:grid-cols-3"}>
+      {email && (
+        <Channel icon={Mail} label="E-mail">
+          <a href={`mailto:${email}`} className={channelLink}>
+            {email}
+          </a>
+        </Channel>
+      )}
+      {phone && (
+        <Channel icon={Phone} label="Telefone">
+          <a href={`tel:${phone.replace(/[^\d+]/g, "")}`} className={channelLink}>
+            {phone}
+          </a>
+        </Channel>
+      )}
+      {(address || location) && (
+        <Channel icon={MapPin} label="Endereço">
+          <address className="not-italic">
+            {address}
+            {address && location && <br />}
+            {location}
+          </address>
+        </Channel>
+      )}
+      {socials.length > 0 && (
+        <Channel icon={ArrowUpRight} label="Redes sociais">
+          <ul className="flex flex-col">
+            {socials.map((link) => (
+              <li key={link.id}>
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${channelLink} inline-flex min-h-10 items-center capitalize`}
+                >
+                  {link.label ?? link.platform}
+                  <span className="sr-only"> (abre em nova aba)</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </Channel>
+      )}
+    </ul>
+  );
 
   return (
     <>
@@ -63,45 +115,42 @@ export default async function ContactPage() {
       />
 
       <Container className="section-y">
-        {hasChannels ? (
-          <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {email && (
-              <Channel icon={Mail} label="E-mail">
-                <a href={`mailto:${email}`} className={channelLink}>
-                  {email}
-                </a>
-              </Channel>
-            )}
-            {phone && (
-              <Channel icon={Phone} label="Telefone">
-                <a href={`tel:${phone.replace(/[^\d+]/g, "")}`} className={channelLink}>
-                  {phone}
-                </a>
-              </Channel>
-            )}
-            {(address || location) && (
-              <Channel icon={MapPin} label="Endereço">
-                <address className="not-italic">
-                  {address}
-                  {address && location && <br />}
-                  {location}
-                </address>
-              </Channel>
-            )}
-            {socials.length > 0 && (
-              <Channel icon={ArrowUpRight} label="Redes sociais">
-                <ul className="flex flex-col">
-                  {socials.map((link) => (
-                    <li key={link.id}>
-                      <a href={link.url} className={`${channelLink} inline-flex min-h-10 items-center capitalize`}>
-                        {link.label ?? link.platform}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </Channel>
-            )}
-          </ul>
+        {config ? (
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-12 xl:gap-16">
+            <section
+              aria-labelledby="contact-form-title"
+              className="flex min-w-0 flex-col gap-6 rounded-2xl border border-border bg-surface p-5 sm:p-8"
+            >
+              <div className="flex flex-col gap-2">
+                <h2 id="contact-form-title" className="font-sans text-h3">
+                  Envie uma mensagem
+                </h2>
+                <p className="text-body-sm text-muted-foreground">
+                  Todos os campos são obrigatórios. A resposta será enviada para o e-mail informado.
+                </p>
+              </div>
+              <ContactForm turnstileSiteKey={config.turnstileSiteKey} />
+            </section>
+
+            <aside aria-labelledby="contact-channels-title" className="flex min-w-0 flex-col gap-5">
+              <h2 id="contact-channels-title" className="font-sans text-h4">
+                Outros canais
+              </h2>
+              {hasChannels ? (
+                channels
+              ) : (
+                <EmptyState
+                  title="Os canais oficiais de contato ainda não foram publicados."
+                  description="Enquanto isso, conheça a rede e as linhas de pesquisa."
+                >
+                  <TextLink href="/rede">Conheça a rede</TextLink>
+                  <TextLink href="/pesquisa">Ver linhas de pesquisa</TextLink>
+                </EmptyState>
+              )}
+            </aside>
+          </div>
+        ) : hasChannels ? (
+          channels
         ) : (
           <EmptyState
             title="Os canais oficiais de contato ainda não foram publicados."

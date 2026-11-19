@@ -4,6 +4,7 @@ import { ArrowRight, ArrowUpRight, Lock, Mail, MapPin, Phone } from "lucide-reac
 
 import logo from "@/assets/brand/geologar-logo-circle.png";
 import { Container } from "@/components/ui/container";
+import { safeExternalUrl } from "@/lib/utils/format";
 import type { NavItem, SiteSettings, SocialLink } from "@/types/content";
 
 type FooterProps = {
@@ -12,7 +13,12 @@ type FooterProps = {
   socialLinks: SocialLink[];
 };
 
-export function Footer({ settings, navigation, socialLinks }: FooterProps) {
+export function Footer({ settings, navigation, socialLinks: allSocialLinks }: FooterProps) {
+  // Somente links http(s) válidos (a constraint do banco já exige o esquema).
+  const socialLinks = allSocialLinks.flatMap((link) => {
+    const url = safeExternalUrl(link.url);
+    return url ? [{ ...link, url }] : [];
+  });
   const location = [settings.city, settings.state, settings.country]
     .filter(Boolean)
     .join(" — ");
@@ -123,10 +129,13 @@ export function Footer({ settings, navigation, socialLinks }: FooterProps) {
                     <li key={link.id}>
                       <a
                         href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="inline-flex min-h-10 items-center gap-1.5 text-body-sm capitalize underline-offset-4 hover:underline"
                       >
                         {link.label ?? link.platform}
                         <ArrowUpRight aria-hidden="true" className="size-4" />
+                        <span className="sr-only"> (abre em nova aba)</span>
                       </a>
                     </li>
                   ))}

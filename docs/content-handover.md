@@ -86,14 +86,31 @@ Nenhuma instituição foi cadastrada. A relação sugerida pelo mockup está no
 - [ ] Telefone, se houver atendimento oficial (o do mockup é incompleto).
 - [ ] Localização institucional validada.
 - [ ] Redes sociais ativas (endereços completos).
-- [ ] Endereço que receberá as mensagens do futuro formulário de contato
-      (Etapa 9).
+
+### Formulário de contato
+
+O formulário está pronto, mas **desativado** até que os itens abaixo sejam
+definidos (detalhes em [`contact-form.md`](contact-form.md#checklist-de-ativação)):
+
+- [ ] Endereço que receberá as mensagens do formulário (não precisa ser o
+      e-mail público exibido no site).
+- [ ] Pessoa ou equipe responsável por ler e responder as mensagens.
+- [ ] Domínio de envio (o remetente precisa estar em um domínio verificado no
+      provedor de e-mail, o que exige registros no DNS desse domínio).
+- [ ] Endereço remetente (ex.: `nao-responda@` no domínio de envio).
+- [ ] Conta no provedor de envio (Resend) e no Cloudflare Turnstile, ou
+      autorização para criá-las em nome da GeoLogar.
+- [ ] Aprovação do texto de privacidade exibido abaixo do formulário: "Os
+      dados informados serão utilizados para responder à sua mensagem enviada
+      à GeoLogar."
 
 ## Jurídico
 
 - [ ] Política de privacidade.
 - [ ] Termos de uso, quando aplicáveis.
-- [ ] Orientações sobre tratamento de dados do formulário de contato.
+- [ ] Orientações sobre tratamento de dados do formulário de contato (as
+      mensagens não são gravadas no site; ficam na caixa de e-mail que as
+      recebe e no provedor de envio).
 
 Nenhum texto jurídico foi redigido: os links do mockup (termos, privacidade,
 mapa do site, acessibilidade) só serão criados com textos fornecidos ou
