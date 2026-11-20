@@ -4,11 +4,15 @@ import { fallbackHomepageContent } from "@/data/site";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { HomepageContent } from "@/types/content";
 
+import type { SectionsData } from "@/components/site/page-sections";
+import { SECTION_ANCHORS } from "@/lib/site/anchors";
+
 import { getHomepageInstitutionGroups } from "./institutions";
 import { getFeaturedProjects } from "./projects";
 import { getRecentPublications } from "./publications";
 import { getHomepageResearchLines } from "./research-lines";
 import { logQueryError, resolveImageSrc } from "./shared";
+import { getPageSections, getPillars, type RenderSection } from "./site-config";
 
 async function fetchHomepageContent() {
   // Registro único, garantido pelo índice homepage_content_singleton.
@@ -38,47 +42,48 @@ export async function getHomepageContent(): Promise<HomepageContent> {
   }
 }
 
+/** Dados das seções configuráveis (homepage e /rede), lidos em paralelo. */
+export async function getSectionsData(options: { researchLineLimit: number }): Promise<SectionsData> {
+  const [homepage, researchLines, projects, publications, institutionGroups, pillars] = await Promise.all([
+    getHomepageContent(),
+    // Até 12 itens: o limite exibido é escolhido em cada seção.
+    getHomepageResearchLines(options.researchLineLimit),
+    getFeaturedProjects(12),
+    getRecentPublications(12),
+    getHomepageInstitutionGroups(),
+    getPillars(),
+  ]);
+  const institutions = Object.fromEntries(
+    institutionGroups.flatMap((group) => group.institutions.map((institution) => [institution.id, institution])),
+  );
+  return { homepage, researchLines, projects, publications, institutionGroups, pillars, institutions };
+}
+
 /**
  * Todo o conteúdo da homepage, carregado em paralelo. `cache` garante uma única
- * leitura por requisição, compartilhada pelo layout (navegação) e pela página.
+ * leitura por requisição, compartilhada pelos metadados e pela página.
  */
 export const getHomepageData = cache(async () => {
-  const [content, researchLines, projects, publications, institutionGroups] =
-    await Promise.all([
-      getHomepageContent(),
-      getHomepageResearchLines(),
-      getFeaturedProjects(),
-      getRecentPublications(),
-      getHomepageInstitutionGroups(),
-    ]);
+  const [data, sections] = await Promise.all([getSectionsData({ researchLineLimit: 12 }), getPageSections("home")]);
 
   // Seções renderizadas (ids usados nas âncoras da navegação e dos CTAs).
-  const sections = new Set<string>();
-  if (content.about_title) sections.add("a-rede");
-  if (researchLines.length > 0) sections.add("pesquisa");
-  if (projects.length > 0) sections.add("projetos");
-  if (publications.length > 0) sections.add("publicacoes");
-  if (institutionGroups.length > 0) sections.add("instituicoes");
-  if (content.cooperation_title) sections.add("contato");
+  const anchors = new Set<string>();
+  const present: Record<string, boolean> = {
+    about: Boolean(data.homepage.about_title),
+    research: data.researchLines.length > 0,
+    projects: data.projects.length > 0,
+    publications: data.publications.length > 0,
+    institutions: data.institutionGroups.length > 0,
+    cooperation: Boolean(data.homepage.cooperation_title),
+  };
+  for (const section of sections) {
+    const anchor = SECTION_ANCHORS[section.section_type];
+    if (anchor && present[section.section_type]) anchors.add(anchor);
+  }
 
-  return { content, researchLines, projects, publications, institutionGroups, sections };
+  return { data, sections, anchors };
 });
 
-/**
- * Mantém o link apenas se não apontar para uma âncora de seção ausente da
- * homepage (ex.: valores antigos como "/#pesquisa"). Rotas e URLs externas
- * são mantidas.
- */
-export function isLinkAvailable(href: string, sections: Set<string>) {
-  return !href.startsWith("/#") || sections.has(href.slice(2));
-}
+export type { RenderSection };
 
-/** Textos do banner sem os CTAs que apontam para seções ausentes. */
-export function withAvailableHeroLinks(content: HomepageContent, sections: Set<string>): HomepageContent {
-  const available = (href: string | null) => (href && isLinkAvailable(href, sections) ? href : null);
-  return {
-    ...content,
-    hero_primary_cta_href: available(content.hero_primary_cta_href),
-    hero_secondary_cta_href: available(content.hero_secondary_cta_href),
-  };
-}
+export { isLinkAvailable, withAvailableHeroLinks } from "@/lib/site/anchors";

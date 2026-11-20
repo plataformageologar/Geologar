@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Lock, Menu, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 
-import type { NavItem } from "@/types/content";
+import type { SiteNavItem } from "@/lib/site/navigation";
 
 import { NavLink } from "./nav-link";
 
@@ -12,7 +12,7 @@ import { NavLink } from "./nav-link";
  * Menu de navegação para telas menores que `lg` (padrão disclosure).
  * Fecha com Esc (devolvendo o foco ao botão) ou ao escolher um link.
  */
-export function MobileMenu({ navigation }: { navigation: NavItem[] }) {
+export function MobileMenu({ navigation }: { navigation: SiteNavItem[] }) {
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelId = useId();
@@ -57,9 +57,10 @@ export function MobileMenu({ navigation }: { navigation: NavItem[] }) {
       >
         <ul className="mx-auto flex max-w-[80rem] flex-col px-[clamp(1rem,4vw,2.5rem)] py-3">
           {navigation.map((item) => (
-            <li key={item.href} className="border-b border-border last:border-b-0">
+            <li key={`${item.href}-${item.label}`} className="border-b border-border last:border-b-0">
               <NavLink
                 href={item.href}
+                newTab={item.openInNewTab}
                 onClick={() => setOpen(false)}
                 className="flex min-h-13 items-center gap-3 text-body-lg font-semibold text-foreground hover:text-primary"
                 activeClassName="text-primary before:h-6 before:w-1 before:rounded-full before:bg-primary before:content-['']"

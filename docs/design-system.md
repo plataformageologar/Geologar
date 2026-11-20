@@ -44,6 +44,27 @@ Contraste (WCAG 2.2): todos os pares de texto usados ficam entre **5,3:1** e
 Sobre fundos escuros, envolva a área com a classe `on-dark` para que o foco
 use `ring-on-dark`.
 
+### Personalização (Etapa 9.5)
+
+A tela **Aparência** (`/admin/aparencia`, só admin) altera o tema sem CSS
+livre: `appearanceCss()` (`src/lib/site/appearance.ts`) gera uma regra
+`:root { … }` apenas com variáveis conhecidas, aplicada no layout público e na
+tela do editor.
+
+| Opção | Variáveis |
+| --- | --- |
+| Cor principal / secundária / destaque | `--primary`, `--secondary`, `--earth` + `-soft` (mistura com branco) e `-hover` (mistura com preto) |
+| Fundo das seções (`sand`, `white`, `stone`) | `--background`, `--surface-muted`, `--border` |
+| Cantos (`rounded`, `soft`, `straight`) | `--radius-lg` … `--radius-3xl` |
+| Botões (`pill`, `rounded`, `square`) | `--button-radius` |
+| Cards (`bordered`, `elevated`, `flat`) | `--card-border`, `--card-shadow` |
+| Fonte dos títulos (`serif`, `sans`) | `--heading-font` |
+
+Cada cor precisa de contraste ≥ 4,5:1 com texto branco e com o fundo
+escolhido; caso contrário a gravação é recusada com a razão calculada. Valores
+`null` (ou “Restaurar padrão”) mantêm a tabela de cores acima. Com tudo no
+padrão, nenhuma regra extra é emitida.
+
 ## Tipografia
 
 Duas famílias da mesma superfamília (Source), carregadas via `next/font`:
@@ -176,6 +197,19 @@ fundo suave com curvas de nível e ícone — decorativo (`aria-hidden`).
   registro no formulário.
 - Logotipos e favicon no CMS: pré-visualização somente leitura sobre fundo
   branco com `object-contain` (sem recorte, distorção ou recoloração).
+
+### Editor visual (`components/admin/editor/`)
+
+- Barra superior, tela (iframe com os componentes públicos) e painel de
+  propriedades. Painel fixo a partir de `xl`, sobreposto em `md`–`lg` e
+  gaveta inferior abaixo de `md`.
+- Elemento selecionável: contorno `ring` (`#1f6fb2`) com halo branco, visível
+  sobre fundos claros e escuros; rótulo em chip da mesma cor. Seções ocultas
+  ficam esmaecidas com o selo “Oculta no site”.
+- Status sempre com texto (`role="status"`); avisos de logotipo e contraste
+  com `FormMessage` tom `warning`.
+- O botão público “Editar esta página” é um link flutuante `primary`, só
+  renderizado para quem tem sessão e permissão, e nunca dentro do editor.
 
 ### Ícones
 

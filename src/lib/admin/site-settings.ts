@@ -17,7 +17,35 @@ export const siteSettingsTextRules = {
   city: { max: 120 },
   state: { max: 120 },
   country: { max: 120 },
+  footer_description: { max: 500, multiline: true },
+  footer_note: { max: 300, multiline: true },
+  footer_nav_title: { max: 40 },
+  footer_contact_title: { max: 40 },
+  footer_social_title: { max: 40 },
 } satisfies Record<string, TextRule>;
+
+/** Logotipo do rodapé: oficial (arquivo do código), o institucional ou um próprio. */
+export const FOOTER_LOGO_MODES = ["official", "institutional", "custom"] as const;
+export type FooterLogoMode = (typeof FOOTER_LOGO_MODES)[number];
+export const FOOTER_LOGO_MODE_LABELS: Record<FooterLogoMode, string> = {
+  official: "Logotipo oficial da GeoLogar (padrão)",
+  institutional: "O mesmo logotipo do cabeçalho",
+  custom: "Logotipo próprio para o rodapé",
+};
+
+export const HEADER_STYLES = ["solid", "translucent"] as const;
+export type HeaderStyle = (typeof HEADER_STYLES)[number];
+export const HEADER_STYLE_LABELS: Record<HeaderStyle, string> = {
+  solid: "Fundo branco (padrão)",
+  translucent: "Fundo translúcido ao rolar",
+};
+
+/** Títulos padrão das colunas do rodapé (campos vazios). */
+export const FOOTER_DEFAULT_TITLES = {
+  footer_nav_title: "Navegação",
+  footer_contact_title: "Contato",
+  footer_social_title: "Redes sociais",
+} as const;
 
 export const siteSettingsFields = [
   "site_name",
@@ -32,6 +60,14 @@ export const siteSettingsFields = [
   "country",
   "logo_path",
   "favicon_path",
+  "footer_description",
+  "footer_note",
+  "footer_nav_title",
+  "footer_contact_title",
+  "footer_social_title",
+  "footer_logo_mode",
+  "footer_logo_path",
+  "header_style",
 ] as const;
 
 export type SiteSettingsField = (typeof siteSettingsFields)[number];
@@ -60,7 +96,7 @@ export function readSiteSettingsForm(formData: FormData): SiteSettingsFormValues
  */
 export function parseSiteSettingsValues(
   values: SiteSettingsFormValues,
-  current: { logoPath: string | null; faviconPath: string | null },
+  current: { logoPath: string | null; faviconPath: string | null; footerLogoPath?: string | null },
 ): {
   data: SiteSettingsRecord;
   errors: SiteSettingsFieldErrors;
@@ -71,6 +107,20 @@ export function parseSiteSettingsValues(
   if (logo.error) errors.logo_path = logo.error;
   const favicon = parseImageReference(values.favicon_path, current.faviconPath);
   if (favicon.error) errors.favicon_path = favicon.error;
+  const footerLogo = parseImageReference(values.footer_logo_path, current.footerLogoPath ?? null);
+  if (footerLogo.error) errors.footer_logo_path = footerLogo.error;
+
+  const footerLogoMode = (FOOTER_LOGO_MODES as readonly string[]).includes(values.footer_logo_mode)
+    ? (values.footer_logo_mode as FooterLogoMode)
+    : null;
+  if (!footerLogoMode) errors.footer_logo_mode = "Escolha uma das opções.";
+  else if (footerLogoMode === "custom" && !footerLogo.value && !footerLogo.error) {
+    errors.footer_logo_path = "Selecione o logotipo do rodapé ou escolha outra opção.";
+  }
+  const headerStyle = (HEADER_STYLES as readonly string[]).includes(values.header_style)
+    ? (values.header_style as HeaderStyle)
+    : null;
+  if (!headerStyle) errors.header_style = "Escolha uma das opções.";
   const text = (field: keyof typeof siteSettingsTextRules) => {
     const rule: TextRule = siteSettingsTextRules[field];
     const value = normalizeText(values[field], rule.multiline);
@@ -100,6 +150,15 @@ export function parseSiteSettingsValues(
     country: text("country"),
     logo_path: logo.value,
     favicon_path: favicon.value,
+    footer_description: text("footer_description"),
+    footer_note: text("footer_note"),
+    footer_nav_title: text("footer_nav_title"),
+    footer_contact_title: text("footer_contact_title"),
+    footer_social_title: text("footer_social_title"),
+    footer_logo_mode: footerLogoMode ?? "official",
+    // O arquivo próprio fica guardado mesmo com outra opção ativa.
+    footer_logo_path: footerLogo.value,
+    header_style: headerStyle ?? "solid",
   };
   return { data, errors };
 }

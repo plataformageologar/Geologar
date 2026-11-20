@@ -5,26 +5,24 @@ import { researchLineIcon, researchLineTint } from "@/components/research/resear
 import { Container } from "@/components/ui/container";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { resolvePageHeader } from "@/lib/site/page-content";
+import { getPageContent, getPageMetadata } from "@/lib/queries/site-config";
 import { getPublishedResearchLines } from "@/lib/queries/research-lines";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Pesquisa",
-  description:
-    "Linhas de pesquisa da GeoLogar, com os projetos e as publicações associados a cada uma.",
-};
+export function generateMetadata(): Promise<Metadata> {
+  return getPageMetadata("pesquisa", { title: "Pesquisa" });
+}
 
 export default async function ResearchPage() {
-  const researchLines = await getPublishedResearchLines();
+  const [researchLines, page] = await Promise.all([getPublishedResearchLines(), getPageContent("pesquisa")]);
 
   return (
     <>
       <PageHeader
         breadcrumb={[{ label: "Início", href: "/" }, { label: "Pesquisa" }]}
-        eyebrow="Pesquisa"
-        title="Linhas de pesquisa"
-        description="Conheça as linhas de pesquisa da rede e os projetos e publicações associados a cada uma."
+        {...resolvePageHeader("pesquisa", page)}
       />
 
       <Container className="section-y">

@@ -8,8 +8,11 @@ A Etapa 7.3 completou o conteúdo institucional: **publicações**,
 (`site_settings`) e **redes sociais**. A Etapa 8 adicionou a **biblioteca de
 mídia** (Supabase Storage) e o campo de imagem em homepage, linhas de
 pesquisa, projetos, instituições e configurações — ver
-[`media-library.md`](media-library.md). Todos os itens da navegação do painel
-têm página.
+[`media-library.md`](media-library.md). A Etapa 9.5 levou para o banco o que
+ainda estava no código (pilares, menus, seções, textos das páginas internas,
+rodapé e aparência), criou as telas do grupo **Site** e o **editor visual**
+(`/admin/editor`) — ver [`visual-editor.md`](visual-editor.md). Todos os
+itens da navegação do painel têm página.
 
 Autenticação, papéis e sessão: ver [`admin-auth.md`](admin-auth.md).
 
@@ -445,12 +448,56 @@ rascunhos são lidos com a sessão do usuário (RLS libera apenas admin/editor
 ativos); o layout `/admin` aplica `noindex, nofollow`. A prévia não grava
 nada. Pendências do cliente em [`content-handover.md`](content-handover.md).
 
+## Personalização do site (Etapa 9.5)
+
+Grupo **Site** no menu do painel. Cada tela tem o link “Editar visualmente”
+para o editor visual, que grava pelas mesmas actions.
+
+| Tela | Papel | Conteúdo | Action |
+| --- | --- | --- | --- |
+| `/admin/editor?pagina=/` | admin, editor | Editor visual (ver [`visual-editor.md`](visual-editor.md)) | todas abaixo |
+| `/admin/secoes?pagina=home\|rede` | admin, editor | Ordem, visibilidade e opções das seções; blocos texto, imagem + texto, chamada, galeria e logotipos | `savePageSections` |
+| `/admin/pilares` | admin, editor | Pilares da rede (título, descrição, ícone da lista fixa) | `savePillars` |
+| `/admin/textos-das-paginas?pagina=` | admin, editor | Rótulo, título, introdução e SEO de rede, pesquisa, projetos, publicações, instituições e contato | `savePageContent` |
+| `/admin/navegacao?menu=header\|footer` | admin (editor só consulta) | Links do cabeçalho e do rodapé | `saveNavigation` |
+| `/admin/aparencia` | admin | Cores, fundo, botões, cantos, fonte dos títulos, cards | `saveAppearance` |
+| `/admin/configuracoes` | admin | + seção “Cabeçalho e rodapé” (estilo do cabeçalho, logotipo e textos do rodapé) | `saveSiteSettings` |
+
+Arquivos: `src/app/admin/(protected)/{secoes,pilares,textos-das-paginas,navegacao,aparencia}/`,
+`src/components/admin/site/` (campos compartilhados com o editor),
+`src/lib/site/` (validação), `src/lib/admin/site-config-actions.ts`,
+`src/lib/queries/site-config.ts`.
+
+Regras:
+
+- Listas (pilares, menus, seções) são salvas inteiras por funções atômicas
+  (`save_site_pillars`, `save_site_navigation`, `save_page_sections`), com
+  detecção de edição simultânea pelos pares `(id, updated_at)` (`GL409`).
+- Seções nativas (hero, apresentação, pilares, pesquisa, projetos,
+  publicações, instituições, cooperação) podem ser ocultadas e reordenadas,
+  não removidas nem duplicadas. Blocos podem ser adicionados, duplicados e
+  removidos (até 40 seções por página).
+- As configurações de cada seção são JSONB com chaves permitidas por tipo,
+  validadas no servidor (`validateSectionSettings`) e no banco
+  (`is_valid_section_settings`). Sem HTML, CSS ou componentes livres.
+- Links: caminhos internos ou URLs http(s) (recomenda-se `https://`); nos
+  menus, `/admin`, `/api` e `/auth` também são recusados. CTAs que apontam para âncoras de seções
+  ocultas são omitidos no site.
+- O acesso à área restrita não faz parte dos menus editáveis (fica no
+  código), para que nenhuma edição bloqueie o painel.
+- Campos vazios em “Textos das páginas” usam o texto padrão
+  (`resolvePageHeader`).
+- Aparência: só cores `#rrggbb` com contraste mínimo de 4,5:1 e opções
+  fechadas, aplicadas como variáveis CSS (ver
+  [`design-system.md`](design-system.md#personalização-etapa-95)).
+
 ## Limitações atuais
 
 - Sem rich text, histórico de versões ou agendamento. A homepage não tem
   rascunho.
 - Sem redirecionamento de slugs antigos.
-- Ordenação por número (`sort_order`), sem arrastar e soltar.
+- Ordenação por número (`sort_order`) ou botões subir/descer, sem arrastar e
+  soltar.
 - Imagens sem recorte ou compressão no navegador (ver
   [`media-library.md`](media-library.md#limitações)).
 - Publicações não têm página individual; o slug fica reservado.
@@ -466,3 +513,6 @@ nada. Pendências do cliente em [`content-handover.md`](content-handover.md).
   ([`initial-content-manifest.md`](initial-content-manifest.md)).
 - Etapa 9 concluída: formulário de contato (desativado até a configuração
   pela GeoLogar), sem gravação no banco ([`contact-form.md`](contact-form.md)).
+- Etapa 9.5 concluída: editor visual e personalização do site
+  ([`visual-editor.md`](visual-editor.md),
+  [`guia-edicao-geologar.md`](guia-edicao-geologar.md)).

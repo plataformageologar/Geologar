@@ -6,6 +6,8 @@ import { ProjectCard } from "@/components/projects/project-card";
 import { Container } from "@/components/ui/container";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { resolvePageHeader } from "@/lib/site/page-content";
+import { getPageContent, getPageMetadata } from "@/lib/queries/site-config";
 import { Pagination } from "@/components/ui/pagination";
 import { TextLink } from "@/components/ui/text-link";
 import {
@@ -19,10 +21,9 @@ import type { ProjectStatus } from "@/types/content";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Projetos",
-  description: "Projetos de pesquisa desenvolvidos pela GeoLogar e seus resultados.",
-};
+export function generateMetadata(): Promise<Metadata> {
+  return getPageMetadata("projetos", { title: "Projetos" });
+}
 
 // Valores de `?situacao=` (em português, na URL) e a situação no banco.
 const statusFilters = [
@@ -45,9 +46,10 @@ export default async function ProjectsPage({ searchParams }: PageProps<"/projeto
     statusFilters.find((item) => item.param && item.param === firstParam(query.situacao)) ??
     statusFilters[0];
 
-  const [counts, result] = await Promise.all([
+  const [counts, result, pageContent] = await Promise.all([
     getProjectStatusCounts(),
     getPublishedProjects({ status: filter.status, page }),
+    getPageContent("projetos"),
   ]);
   if (result.outOfRange) notFound();
 
@@ -59,9 +61,7 @@ export default async function ProjectsPage({ searchParams }: PageProps<"/projeto
     <>
       <PageHeader
         breadcrumb={[{ label: "Início", href: "/" }, { label: "Projetos" }]}
-        eyebrow="Projetos"
-        title="Projetos de pesquisa"
-        description="Conheça os projetos da rede, seus objetivos e resultados."
+        {...resolvePageHeader("projetos", pageContent)}
       />
 
       <Container className="section-y">

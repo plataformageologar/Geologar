@@ -14,11 +14,11 @@ import { PublicShell } from "@/components/layout/public-shell";
 import { ProjectCard } from "@/components/projects/project-card";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { pillars } from "@/data/site";
 import { requireAdminAccess } from "@/lib/auth/access";
 import { getDraftProjectsForDemo } from "@/lib/queries/admin-demo";
 import { getHomepageData, withAvailableHeroLinks } from "@/lib/queries/homepage";
 import { getActiveSocialLinks, getSiteSettings } from "@/lib/queries/settings";
+import type { SectionType } from "@/lib/site/sections";
 
 export const dynamic = "force-dynamic";
 
@@ -37,8 +37,15 @@ export const metadata: Metadata = {
 export default async function DemoPreviewPage() {
   await requireAdminAccess();
 
-  const [{ content, researchLines, projects, publications, institutionGroups, sections }, drafts, settings, socialLinks] =
-    await Promise.all([getHomepageData(), getDraftProjectsForDemo(), getSiteSettings(), getActiveSocialLinks()]);
+  const [{ data, sections, anchors }, drafts, settings, socialLinks] = await Promise.all([
+    getHomepageData(),
+    getDraftProjectsForDemo(),
+    getSiteSettings(),
+    getActiveSocialLinks(),
+  ]);
+  const { homepage: content, researchLines, projects, publications, institutionGroups, pillars } = data;
+  // Mesmas opções das seções da homepage (Seções e blocos).
+  const settingsOf = (type: SectionType) => sections.find((section) => section.section_type === type)?.settings ?? {};
 
   const linesWithImage = researchLines.filter((line) => line.image_path).length;
   const draftProjects = drafts.status === "ready" ? drafts.data : [];
@@ -67,7 +74,7 @@ export default async function DemoPreviewPage() {
       </div>
 
       <PublicShell>
-        <Hero content={withAvailableHeroLinks(content, sections)} eyebrow="Rede de Pesquisa em Geociências" />
+        <Hero content={withAvailableHeroLinks(content, anchors)} settings={settingsOf("hero")} />
         {content.hero_image_path ? (
           <DemoNote state="published">Banner com a fotografia configurada em Homepage.</DemoNote>
         ) : (
@@ -78,12 +85,12 @@ export default async function DemoPreviewPage() {
           </DemoNote>
         )}
 
-        <AboutNetwork content={content} pillars={pillars} />
+        <AboutNetwork content={content} pillars={pillars} settings={settingsOf("about")} />
         <DemoNote state="published">
-          Texto e pilares do briefing, já exibidos no site. <strong>Aprovação formal da equipe pendente.</strong>
+          Texto e pilares (editáveis em Pilares da rede), já exibidos no site. <strong>Aprovação formal da equipe pendente.</strong>
         </DemoNote>
 
-        <ResearchLines researchLines={researchLines} />
+        <ResearchLines researchLines={researchLines} settings={settingsOf("research")} />
         <DemoNote state="published">
           {researchLines.length} linhas publicadas
           {linesWithImage > 0 &&
@@ -91,7 +98,7 @@ export default async function DemoPreviewPage() {
           . <strong>Descrições pendentes de aprovação.</strong>
         </DemoNote>
 
-        <FeaturedProjects projects={projects} />
+        <FeaturedProjects projects={projects} settings={settingsOf("projects")} />
         {draftProjects.length > 0 ? (
           <section aria-labelledby="demo-projetos-title" className="section-y">
             <Container>
@@ -131,7 +138,7 @@ export default async function DemoPreviewPage() {
         </DemoNote>
 
         {publications.length > 0 ? (
-          <RecentPublications publications={publications} />
+          <RecentPublications publications={publications} settings={settingsOf("publications")} />
         ) : (
           <DemoPlaceholderSection id="demo-publicacoes" eyebrow="Publicações" title="Conhecimento publicado">
             <p>
@@ -143,7 +150,7 @@ export default async function DemoPreviewPage() {
         )}
 
         {institutionGroups.length > 0 ? (
-          <Partners groups={institutionGroups} />
+          <Partners groups={institutionGroups} settings={settingsOf("institutions")} />
         ) : (
           <DemoPlaceholderSection id="demo-instituicoes" eyebrow="Instituições" title="Instituições que conectam a rede">
             <p>
@@ -155,7 +162,7 @@ export default async function DemoPreviewPage() {
           </DemoPlaceholderSection>
         )}
 
-        <CooperationCta content={content} />
+        <CooperationCta content={content} settings={settingsOf("cooperation")} />
         <DemoNote state={hasContact || socialLinks.length > 0 ? "published" : "pending"}>
           {hasContact || socialLinks.length > 0
             ? "Rodapé com os contatos e redes sociais cadastrados em Configurações."

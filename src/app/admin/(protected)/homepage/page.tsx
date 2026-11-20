@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 
 import { FormMessage } from "@/components/admin/form-controls";
 import { HomepageForm } from "@/components/admin/homepage/homepage-form";
+import { VisualEditLink } from "@/components/admin/site/page-intro";
 import { toFormValues } from "@/lib/admin/homepage";
 import { requireAdminAccess } from "@/lib/auth/access";
 import { getHomepageForEdit } from "@/lib/queries/admin";
@@ -24,19 +26,27 @@ export default async function AdminHomepagePage() {
           <div className="flex flex-col gap-2">
             <h1 className="text-h1">Editar homepage</h1>
             <p className="text-body text-muted-foreground">
-              Gerencie os textos e botões apresentados na página inicial do portal GeoLogar.
+              Gerencie os textos e botões apresentados na página inicial do portal GeoLogar. A ordem
+              e a visibilidade das seções ficam em{" "}
+              <Link href="/admin/secoes" className="font-semibold text-primary underline underline-offset-2">
+                Seções e blocos
+              </Link>
+              .
             </p>
           </div>
-          <a
-            href="/"
-            target="_blank"
-            rel="noopener"
-            className="inline-flex min-h-11 shrink-0 items-center gap-2 self-start rounded-full border border-primary px-5 text-label text-primary transition-colors hover:bg-primary-soft"
-          >
-            Visualizar homepage
-            <ExternalLink aria-hidden="true" className="size-4" />
-            <span className="sr-only">(abre em nova aba)</span>
-          </a>
+          <div className="flex shrink-0 flex-wrap gap-3 self-start">
+            <VisualEditLink href="/admin/editor?pagina=%2F" />
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener"
+              className="inline-flex min-h-11 shrink-0 items-center gap-2 self-start rounded-full border border-primary px-5 text-label text-primary transition-colors hover:bg-primary-soft"
+            >
+              Visualizar homepage
+              <ExternalLink aria-hidden="true" className="size-4" />
+              <span className="sr-only">(abre em nova aba)</span>
+            </a>
+          </div>
         </div>
         {homepage.status === "ready" && (
           <FormMessage tone="info">

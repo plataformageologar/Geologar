@@ -24,7 +24,7 @@ type ButtonAsButton = BaseProps &
   Omit<ComponentProps<"button">, keyof BaseProps> & { href?: undefined };
 
 const base =
-  "group inline-flex items-center justify-center gap-2 rounded-full font-semibold " +
+  "group inline-flex items-center justify-center gap-2 rounded-[var(--button-radius)] font-semibold " +
   "transition-colors duration-200 disabled:pointer-events-none disabled:opacity-50";
 
 const sizes: Record<Size, string> = {

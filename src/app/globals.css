@@ -47,6 +47,16 @@
 
   /* Layout */
   --header-height: 4.5rem;
+
+  /*
+   * Aparência ajustável pelo CMS (Aparência do site). A tabela
+   * site_appearance gera uma regra :root com novos valores para estas
+   * variáveis e para as cores acima — nunca CSS livre.
+   */
+  --heading-font: var(--font-source-serif), ui-serif, Georgia, serif;
+  --button-radius: 9999px;
+  --card-border: var(--border);
+  --card-shadow: none;
 }
 
 @theme inline {
@@ -80,7 +90,7 @@
   --color-ring: var(--ring);
 
   --font-sans: var(--font-source-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-source-serif), ui-serif, Georgia, serif;
+  --font-display: var(--heading-font);
 }
 
 @theme {
@@ -129,6 +139,12 @@
 /* Espaçamento vertical padrão entre seções */
 @utility section-y {
   padding-block: clamp(4rem, 2.8rem + 5vw, 7.5rem);
+}
+
+/* Borda e sombra dos cards, conforme o estilo escolhido em Aparência. */
+@utility card-surface {
+  border-color: var(--card-border);
+  box-shadow: var(--card-shadow);
 }
 
 /* Padrão de curvas de nível; a cor vem de `color`/currentColor. */

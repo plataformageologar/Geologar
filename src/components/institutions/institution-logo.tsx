@@ -19,7 +19,7 @@ export function InstitutionLogo({ institution }: { institution: InstitutionSumma
     <span
       className={cn(
         "relative flex aspect-[3/2] items-center justify-center rounded-xl border bg-surface p-4",
-        institution.logo_path ? "border-border" : "border-dashed border-border",
+        institution.logo_path ? "card-surface" : "border-dashed border-border",
       )}
     >
       {institution.logo_path ? (

@@ -387,6 +387,46 @@ serão criadas módulo a módulo (ver [`cms.md`](cms.md)).
 As funções de trigger usam `search_path` vazio e não podem ser executadas
 diretamente por `anon`/`authenticated`.
 
+## Etapa 9.5 — personalização do site
+
+Migration `20261120090000_visual_editor_customization.sql`. Conteúdo que estava
+fixo no código passou para o banco; a migration insere os mesmos valores
+(idempotente, sem apagar registros existentes).
+
+| Tabela | Conteúdo | Leitura pública | Escrita |
+| --- | --- | --- | --- |
+| `site_pillars` | Pilares da rede: título, descrição, ícone (lista fixa), ordem, visibilidade | itens visíveis | admin, editor |
+| `site_navigation` | Links do cabeçalho/rodapé (`location` header/footer), nova aba, ordem, visibilidade | itens visíveis | admin |
+| `page_sections` | Seções de `home` e `rede`: tipo, ordem, visibilidade, `settings` JSONB | itens visíveis | admin, editor |
+| `page_content` | Rótulo, título, introdução e SEO de 6 páginas internas | todas | admin, editor (só UPDATE) |
+| `site_appearance` | Registro único: cores, fundo, botões, cantos, fonte, cards | sim | admin (só UPDATE) |
+| `site_settings` (+) | `footer_description`, `footer_note`, `footer_*_title`, `footer_logo_mode` (official/institutional/custom), `footer_logo_path`, `header_style` (solid/translucent) | sim | admin |
+
+Regras no banco:
+
+- `page_sections.section_type`: nativas (`hero`, `about`, `pillars`,
+  `research`, `projects`, `publications`, `institutions`, `cooperation`, no
+  máximo uma por página — índice único parcial) e blocos (`text`,
+  `image_text`, `cta`, `gallery`, `logos`).
+- `is_valid_section_settings(type, settings)`: somente as chaves previstas
+  para o tipo, com tipo, tamanho e valores fechados; `is_valid_site_href`
+  para links; imagens no formato da biblioteca.
+- Imagens novas em `settings`, `footer_logo_path` e `seo_image_path` precisam
+  existir no bucket (`GL422`) e aparecem em `media_usage` (não podem ser
+  excluídas enquanto usadas).
+- Cores `^#[0-9a-f]{6}$` e opções por `CHECK`; `null` mantém o padrão.
+- `GRANT` por coluna: `id`, `created_at`, `updated_at`, `page_key` (em
+  `page_content`) e `section_type` (em UPDATE) não são graváveis.
+- Funções `save_site_pillars`, `save_site_navigation` e `save_page_sections`
+  (SECURITY INVOKER, sujeitas a RLS) gravam a lista inteira numa transação e
+  recusam com `GL409` se algum par `(id, updated_at)` mudou
+  (`assert_list_unchanged`).
+- Políticas com `has_cms_role(...)`; nenhuma usa `USING (true)` para escrita
+  nem SECURITY DEFINER.
+
+Testes: `supabase/tests/database/visual_editor_customization.test.sql`
+(pgTAP, em transação desfeita no final).
+
 ## Ainda não implementado
 
 - Gestão de usuários pelo painel.

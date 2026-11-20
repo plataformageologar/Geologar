@@ -250,6 +250,22 @@ com os dados da GeoLogar; até lá a página mostra só os canais publicados.
 Detalhes, testes e checklist de ativação em
 [`docs/contact-form.md`](docs/contact-form.md).
 
+### Editor visual e personalização (Etapa 9.5)
+
+**`/admin/editor?pagina=/`** abre o editor visual: a página real renderizada
+com os componentes públicos, seleção por clique, painel de propriedades,
+prévia em celular/tablet/computador, desfazer/refazer, `Ctrl+S` e detecção de
+edição simultânea. Com sessão, o site mostra o botão **“Editar esta página”**
+(verificado no servidor; nenhum código do editor vai para visitantes).
+
+Novas telas no grupo **Site** do painel: seções e blocos (`/admin/secoes`),
+pilares, textos das páginas internas, navegação e aparência. Pilares, menus,
+seções, textos, rodapé e aparência agora ficam no banco (migration
+`20261120090000_visual_editor_customization.sql`), com validação de JSONB,
+RLS por papel e gravação atômica das listas. Documentação técnica em
+[`docs/visual-editor.md`](docs/visual-editor.md); guia para a equipe em
+[`docs/guia-edicao-geologar.md`](docs/guia-edicao-geologar.md).
+
 ## Supabase
 
 O projeto usa o Supabase para banco de dados (PostgreSQL com Row Level

@@ -4,29 +4,27 @@ import { InstitutionLogo } from "@/components/institutions/institution-logo";
 import { Container } from "@/components/ui/container";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { resolvePageHeader } from "@/lib/site/page-content";
+import { getPageContent, getPageMetadata } from "@/lib/queries/site-config";
 import { TextLink } from "@/components/ui/text-link";
 import { getPublishedInstitutionGroups } from "@/lib/queries/institutions";
 import { safeExternalUrl } from "@/lib/utils/format";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Instituições",
-  description: "Instituições e parceiros que integram ou colaboram com a GeoLogar.",
-};
+export function generateMetadata(): Promise<Metadata> {
+  return getPageMetadata("instituicoes", { title: "Instituições" });
+}
 
 export default async function InstitutionsPage() {
-  const groups = (await getPublishedInstitutionGroups()).filter(
-    (group) => group.institutions.length > 0,
-  );
+  const [allGroups, page] = await Promise.all([getPublishedInstitutionGroups(), getPageContent("instituicoes")]);
+  const groups = allGroups.filter((group) => group.institutions.length > 0);
 
   return (
     <>
       <PageHeader
         breadcrumb={[{ label: "Início", href: "/" }, { label: "Instituições" }]}
-        eyebrow="Instituições"
-        title="Instituições"
-        description="Instituições e parceiros que integram ou colaboram com a rede."
+        {...resolvePageHeader("instituicoes", page)}
       />
 
       <Container className="section-y">

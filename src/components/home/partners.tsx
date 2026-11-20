@@ -1,28 +1,30 @@
 import { InstitutionLogo } from "@/components/institutions/institution-logo";
+import { SectionFrame } from "@/components/site/section-frame";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { TextLink } from "@/components/ui/text-link";
+import { resolveBackground, type SectionSettings } from "@/lib/site/sections";
 import type { InstitutionGroup } from "@/types/content";
 
 type PartnersProps = {
   groups: InstitutionGroup[];
+  settings?: SectionSettings;
 };
 
-export function Partners({ groups }: PartnersProps) {
+export function Partners({ groups, settings = {} }: PartnersProps) {
   const visibleGroups = groups.filter((group) => group.institutions.length > 0);
 
   if (visibleGroups.length === 0) return null;
 
   return (
-    <section id="instituicoes" aria-labelledby="instituicoes-title" className="section-y">
+    <SectionFrame id="instituicoes" labelledBy="instituicoes-title" background={resolveBackground("institutions", settings)}>
       <Container>
         <SectionHeading
           id="instituicoes-title"
-          eyebrow="Instituições"
-          title="Instituições que conectam a rede"
-          action={
-            <TextLink href="/instituicoes">Conheça nossas instituições parceiras</TextLink>
-          }
+          eyebrow={settings.eyebrow}
+          title={settings.title ?? "Instituições que conectam a rede"}
+          description={settings.description}
+          action={settings.cta_label && settings.cta_href ? <TextLink href={settings.cta_href}>{settings.cta_label}</TextLink> : undefined}
         />
 
         <div className="mt-12 flex flex-col gap-10">
@@ -42,6 +44,6 @@ export function Partners({ groups }: PartnersProps) {
           ))}
         </div>
       </Container>
-    </section>
+    </SectionFrame>
   );
 }

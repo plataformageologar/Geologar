@@ -25,7 +25,7 @@ export function ResearchLineCard({
   return (
     <article
       className={cn(
-        "relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface",
+        "card-surface relative flex h-full flex-col overflow-hidden rounded-2xl border bg-surface",
         href &&
           "transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-[0_12px_32px_-20px_rgb(15_37_55/0.45)] focus-within:border-primary/40",
       )}

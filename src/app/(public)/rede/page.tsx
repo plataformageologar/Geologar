@@ -1,74 +1,39 @@
 import type { Metadata } from "next";
 
-import { CooperationCta } from "@/components/home/cooperation-cta";
-import { PillarList } from "@/components/network/pillar-list";
-import { ResearchLineLinkList } from "@/components/research/research-line-link-list";
-import { Container } from "@/components/ui/container";
+import { PageSections } from "@/components/site/page-sections";
 import { PageHeader } from "@/components/ui/page-header";
-import { SectionHeading } from "@/components/ui/section-heading";
-import { TextLink } from "@/components/ui/text-link";
-import { pillars } from "@/data/site";
-import { getHomepageContent } from "@/lib/queries/homepage";
-import { getHomepageResearchLines } from "@/lib/queries/research-lines";
+import { getHomepageContent, getSectionsData } from "@/lib/queries/homepage";
+import { resolvePageHeader } from "@/lib/site/page-content";
+import { getPageContent, getPageMetadata, getPageSections } from "@/lib/queries/site-config";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getHomepageContent();
-  return {
-    title: "A Rede",
-    description: content.about_description ?? undefined,
-  };
+  return getPageMetadata("rede", { title: "A Rede", description: content.about_description });
 }
 
 export default async function NetworkPage() {
-  // Textos institucionais de `homepage_content` (com fallback do briefing) e
-  // as linhas publicadas; sem linhas, a seção correspondente não aparece.
-  const [content, researchLines] = await Promise.all([
-    getHomepageContent(),
-    getHomepageResearchLines(50),
+  // Título e introdução de page_content; vazios, os textos da apresentação da
+  // rede (homepage_content). Seções vazias não aparecem.
+  const [data, sections, page] = await Promise.all([
+    getSectionsData({ researchLineLimit: 50 }),
+    getPageSections("rede"),
+    getPageContent("rede"),
   ]);
+  const { homepage } = data;
 
   return (
     <>
       <PageHeader
         breadcrumb={[{ label: "Início", href: "/" }, { label: "A Rede" }]}
-        eyebrow="A Rede"
-        title={content.about_title ?? "A Rede"}
-        description={content.about_description}
+        {...resolvePageHeader("rede", page, homepage)}
       />
-
-      <section aria-labelledby="atuacao-title" className="section-y">
-        <Container>
-          <SectionHeading
-            id="atuacao-title"
-            eyebrow="Atuação"
-            title="Pilares da rede"
-            description={content.hero_description ?? undefined}
-          />
-          <PillarList pillars={pillars} className="mt-12 lg:grid-cols-4" />
-        </Container>
-      </section>
-
-      {researchLines.length > 0 && (
-        <section aria-labelledby="linhas-title" className="section-y bg-surface-muted">
-          <Container>
-            <SectionHeading
-              id="linhas-title"
-              eyebrow="Pesquisa"
-              title="Linhas de pesquisa"
-              action={<TextLink href="/pesquisa">Ver todas as linhas</TextLink>}
-            />
-            <div className="mt-10">
-              <ResearchLineLinkList lines={researchLines} />
-            </div>
-          </Container>
-        </section>
-      )}
-
-      <div className="pt-[clamp(4rem,2.8rem+5vw,7.5rem)]">
-        <CooperationCta content={content} />
-      </div>
+      <PageSections
+        page="rede"
+        sections={sections.map((section) => ({ ...section, key: section.id, is_visible: true }))}
+        data={data}
+      />
     </>
   );
 }

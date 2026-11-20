@@ -18,6 +18,14 @@ export type SiteSettings = Pick<
   | "country"
   | "logo_path"
   | "favicon_path"
+  | "footer_description"
+  | "footer_note"
+  | "footer_nav_title"
+  | "footer_contact_title"
+  | "footer_social_title"
+  | "footer_logo_mode"
+  | "footer_logo_path"
+  | "header_style"
 >;
 
 export type HomepageContent = Omit<

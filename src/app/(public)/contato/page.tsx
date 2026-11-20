@@ -7,6 +7,8 @@ import { ContactForm } from "@/components/contact/contact-form";
 import { Container } from "@/components/ui/container";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { resolvePageHeader } from "@/lib/site/page-content";
+import { getPageContent, getPageMetadata } from "@/lib/queries/site-config";
 import { TextLink } from "@/components/ui/text-link";
 import { getContactConfig } from "@/lib/contact/config";
 import { getHomepageContent } from "@/lib/queries/homepage";
@@ -15,10 +17,9 @@ import { safeExternalUrl } from "@/lib/utils/format";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Contato",
-  description: "Fale com a GeoLogar: formulário e canais oficiais de contato.",
-};
+export function generateMetadata(): Promise<Metadata> {
+  return getPageMetadata("contato", { title: "Contato" });
+}
 
 function Channel({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: ReactNode }) {
   return (
@@ -40,9 +41,10 @@ const channelLink =
   "text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary";
 
 export default async function ContactPage() {
-  const [{ settings, socialLinks }, content] = await Promise.all([
+  const [{ settings, socialLinks }, content, page] = await Promise.all([
     getContactChannels(),
     getHomepageContent(),
+    getPageContent("contato"),
   ]);
 
   const email = settings?.contact_email ?? null;
@@ -109,9 +111,7 @@ export default async function ContactPage() {
     <>
       <PageHeader
         breadcrumb={[{ label: "Início", href: "/" }, { label: "Contato" }]}
-        eyebrow="Contato"
-        title="Entre em contato com a GeoLogar"
-        description={content.cooperation_description}
+        {...resolvePageHeader("contato", page, content)}
       />
 
       <Container className="section-y">

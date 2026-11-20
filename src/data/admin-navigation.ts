@@ -12,6 +12,12 @@ export type AdminNavItem = {
     | "institutions"
     | "media"
     | "demo"
+    | "visual-editor"
+    | "sections"
+    | "pillars"
+    | "page-texts"
+    | "navigation"
+    | "appearance"
     | "site-settings"
     | "social-links"
     | "profile";
@@ -37,6 +43,17 @@ export const adminNavigation: AdminNavSection[] = [
       { id: "publications", label: "Publicações", href: "/admin/publicacoes" },
       { id: "institutions", label: "Instituições", href: "/admin/instituicoes" },
       { id: "media", label: "Biblioteca de mídia", href: "/admin/midias" },
+    ],
+  },
+  {
+    title: "Site",
+    items: [
+      { id: "visual-editor", label: "Editor visual", href: "/admin/editor?pagina=%2F" },
+      { id: "sections", label: "Seções e blocos", href: "/admin/secoes" },
+      { id: "pillars", label: "Pilares da rede", href: "/admin/pilares" },
+      { id: "page-texts", label: "Textos das páginas", href: "/admin/textos-das-paginas" },
+      { id: "navigation", label: "Navegação", href: "/admin/navegacao" },
+      { id: "appearance", label: "Aparência", href: "/admin/aparencia" },
     ],
   },
   {

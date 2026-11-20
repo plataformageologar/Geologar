@@ -53,13 +53,14 @@ export async function saveSiteSettings(
 
     const supabase = await createClient();
     // O id vem do banco, nunca do navegador.
-    const read = await supabase.from("site_settings").select("id, updated_at, logo_path, favicon_path").maybeSingle();
+    const read = await supabase.from("site_settings").select("id, updated_at, logo_path, favicon_path, footer_logo_path").maybeSingle();
     if (read.error) return fail(classifyDatabaseError("leitura de site_settings", read.error, read.status), ENTITY);
     if (!read.data) return fail("not-found", ENTITY);
 
     const { data, errors } = parseSiteSettingsValues(readSiteSettingsForm(formData), {
       logoPath: read.data.logo_path,
       faviconPath: read.data.favicon_path,
+      footerLogoPath: read.data.footer_logo_path,
     });
     if (Object.keys(errors).length > 0) return fail("validation", ENTITY, { fieldErrors: errors });
 
@@ -79,6 +80,7 @@ export async function saveSiteSettings(
         const fieldErrors: Partial<Record<SiteSettingsField, string>> = {};
         if (data.logo_path !== read.data.logo_path) fieldErrors.logo_path = MEDIA_MISSING_MESSAGE;
         if (data.favicon_path !== read.data.favicon_path) fieldErrors.favicon_path = MEDIA_MISSING_MESSAGE;
+        if (data.footer_logo_path !== read.data.footer_logo_path) fieldErrors.footer_logo_path = MEDIA_MISSING_MESSAGE;
         return fail("validation", ENTITY, { fieldErrors });
       }
       return fail(reason, ENTITY);
@@ -99,7 +101,7 @@ export async function saveSiteSettings(
     refresh();
     return {
       status: "success",
-      message: "Informações salvas. Rodapé, página de contato e metadados do site já usam os novos dados.",
+      message: "Informações salvas. Cabeçalho, rodapé, página de contato e metadados do site já usam os novos dados.",
       values: toSiteSettingsFormValues(row),
       updatedAt: row.updated_at,
     };

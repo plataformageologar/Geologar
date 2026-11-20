@@ -3,6 +3,11 @@
 import { startTransition, useActionState, useEffect, useRef, useState, type ReactNode } from "react";
 
 import {
+  FOOTER_DEFAULT_TITLES,
+  FOOTER_LOGO_MODE_LABELS,
+  FOOTER_LOGO_MODES,
+  HEADER_STYLE_LABELS,
+  HEADER_STYLES,
   parseSiteSettingsValues,
   siteSettingsFields,
   siteSettingsTextRules,
@@ -13,7 +18,7 @@ import {
 import { saveSiteSettings, type SiteSettingsSaveState } from "@/lib/admin/site-settings-actions";
 import { countCharacters, EMAIL_MAX_LENGTH } from "@/lib/admin/validation";
 
-import { describedBy, Field, FormSection, TextArea, TextInput } from "../form-controls";
+import { describedBy, Field, FormMessage, FormSection, Select, TextArea, TextInput } from "../form-controls";
 import { MediaField } from "../media/media-field";
 import { buildFormData, FailureAction, SaveBar, useUnsavedChangesWarning } from "../save-bar";
 
@@ -101,6 +106,7 @@ export function SiteSettingsForm({
     const { errors: found } = parseSiteSettingsValues(values, {
       logoPath: saved.values.logo_path || null,
       faviconPath: saved.values.favicon_path || null,
+      footerLogoPath: saved.values.footer_logo_path || null,
     });
     if (Object.keys(found).length > 0) {
       setErrors(found);
@@ -265,6 +271,94 @@ export function SiteSettingsForm({
               disabled={readOnly || pending}
             />
           </div>
+        </FormSection>
+
+        <FormSection
+          id="cabecalho-rodape"
+          title="Cabeçalho e rodapé"
+          description="Textos e logotipo do rodapé e estilo do cabeçalho. Os links dos menus ficam em Navegação."
+        >
+          <Field
+            id="header_style"
+            label="Estilo do cabeçalho"
+            hint="Translúcido deixa o fundo da página aparecer levemente atrás do menu."
+            error={errors.header_style}
+          >
+            <Select
+              id="header_style"
+              name="header_style"
+              value={values.header_style}
+              onChange={(event) => update("header_style", event.target.value)}
+              aria-describedby={describedBy("header_style", { hint: true, error: errors.header_style })}
+              className="sm:max-w-72"
+            >
+              {HEADER_STYLES.map((style) => (
+                <option key={style} value={style}>
+                  {HEADER_STYLE_LABELS[style]}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field
+            id="footer_logo_mode"
+            label="Logotipo do rodapé"
+            hint="O logotipo oficial é o padrão. Trocar o logotipo altera a identidade da rede: confirme com a coordenação antes."
+            error={errors.footer_logo_mode}
+          >
+            <Select
+              id="footer_logo_mode"
+              name="footer_logo_mode"
+              value={values.footer_logo_mode}
+              onChange={(event) => update("footer_logo_mode", event.target.value)}
+              aria-describedby={describedBy("footer_logo_mode", { hint: true, error: errors.footer_logo_mode })}
+              className="sm:max-w-md"
+            >
+              {FOOTER_LOGO_MODES.map((mode) => (
+                <option key={mode} value={mode}>
+                  {FOOTER_LOGO_MODE_LABELS[mode]}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          {values.footer_logo_mode === "custom" && (
+            <>
+              <FormMessage tone="warning">
+                Use somente uma versão oficial do logotipo GeoLogar, sem distorções ou alterações de cor.
+              </FormMessage>
+              <MediaField
+                id="footer_logo_path"
+                label="Arquivo do logotipo do rodapé"
+                value={values.footer_logo_path}
+                onChange={(value) => update("footer_logo_path", value)}
+                error={errors.footer_logo_path}
+                hint="PNG ou WebP com fundo transparente, legível sobre o fundo escuro do rodapé."
+                emptyText="Nenhum arquivo escolhido."
+                fit="contain"
+                aspect="aspect-[3/1] max-w-md"
+                canUpload={!readOnly}
+                disabled={readOnly || pending}
+              />
+            </>
+          )}
+          {textField("footer_description", "Texto de apresentação do rodapé", {
+            rows: 3,
+            hint: "Opcional. Vazio, o rodapé usa a descrição curta do site.",
+          })}
+          <div className="grid gap-6 md:grid-cols-3">
+            {textField("footer_nav_title", "Título da coluna de links", {
+              hint: `Vazio: “${FOOTER_DEFAULT_TITLES.footer_nav_title}”.`,
+            })}
+            {textField("footer_contact_title", "Título da coluna de contato", {
+              hint: `Vazio: “${FOOTER_DEFAULT_TITLES.footer_contact_title}”.`,
+            })}
+            {textField("footer_social_title", "Título das redes sociais", {
+              hint: `Vazio: “${FOOTER_DEFAULT_TITLES.footer_social_title}”.`,
+            })}
+          </div>
+          {textField("footer_note", "Nota final do rodapé", {
+            rows: 2,
+            hint: "Opcional. Texto curto exibido abaixo do rodapé, ao lado dos direitos autorais.",
+          })}
         </FormSection>
       </fieldset>
 

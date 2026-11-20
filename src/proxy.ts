@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { EDITOR_HINT_COOKIE, EDITOR_HINT_MAX_AGE } from "@/lib/auth/editor-hint";
 import { authCookieOptions } from "@/lib/supabase/cookies";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 import type { Database } from "@/types/database.types";
@@ -51,17 +52,40 @@ export async function proxy(request: NextRequest) {
 
   if (!authenticated && !PUBLIC_ADMIN_PATHS.has(pathname) && !isServerAction) {
     const loginUrl = new URL("/admin/login", request.url);
-    if (pathname !== "/admin") loginUrl.searchParams.set("next", pathname);
+    // O editor visual volta à mesma página depois do login (pagina validada
+    // de novo em safeAdminPath).
+    const next =
+      pathname === "/admin/editor" && request.nextUrl.searchParams.has("pagina")
+        ? `${pathname}?pagina=${encodeURIComponent(request.nextUrl.searchParams.get("pagina") ?? "")}`
+        : pathname;
+    if (pathname !== "/admin") loginUrl.searchParams.set("next", next);
 
     const redirect = NextResponse.redirect(loginUrl);
     // Preserva a limpeza de cookies feita pelo Supabase (sessão inválida).
     response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+    if (request.cookies.has(EDITOR_HINT_COOKIE)) redirect.cookies.delete(EDITOR_HINT_COOKIE);
     redirect.headers.set("Cache-Control", "private, no-store");
     return redirect;
   }
 
-  // Páginas administrativas nunca entram em cache compartilhado.
+  // Indicador não sensível para o botão "Editar esta página" (ver editor-hint).
+  if (authenticated && request.cookies.get(EDITOR_HINT_COOKIE)?.value !== "1") {
+    response.cookies.set(EDITOR_HINT_COOKIE, "1", {
+      path: "/",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: false,
+      maxAge: EDITOR_HINT_MAX_AGE,
+    });
+  } else if (!authenticated && request.cookies.has(EDITOR_HINT_COOKIE)) {
+    response.cookies.delete(EDITOR_HINT_COOKIE);
+  }
+
+  // Páginas administrativas nunca entram em cache compartilhado e só podem
+  // ser exibidas em iframe pelo próprio portal (tela do editor visual).
   response.headers.set("Cache-Control", "private, no-store");
+  response.headers.set("Content-Security-Policy", "frame-ancestors 'self'");
+  response.headers.set("X-Frame-Options", "SAMEORIGIN");
   return response;
 }
 

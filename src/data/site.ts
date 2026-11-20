@@ -1,52 +1,9 @@
 /**
- * Conteúdo que ainda não tem estrutura no banco, e fallbacks editoriais
- * usados apenas se o Supabase estiver indisponível ou sem o registro.
+ * Fallbacks editoriais usados apenas se o Supabase estiver indisponível ou
+ * sem o registro. Pilares, menus, seções e textos das páginas têm seus
+ * próprios fallbacks em src/lib/site/ (iguais às seeds das migrations).
  */
-import type { HomepageContent, NavItem, SiteSettings } from "@/types/content";
-
-export const mainNavigation: NavItem[] = [
-  { label: "Início", href: "/" },
-  { label: "A Rede", href: "/rede" },
-  { label: "Pesquisa", href: "/pesquisa" },
-  { label: "Projetos", href: "/projetos" },
-  { label: "Publicações", href: "/publicacoes" },
-  { label: "Contato", href: "/contato" },
-];
-
-/** Rodapé: a navegação principal mais as páginas secundárias. */
-export const footerNavigation: NavItem[] = [
-  ...mainNavigation.slice(0, -1),
-  { label: "Instituições", href: "/instituicoes" },
-  ...mainNavigation.slice(-1),
-];
-
-// Os pilares não existem no schema; permanecem como conteúdo estático.
-export const pillars = [
-  {
-    id: "pesquisa",
-    title: "Pesquisa",
-    description: "Desenvolvimento de estudos e projetos científicos.",
-  },
-  {
-    id: "formacao",
-    title: "Formação",
-    description: "Integração entre pesquisa, ensino e formação acadêmica.",
-  },
-  {
-    id: "territorio",
-    title: "Território",
-    description:
-      "Conhecimento da geodiversidade, dos recursos naturais e do patrimônio geológico.",
-  },
-  {
-    id: "cooperacao",
-    title: "Cooperação",
-    description:
-      "Articulação entre instituições e parceiros nacionais e internacionais.",
-  },
-] as const;
-
-export type Pillar = (typeof pillars)[number];
+import type { HomepageContent, SiteSettings } from "@/types/content";
 
 /** Fallback de `site_settings`: apenas a identificação institucional. */
 export const fallbackSiteSettings: SiteSettings = {
@@ -63,6 +20,14 @@ export const fallbackSiteSettings: SiteSettings = {
   // Vazios: o site usa o logotipo e o ícone oficiais incluídos no código.
   logo_path: null,
   favicon_path: null,
+  footer_description: null,
+  footer_note: null,
+  footer_nav_title: null,
+  footer_contact_title: null,
+  footer_social_title: null,
+  footer_logo_mode: "official",
+  footer_logo_path: null,
+  header_style: "solid",
 };
 
 /**

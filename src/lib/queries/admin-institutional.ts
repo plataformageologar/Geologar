@@ -161,7 +161,7 @@ export type SiteSettingsForEdit = {
 };
 
 export const siteSettingsEditColumns =
-  "id, site_name, institutional_name, tagline, short_description, contact_email, contact_phone, address, city, state, country, logo_path, favicon_path, updated_at";
+  "id, site_name, institutional_name, tagline, short_description, contact_email, contact_phone, address, city, state, country, logo_path, favicon_path, footer_description, footer_note, footer_nav_title, footer_contact_title, footer_social_title, footer_logo_mode, footer_logo_path, header_style, updated_at";
 
 /** `null`: o registro único não existe (configuração pendente). */
 export async function getSiteSettingsForEdit(): Promise<AdminResult<SiteSettingsForEdit | null>> {
@@ -189,6 +189,14 @@ export async function getSiteSettingsForEdit(): Promise<AdminResult<SiteSettings
     country: rest.country,
     logo_path: rest.logo_path,
     favicon_path: rest.favicon_path,
+    footer_description: rest.footer_description,
+    footer_note: rest.footer_note,
+    footer_nav_title: rest.footer_nav_title,
+    footer_contact_title: rest.footer_contact_title,
+    footer_social_title: rest.footer_social_title,
+    footer_logo_mode: rest.footer_logo_mode,
+    footer_logo_path: rest.footer_logo_path,
+    header_style: rest.header_style,
   };
   return {
     status: "ready",

@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { resolvePageHeader } from "@/lib/site/page-content";
+import { getPageContent, getPageMetadata } from "@/lib/queries/site-config";
 import { Pagination } from "@/components/ui/pagination";
 import { TextLink } from "@/components/ui/text-link";
 import { isValidSlug } from "@/lib/queries/shared";
@@ -21,10 +23,9 @@ import type { PublicationListItem } from "@/types/content";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Publicações",
-  description: "Artigos, livros e demais publicações científicas da GeoLogar.",
-};
+export function generateMetadata(): Promise<Metadata> {
+  return getPageMetadata("publicacoes", { title: "Publicações" });
+}
 
 function parseYear(value: string | undefined) {
   if (!value || !/^\d{4}$/.test(value)) return undefined;
@@ -57,9 +58,10 @@ export default async function PublicationsPage({ searchParams }: PageProps<"/pub
   const q = normalizeSearchTerm(firstParam(query.busca)) || undefined;
   const hasFilters = Boolean(year || line || q);
 
-  const [options, result] = await Promise.all([
+  const [options, result, pageContent] = await Promise.all([
     getPublicationFilterOptions(),
     getPublishedPublications({ year, line, q, page }),
+    getPageContent("publicacoes"),
   ]);
   if (result.outOfRange) notFound();
 
@@ -71,9 +73,7 @@ export default async function PublicationsPage({ searchParams }: PageProps<"/pub
     <>
       <PageHeader
         breadcrumb={[{ label: "Início", href: "/" }, { label: "Publicações" }]}
-        eyebrow="Publicações"
-        title="Publicações"
-        description="Produção científica da rede, organizada por ano de publicação."
+        {...resolvePageHeader("publicacoes", pageContent)}
       />
 
       <Container className="section-y">

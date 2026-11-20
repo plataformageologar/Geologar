@@ -196,6 +196,75 @@ export type Database = {
           },
         ]
       }
+      page_content: {
+        Row: {
+          created_at: string
+          description: string | null
+          eyebrow: string | null
+          page_key: string
+          seo_description: string | null
+          seo_image_path: string | null
+          seo_title: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          eyebrow?: string | null
+          page_key: string
+          seo_description?: string | null
+          seo_image_path?: string | null
+          seo_title?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          eyebrow?: string | null
+          page_key?: string
+          seo_description?: string | null
+          seo_image_path?: string | null
+          seo_title?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      page_sections: {
+        Row: {
+          created_at: string
+          id: string
+          is_visible: boolean
+          page_key: string
+          section_type: string
+          settings: Json
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          page_key: string
+          section_type: string
+          settings?: Json
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          page_key?: string
+          section_type?: string
+          settings?: Json
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       project_research_lines: {
         Row: {
           created_at: string
@@ -469,6 +538,117 @@ export type Database = {
         }
         Relationships: []
       }
+      site_appearance: {
+        Row: {
+          accent_color: string | null
+          button_shape: string
+          card_style: string
+          corner_style: string
+          created_at: string
+          heading_font: string
+          id: string
+          primary_color: string | null
+          secondary_color: string | null
+          section_background: string
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string | null
+          button_shape?: string
+          card_style?: string
+          corner_style?: string
+          created_at?: string
+          heading_font?: string
+          id?: string
+          primary_color?: string | null
+          secondary_color?: string | null
+          section_background?: string
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string | null
+          button_shape?: string
+          card_style?: string
+          corner_style?: string
+          created_at?: string
+          heading_font?: string
+          id?: string
+          primary_color?: string | null
+          secondary_color?: string | null
+          section_background?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_navigation: {
+        Row: {
+          created_at: string
+          href: string
+          id: string
+          is_visible: boolean
+          label: string
+          location: string
+          open_in_new_tab: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          href: string
+          id?: string
+          is_visible?: boolean
+          label: string
+          location: string
+          open_in_new_tab?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          href?: string
+          id?: string
+          is_visible?: boolean
+          label?: string
+          location?: string
+          open_in_new_tab?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_pillars: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          is_visible: boolean
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          is_visible?: boolean
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          is_visible?: boolean
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           address: string | null
@@ -478,6 +658,14 @@ export type Database = {
           country: string | null
           created_at: string
           favicon_path: string | null
+          footer_contact_title: string | null
+          footer_description: string | null
+          footer_logo_mode: string
+          footer_logo_path: string | null
+          footer_nav_title: string | null
+          footer_note: string | null
+          footer_social_title: string | null
+          header_style: string
           id: string
           institutional_name: string | null
           logo_path: string | null
@@ -495,6 +683,14 @@ export type Database = {
           country?: string | null
           created_at?: string
           favicon_path?: string | null
+          footer_contact_title?: string | null
+          footer_description?: string | null
+          footer_logo_mode?: string
+          footer_logo_path?: string | null
+          footer_nav_title?: string | null
+          footer_note?: string | null
+          footer_social_title?: string | null
+          header_style?: string
           id?: string
           institutional_name?: string | null
           logo_path?: string | null
@@ -512,6 +708,14 @@ export type Database = {
           country?: string | null
           created_at?: string
           favicon_path?: string | null
+          footer_contact_title?: string | null
+          footer_description?: string | null
+          footer_logo_mode?: string
+          footer_logo_path?: string | null
+          footer_nav_title?: string | null
+          footer_note?: string | null
+          footer_social_title?: string | null
+          header_style?: string
           id?: string
           institutional_name?: string | null
           logo_path?: string | null
@@ -561,9 +765,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assert_list_unchanged: {
+        Args: { p_current: Json; p_expected: Json }
+        Returns: undefined
+      }
       has_cms_role: { Args: { allowed_roles: string[] }; Returns: boolean }
       is_media_object_name: { Args: { value: string }; Returns: boolean }
+      is_short_text: {
+        Args: { max_length: number; value: Json }
+        Returns: boolean
+      }
       is_valid_image_reference: { Args: { value: string }; Returns: boolean }
+      is_valid_section_settings: {
+        Args: { p_settings: Json; p_type: string }
+        Returns: boolean
+      }
+      is_valid_site_href: { Args: { value: string }; Returns: boolean }
       list_media: {
         Args: {
           p_limit?: number
@@ -592,6 +809,25 @@ export type Database = {
           label: string
           record_id: string
         }[]
+      }
+      save_page_sections: {
+        Args: { p_expected: Json; p_items: Json; p_page_key: string }
+        Returns: {
+          created_at: string
+          id: string
+          is_visible: boolean
+          page_key: string
+          section_type: string
+          settings: Json
+          sort_order: number
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "page_sections"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       save_project: {
         Args: {
@@ -688,6 +924,46 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      save_site_navigation: {
+        Args: { p_expected: Json; p_items: Json; p_location: string }
+        Returns: {
+          created_at: string
+          href: string
+          id: string
+          is_visible: boolean
+          label: string
+          location: string
+          open_in_new_tab: boolean
+          sort_order: number
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "site_navigation"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      save_site_pillars: {
+        Args: { p_expected: Json; p_items: Json }
+        Returns: {
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          is_visible: boolean
+          sort_order: number
+          title: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "site_pillars"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      section_image_paths: { Args: { p_settings: Json }; Returns: string[] }
     }
     Enums: {
       [_ in never]: never

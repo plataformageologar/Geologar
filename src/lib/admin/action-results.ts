@@ -42,7 +42,13 @@ export type Entity =
   | "institution-category"
   | "social-link"
   | "site-settings"
-  | "media";
+  | "media"
+  | "pillars"
+  | "navigation"
+  | "page-sections"
+  | "page-content"
+  | "appearance"
+  | "homepage";
 
 /** Gênero gramatical, para mensagens como "foi excluída"/"foi excluído". */
 export type Gender = "f" | "m";
@@ -89,6 +95,42 @@ export const entityNouns: Record<Entity, { the: string; a: string; gender: Gende
     a: "uma imagem",
     gender: "f",
     notFound: "Não encontramos a imagem: ela pode ter sido excluída. Recarregue a biblioteca.",
+  },
+  pillars: {
+    the: "os pilares",
+    a: "um pilar",
+    gender: "m",
+    notFound: "Não encontramos um dos pilares: ele pode ter sido excluído. Recarregue a página.",
+  },
+  navigation: {
+    the: "o menu",
+    a: "um link",
+    gender: "m",
+    notFound: "Não encontramos um dos links: ele pode ter sido excluído. Recarregue a página.",
+  },
+  "page-sections": {
+    the: "as seções da página",
+    a: "uma seção",
+    gender: "f",
+    notFound: "Não encontramos uma das seções: ela pode ter sido excluída. Recarregue a página.",
+  },
+  "page-content": {
+    the: "os textos da página",
+    a: "um texto de página",
+    gender: "m",
+    notFound: "Os textos desta página não foram encontrados no banco de dados. Contate a equipe técnica.",
+  },
+  appearance: {
+    the: "a aparência do site",
+    a: "uma configuração de aparência",
+    gender: "f",
+    notFound: "O registro de aparência não foi encontrado no banco de dados. Contate a equipe técnica.",
+  },
+  homepage: {
+    the: "o conteúdo da homepage",
+    a: "um conteúdo da homepage",
+    gender: "m",
+    notFound: "O registro da homepage não foi encontrado no banco de dados. Contate a equipe técnica.",
   },
   "site-settings": {
     the: "as informações institucionais",

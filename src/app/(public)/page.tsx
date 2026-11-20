@@ -1,31 +1,19 @@
-import { AboutNetwork } from "@/components/home/about-network";
-import { CooperationCta } from "@/components/home/cooperation-cta";
-import { FeaturedProjects } from "@/components/home/featured-projects";
-import { Hero } from "@/components/home/hero";
-import { Partners } from "@/components/home/partners";
-import { RecentPublications } from "@/components/home/recent-publications";
-import { ResearchLines } from "@/components/home/research-lines";
-import { pillars } from "@/data/site";
+import { PageSections } from "@/components/site/page-sections";
 import { getHomepageData, withAvailableHeroLinks } from "@/lib/queries/homepage";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const { content, researchLines, projects, publications, institutionGroups, sections } =
-    await getHomepageData();
+  const { data, sections, anchors } = await getHomepageData();
 
-  // CTAs que apontam para seções ainda sem conteúdo não são exibidos.
-  const heroContent = withAvailableHeroLinks(content, sections);
+  // CTAs que apontam para seções ausentes ou ocultas não são exibidos.
+  const homepage = withAvailableHeroLinks(data.homepage, anchors);
 
   return (
-    <>
-      <Hero content={heroContent} eyebrow="Rede de Pesquisa em Geociências" />
-      <AboutNetwork content={content} pillars={pillars} />
-      <ResearchLines researchLines={researchLines} />
-      <FeaturedProjects projects={projects} />
-      <RecentPublications publications={publications} />
-      <Partners groups={institutionGroups} />
-      <CooperationCta content={content} />
-    </>
+    <PageSections
+      page="home"
+      sections={sections.map((section) => ({ ...section, key: section.id, is_visible: true }))}
+      data={{ ...data, homepage }}
+    />
   );
 }
