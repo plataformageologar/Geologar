@@ -188,10 +188,27 @@ sob demanda no Worker + leituras no Supabase a cada requisição; a primeira
 requisição de uma sequência tende a ser mais lenta). Sem deslocamento de
 layout (CLS 0) em todas as páginas.
 
-**Depois**: ver seção 10 (medição em produção após o deploy desta etapa).
-As mudanças desta etapa não alteram a renderização nem as consultas das
-páginas (acrescentam metadados e cabeçalhos), então não se espera diferença
-além da variação normal.
+**Depois** (produção, commit `b9d200e`, mesmo método, ~13 minutos depois):
+
+| Condição | Página | TTFB | FCP | LCP | CLS | KB |
+|---|---|---|---|---|---|---|
+| Desktop | `/` | 1711 → 469 | 1844 → 572 | 1844 → 572 | 0 | 325 → 328 |
+| Desktop | `/pesquisa` | 1158 → 501 | 1408 → 648 | 2544 → 808 | 0 | 319 → 332 |
+| Desktop | `/pesquisa/geologia-e-geodiversidade` | 595 → 540 | 716 → 648 | 840 → 764 | 0 | 269 → 272 |
+| Desktop | `/projetos` | 651 → 509 | 752 → 604 | 752 → 604 | 0 | 253 → 255 |
+| Desktop | `/contato` | 495 → 540 | 588 → 660 | 588 → 660 | 0 | 261 → 264 |
+| Celular | `/` | 684 → 547 | 1720 → 1496 | 1720 → 1496 | 0 | 247 → 249 |
+| Celular | `/pesquisa` | 640 → 327 | 1708 → 1284 | 2312 → 1776 | 0 | 297 → 298 |
+| Celular | `/pesquisa/geologia-e-geodiversidade` | 488 → 523 | 1492 → 1504 | 1828 → 1888 | 0 | 263 → 265 |
+| Celular | `/projetos` | 364 → 469 | 1344 → 1416 | 1344 → 1416 | 0 | 246 → 247 |
+| Celular | `/contato` | 496 → 517 | 1492 → 1532 | 1492 → 1532 | 0 | 257 → 258 |
+
+**Leitura honesta**: esta etapa não mudou a renderização nem as consultas
+(só acrescentou metadados, cabeçalhos e o sitemap). As quedas grandes em `/`
+e `/pesquisa` no desktop vêm do TTFB da primeira medição, que pegou o Worker
+e o banco “frios”; não são ganho das mudanças. Nas demais páginas as
+diferenças ficam dentro da variação normal (±100 ms). O tamanho das páginas
+subiu 1 a 13 KB (metadados de canonical/Open Graph).
 
 Possíveis ganhos futuros (não aplicados — exigiriam cache, desativado por
 decisão do projeto): cache das leituras públicas ou ISR. A maior parte do
@@ -224,8 +241,26 @@ serviço de imagens entrega o tamanho certo para telas de alta densidade.
 
 ## 10. Validação em produção
 
-Preenchida após o push desta etapa (ver o commit seguinte ou o relatório
-final da etapa).
+Depois do push do commit `b9d200e` (deploy automático do Workers Builds,
+publicado em cerca de 2 minutos e meio), em
+<https://geologar.plataformageologar.workers.dev>:
+
+| Verificação | Resultado |
+|---|---|
+| 8 páginas públicas | `200` |
+| Slugs inexistentes, página arquivada | `404` |
+| `/admin` sem sessão | `307` → `/admin/login`, `Cache-Control: private, no-store` |
+| Cabeçalhos de segurança em `/` | Presentes (4) |
+| `robots.txt` | Bloqueia só `/admin`, `/api/`, `/auth/`; aponta o sitemap |
+| `sitemap.xml` | 13 endereços, nenhum de `/admin`, nenhuma página não publicada |
+| Canonical e título | Corretos em `/`, `/pesquisa` e no detalhe de linha |
+| `POST /api/contact` | `503` (formulário oculto em produção, como esperado) |
+| Assets `/_next/static` | `public,max-age=31536000,immutable` |
+| Segredos no HTML/JS da página inicial | Nenhum (`sb_secret_`, `service_role`, chaves Resend) |
+| `npm run test:e2e` contra produção | 30 passaram, 6 ignorados de propósito |
+
+Não verificado em produção: login e telas do CMS depois do deploy (exige a
+senha da pessoa), envio do formulário de contato (desativado).
 
 ## Como repetir
 
