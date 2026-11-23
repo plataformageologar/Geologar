@@ -179,6 +179,25 @@ Fluxos com contas reais (criar, primeiro acesso, desativar, redefinir) são
 feitos por uma pessoa autorizada no navegador; ver
 [`homologation-checklist.md`](homologation-checklist.md).
 
+### Validação em produção (23/11/2026)
+
+Feita no site publicado com uma conta de teste `@example.test`; as senhas
+foram digitadas pela pessoa responsável, nunca pela automação.
+
+| Verificação | Resultado |
+|---|---|
+| Conta `editor` abre `/admin/usuarios` | “Acesso negado”, sem lista; item fora do menu; o resto do CMS funciona |
+| Administrador lista Editores | Lista e histórico pela Edge Function |
+| Adicionar Editor | Conta criada (`email_confirm`, marcador `geologar_managed`), vínculo `editor` ativo com troca pendente; evento `editor_created` |
+| Primeiro acesso | Login leva a “Defina sua senha pessoal”; depois da troca o painel abre, `must_change_password = false`, evento `initial_password_changed` |
+| Desativar / reativar | `is_active` muda; eventos `editor_deactivated` e `editor_reactivated` |
+| Definir nova senha inicial | Volta a “Pendente de troca” (`must_change_password = true`); evento `editor_password_reset` |
+| Histórico | Seis eventos `success`, `detail` vazio: nenhuma senha ou token |
+| Limpeza | Conta de teste desativada (não há exclusão pelo módulo) |
+
+Não exercitado em produção: entrar com a conta desativada (coberto pelo pgTAP)
+e a recusa da senha inicial como nova senha (coberta pelos testes do núcleo).
+
 ## Deploy
 
 A Edge Function **não** é publicada pelo push no GitHub (o Workers Builds

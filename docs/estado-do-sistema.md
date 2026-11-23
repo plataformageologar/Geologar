@@ -11,7 +11,7 @@ e preparação para homologação). Resultados completos em
 | | |
 |---|---|
 | Etapas concluídas | 1 a 10.5 |
-| Último commit | `feat: implement direct editor account management` |
+| Último commit | `docs: record Stage 10.5 production validation` |
 | Site em produção | <https://geologar.plataformageologar.workers.dev> (sem domínio próprio) |
 | Deploy | Automático a cada push em `main` (Cloudflare Workers Builds, Worker `geologar`) |
 | Banco e autenticação | Supabase (PostgreSQL + RLS, Auth, Storage, Edge Function `admin-editor-management`) |
@@ -183,6 +183,7 @@ Ver [`database-schema.md`](database-schema.md).
 | `npm audit --omit=dev` | 0 vulnerabilidades |
 | Fluxo editorial no navegador (sessão admin) | Rascunho, descarte, restauração, criar/publicar/despublicar/arquivar página, conflito entre abas, editor visual |
 | Interface com conta editor (produção, sem gravar) | Permissões e avisos corretos; editor visual edita e descarta sem salvar |
+| Gerenciamento de Editores em produção (conta de teste) | Criar, primeiro acesso com troca obrigatória, desativar, reativar e nova senha inicial OK; histórico sem senhas; conta de teste desativada ([detalhes](user-management.md#validação-em-produção-23112026)) |
 | Responsivo (6 tamanhos × 16 páginas públicas e do CMS) | Sem rolagem horizontal |
 | Verificação automática de acessibilidade (14 páginas) | Sem problemas (não é auditoria WCAG) |
 
