@@ -393,6 +393,12 @@ deno_version = 2
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+# Gerenciamento de Editores (Etapa 10.5). Exige o JWT da sessão do painel na
+# plataforma; a função valida de novo o usuário e o vínculo administrativo.
+[functions.admin-editor-management]
+enabled = true
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327

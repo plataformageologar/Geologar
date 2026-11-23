@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 
-import { resolveAdminAccess } from "./access";
+import { forbiddenDestination, resolveAdminAccess } from "./access";
 import { resolveAuthOrigin, safeAdminPath } from "./redirect";
 
 /**
@@ -71,7 +71,8 @@ export async function signIn(_state: FormState, formData: FormData): Promise<For
   // Autenticado não significa autorizado: o vínculo é verificado agora e
   // novamente em cada página da área protegida.
   const access = await resolveAdminAccess(supabase);
-  redirect(access.status === "authorized" ? next : "/admin/acesso-negado");
+  // Conta com senha inicial: vai direto à troca obrigatória.
+  redirect(access.status === "authorized" ? next : access.status === "forbidden" ? forbiddenDestination(access) : "/admin/login");
 }
 
 export async function signOut() {

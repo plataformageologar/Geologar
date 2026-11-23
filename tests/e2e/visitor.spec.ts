@@ -81,6 +81,14 @@ test("área administrativa exige login (sem credenciais)", async ({ page }) => {
   await expect(page.locator('input[type="password"]')).toBeVisible();
 });
 
+test("usuários e troca de senha inicial exigem login (Etapa 10.5)", async ({ page }) => {
+  await page.goto("/admin/usuarios");
+  await expect(page).toHaveURL(/\/admin\/login\?next=%2Fadmin%2Fusuarios$/);
+  await page.goto("/admin/trocar-senha-inicial");
+  await expect(page).toHaveURL(/\/admin\/login/);
+  await expect(page.locator('input[type="email"]')).toBeVisible();
+});
+
 test("menu móvel abre e fecha pelo teclado", async ({ page, isMobile }) => {
   test.skip(!isMobile, "menu móvel");
   await page.goto("/");

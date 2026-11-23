@@ -25,6 +25,7 @@ import {
   Presentation,
   Share2,
   UserRound,
+  UsersRound,
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -55,13 +56,14 @@ const icons: Record<AdminNavItem["id"], LucideIcon> = {
   appearance: Palette,
   "site-settings": Info,
   "social-links": Share2,
+  users: UsersRound,
   profile: UserRound,
 };
 
 const itemClasses =
   "flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-body-sm transition-colors";
 
-function NavList({ onNavigate }: { onNavigate?: () => void }) {
+function NavList({ isAdmin, onNavigate }: { isAdmin: boolean; onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
@@ -74,7 +76,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
             </p>
           )}
           <ul className="flex flex-col gap-0.5">
-            {section.items.map((item) => {
+            {section.items.filter((item) => isAdmin || !item.adminOnly).map((item) => {
               const Icon = icons[item.id];
               if (!item.href) {
                 // Módulo previsto, ainda sem página: não é um link.
@@ -149,7 +151,7 @@ function Brand() {
  * em telas menores, barra superior com menu recolhível (fecha com Esc,
  * devolvendo o foco ao botão, ou ao escolher um item).
  */
-export function AdminNavigation() {
+export function AdminNavigation({ isAdmin }: { isAdmin: boolean }) {
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelId = useId();
@@ -173,7 +175,7 @@ export function AdminNavigation() {
           <Brand />
         </div>
         <nav aria-label="Administração">
-          <NavList />
+          <NavList isAdmin={isAdmin} />
         </nav>
       </aside>
 
@@ -198,7 +200,7 @@ export function AdminNavigation() {
           hidden={!open}
           className="absolute inset-x-0 top-full z-40 max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-white/15 bg-deep px-4 pb-6 pt-4 shadow-[0_12px_24px_-16px_rgb(15_37_55/0.6)]"
         >
-          <NavList onNavigate={() => setOpen(false)} />
+          <NavList isAdmin={isAdmin} onNavigate={() => setOpen(false)} />
         </nav>
       </div>
     </>

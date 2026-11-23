@@ -13,7 +13,11 @@ Guia para a equipe que mantém o conteúdo do portal. Detalhes técnicos em
 
 1. Acesse `/admin/login` com o e-mail e a senha cadastrados pela
    administração.
-2. Com a sessão ativa, ao visitar o site aparece o botão **“Editar esta
+2. No **primeiro acesso** (ou depois que o Administrador definir uma nova
+   senha inicial), o painel pede **“Defina sua senha pessoal”**: escolha uma
+   senha nova, só sua, e clique em **Salvar nova senha**. Até fazer isso, nada
+   no painel pode ser editado.
+3. Com a sessão ativa, ao visitar o site aparece o botão **“Editar esta
    página”** no canto da tela. Ele abre o editor visual na mesma página.
 
 ## Dois jeitos de editar
@@ -179,6 +183,68 @@ ou reativadas por administradores.
 | Cabeçalho, rodapé, contatos, redes sociais | ✔ | — |
 | Menus (navegação) | ✔ | apenas consulta |
 | Aparência (cores, botões, fontes) | ✔ | — |
+| Usuários e permissões (criar, desativar, reativar Editores, definir senha inicial) | ✔ | — |
+
+## Usuários e permissões (administradores)
+
+Menu *Configurações → Usuários e permissões*. Só administradores veem e usam
+esta tela; contas de administradores não são alteradas por ela.
+
+### Como criar um Editor
+
+1. Entre como Administrador.
+2. Abra **Usuários e permissões**.
+3. Clique em **Adicionar Editor**.
+4. Informe o e-mail e uma **senha inicial** forte (pelo menos 12 caracteres,
+   misturando letras maiúsculas, minúsculas, números ou símbolos) e repita a
+   senha em **Confirmar senha**.
+5. Clique em **Criar Editor**. A mensagem “Editor criado com sucesso” confirma
+   que a conta já pode entrar.
+6. Envie o e-mail e a senha inicial à pessoa por um canal seguro e separado
+   (pessoalmente, por telefone). O painel não guarda nem mostra a senha de
+   novo.
+
+Antes de criar, confirme que o e-mail é mesmo da pessoa: o painel não envia
+link de confirmação.
+
+### Como um Editor entra pela primeira vez
+
+1. Acesse o painel (`/admin/login`).
+2. Informe o e-mail e a senha inicial recebidos.
+3. Escolha uma nova senha (diferente da inicial) e confirme.
+4. Comece a usar o CMS.
+
+### Como desativar um Editor
+
+Na lista, clique em **Desativar acesso** e confirme. A pessoa perde o acesso
+ao painel na próxima ação; os conteúdos e o histórico feitos por ela são
+preservados. Nada é excluído.
+
+### Como reativar um Editor
+
+Na lista (filtro **Desativados**), clique em **Reativar acesso** e confirme.
+Se a troca da senha inicial ainda estiver pendente, ela continua sendo
+exigida.
+
+### Como redefinir a senha de um Editor
+
+Clique em **Redefinir senha**, informe uma **nova senha inicial**, confirme e
+clique em **Definir nova senha**. A senha anterior deixa de funcionar e o
+Editor precisará trocá-la no próximo acesso. Envie a nova senha por um canal
+seguro.
+
+### Diferença entre Administrador e Editor
+
+- **Editor**: cuida do conteúdo (textos, seções, pilares, páginas, projetos,
+  linhas de pesquisa, publicações, instituições e imagens), salva rascunhos e
+  publica.
+- **Administrador**: tudo o que o Editor faz, mais menus, aparência,
+  informações institucionais, redes sociais, exclusões e o gerenciamento de
+  Editores.
+
+O histórico no fim da tela mostra as últimas operações (Editor criado,
+desativado, reativado, senha redefinida, senha inicial alterada), sem nenhuma
+senha.
 
 ## Aparência (administradores)
 

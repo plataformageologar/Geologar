@@ -205,6 +205,12 @@ Redirect URLs, cadastro público) em [`admin-auth.md`](admin-auth.md).
 - [ ] `GET /admin` sem sessão em `307` para `/admin/login`, com
       `Cache-Control: private, no-store`; `/admin/login` em `200`.
 - [ ] Login, painel, "Meu perfil" e "Sair" funcionando com uma conta vinculada.
+- [ ] Edge Function `admin-editor-management` publicada **separadamente**
+      (`npx supabase functions deploy admin-editor-management --use-api`;
+      o push na `main` não a publica) e `npx supabase functions list` com
+      `ACTIVE` e `verify_jwt: true`. Sem sessão, `POST` na função responde `401`.
+- [ ] `/admin/usuarios` lista os Editores para um administrador e mostra
+      acesso negado para um Editor ([`user-management.md`](user-management.md)).
 - [ ] Observability do Worker sem erros (*Workers → geologar → Logs*).
 - [ ] `GET /robots.txt` em `200`, bloqueando apenas `/admin`, `/api/` e
       `/auth/`, com a linha `Sitemap:` apontando para o endereço público.

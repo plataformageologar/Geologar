@@ -165,7 +165,9 @@ Migration `20261109152838_enable_homepage_cms_updates.sql`:
   `hero_image_path` continuam somente leitura;
 - policy `Active admins and editors can update homepage content`
   (`for update to authenticated`), com `USING` e `WITH CHECK` exigindo vínculo
-  ativo em `admin_memberships` com papel `admin` ou `editor`;
+  ativo em `admin_memberships` com papel `admin` ou `editor` (desde a Etapa
+  10.5 via `has_cms_role`, que também recusa contas com troca de senha
+  pendente);
 - sem `INSERT`/`DELETE`, sem `SECURITY DEFINER`, sem `service_role`;
 - nenhuma outra tabela recebeu permissão de escrita.
 

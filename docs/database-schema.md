@@ -233,6 +233,8 @@ Vínculo administrativo de uma conta do Supabase Auth. Sem registro (ou com
 | `user_id`    | `uuid`        | PK; FK para `auth.users(id)` com `ON DELETE CASCADE`        |
 | `role`       | `text`        | `admin` ou `editor` (constraint `admin_memberships_role_check`) |
 | `is_active`  | `boolean`     | Padrão `true`; `false` suspende o acesso sem apagar a conta |
+| `must_change_password` | `boolean` | Padrão `false`; `true` enquanto a conta usa a senha inicial definida pelo administrador (bloqueia o CMS; Etapa 10.5) |
+| `password_change_required_at` | `timestamptz` | Quando a troca passou a ser exigida; obrigatório se `must_change_password` (constraint `admin_memberships_password_change_check`) |
 | `created_at` / `updated_at` | `timestamptz` | Padrão `now()`; trigger `set_updated_at`      |
 
 - Índice parcial `admin_memberships_active_role_idx` em `role` (apenas ativos).
@@ -240,6 +242,27 @@ Vínculo administrativo de uma conta do Supabase Auth. Sem registro (ou com
   usuário pode alterar.
 - A migration não cria registros: o primeiro administrador é vinculado
   manualmente (ver [`admin-auth.md`](admin-auth.md#criar-o-primeiro-administrador)).
+- `authenticated` tem apenas `SELECT` (o próprio vínculo). Vínculos de Editor
+  são criados e alterados somente pela Edge Function `admin-editor-management`
+  (service_role), depois de validar o administrador ([`user-management.md`](user-management.md)).
+- `has_cms_role` exige `is_active` **e** `not must_change_password`.
+
+### `admin_user_events`
+
+Histórico das operações sobre contas de Editor (Etapa 10.5).
+
+| Coluna | Tipo | Regra |
+|---|---|---|
+| `id` | `bigint` | Identidade |
+| `created_at` | `timestamptz` | Padrão `now()` |
+| `actor_user_id` / `target_user_id` | `uuid` | FK para `auth.users`, `ON DELETE SET NULL` |
+| `target_email` | `text` | E-mail da conta alvo (≤ 320) |
+| `event_type` | `text` | `editor_created`, `editor_deactivated`, `editor_reactivated`, `editor_password_reset`, `initial_password_changed` |
+| `outcome` | `text` | `success` ou `failure` |
+| `detail` | `text` | Código curto (`^[a-z0-9_:-]{1,80}$`); nunca senha ou token |
+
+RLS: `SELECT` para administradores ativos. `INSERT` somente para
+`service_role`; ninguém tem `UPDATE` nem `DELETE`.
 
 ### Relações N:N
 

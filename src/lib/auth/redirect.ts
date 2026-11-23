@@ -11,7 +11,12 @@ const ADMIN_PATH = /^\/admin(?:\/[a-z0-9-]+)*$/;
 const EDITOR_PREFIX = "/admin/editor?pagina=";
 
 // Telas de acesso: não fazem sentido como destino depois de entrar.
-const EXCLUDED = new Set(["/admin/login", "/admin/recuperar-senha", "/admin/acesso-negado"]);
+const EXCLUDED = new Set([
+  "/admin/login",
+  "/admin/recuperar-senha",
+  "/admin/acesso-negado",
+  "/admin/trocar-senha-inicial",
+]);
 
 export function safeAdminPath(value: unknown, fallback = "/admin"): string {
   if (typeof value === "string" && value.startsWith(EDITOR_PREFIX) && value.length <= 400) {

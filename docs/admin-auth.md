@@ -209,7 +209,18 @@ acesso:
 
 5. Acesse `/admin/login` com o e-mail e a senha da conta.
 
-Para outros papéis use `'editor'`. Para revogar o acesso sem apagar a conta:
+Este procedimento é **excepcional** e só serve para o primeiro
+Administrador (ou outro Administrador). **Editores** são criados, desativados,
+reativados e têm a senha inicial redefinida pelo próprio painel, em
+*Configurações → Usuários e permissões* (`/admin/usuarios`), sem usar o painel
+do Supabase: ver [`user-management.md`](user-management.md).
+
+Conta já existente no Auth sem vínculo (criada fora do painel): o módulo não a
+transforma em Editor nem altera a senha. Se for mesmo para vincular, a equipe
+técnica insere o vínculo por SQL (`role = 'editor'`), como acima, depois de
+confirmar a identidade da pessoa.
+
+Para revogar o acesso de um Administrador sem apagar a conta:
 
 ```sql
 update public.admin_memberships set is_active = false where user_id = '<UUID-DO-USUARIO>';
@@ -228,4 +239,5 @@ Nunca coloque UUIDs, e-mails ou senhas reais em migrations ou no repositório.
 | E — desativado | `is_active = false` com a sessão aberta | Próxima navegação leva a `/admin/acesso-negado` ("desativado") |
 | F — sessão expirada | Cookie com sessão vencida ou inválida | Cookies apagados e redirecionamento para o login |
 | G — recuperação | Solicitar link, abrir no mesmo navegador, definir senha | `/admin/nova-senha` → login com "Senha redefinida" |
+| H — senha inicial | Entrar com conta criada em `/admin/usuarios` | `/admin/trocar-senha-inicial`; nenhuma página ou operação do CMS antes da troca |
 | Logout | "Sair" e depois Voltar | Login; páginas anteriores não reaparecem autenticadas |

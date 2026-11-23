@@ -23,7 +23,7 @@ export function AdminShell({ email, role, children }: AdminShellProps) {
       >
         Pular para o conteúdo
       </a>
-      <AdminNavigation />
+      <AdminNavigation isAdmin={role === "admin"} />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="border-b border-border bg-surface">

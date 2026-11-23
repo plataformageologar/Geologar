@@ -1,7 +1,8 @@
 # Estado atual do sistema — Portal GeoLogar
 
-Retrato do portal em **23/11/2026**, depois da Etapa 10 (auditoria, QA,
-segurança, SEO e preparação para homologação). Resultados completos em
+Retrato do portal em **23/11/2026**, depois da Etapa 10.5 (gerenciamento de
+Editores pelo painel), que se seguiu à Etapa 10 (auditoria, QA, segurança, SEO
+e preparação para homologação). Resultados completos em
 [`qa-report.md`](qa-report.md); roteiro para a equipe em
 [`homologation-checklist.md`](homologation-checklist.md). Detalhes de cada parte nos documentos citados.
 
@@ -9,11 +10,11 @@ segurança, SEO e preparação para homologação). Resultados completos em
 
 | | |
 |---|---|
-| Etapas concluídas | 1 a 10 |
-| Último commit | `fix: complete GeoLogar QA security and production readiness` |
+| Etapas concluídas | 1 a 10.5 |
+| Último commit | `feat: implement direct editor account management` |
 | Site em produção | <https://geologar.plataformageologar.workers.dev> (sem domínio próprio) |
 | Deploy | Automático a cada push em `main` (Cloudflare Workers Builds, Worker `geologar`) |
-| Banco e autenticação | Supabase (PostgreSQL + RLS, Auth, Storage) |
+| Banco e autenticação | Supabase (PostgreSQL + RLS, Auth, Storage, Edge Function `admin-editor-management`) |
 | Próxima etapa | 11 — **não iniciada**, aguardando briefing |
 | Indexação | Site público **indexável**; `robots.txt` bloqueia `/admin`, `/api/` e `/auth/`; `sitemap.xml` só com conteúdo publicado |
 
@@ -95,6 +96,11 @@ Papéis em `admin_memberships`:
   páginas personalizadas (não publica menus, aparência nem informações
   institucionais; não despublica nem arquiva páginas já publicadas).
 
+Editores são criados pelo Administrador em `/admin/usuarios` (e-mail e senha
+inicial, sem convite por e-mail) e trocam a senha no primeiro acesso; até lá o
+painel e o banco recusam qualquer edição. Ver
+[`user-management.md`](user-management.md).
+
 | Módulo | Rota | Quem edita |
 |---|---|---|
 | Painel | `/admin` | — |
@@ -111,6 +117,7 @@ Papéis em `admin_memberships`:
 | Instituições | `/admin/instituicoes` | admin, editor; categorias só admin |
 | Biblioteca de mídia | `/admin/midias` | admin, editor envia; admin exclui |
 | Navegação (menus) | `/admin/navegacao` | admin (editor consulta) |
+| Usuários e permissões | `/admin/usuarios` | admin (cria, desativa, reativa Editores e define senha inicial) |
 | Aparência | `/admin/aparencia` | admin |
 | Informações institucionais, cabeçalho e rodapé | `/admin/configuracoes` | admin |
 | Redes sociais | `/admin/redes-sociais` | admin |
@@ -124,8 +131,8 @@ Ver [`cms.md`](cms.md), [`admin-auth.md`](admin-auth.md),
 
 ## Banco de dados
 
-12 migrations aplicadas, de `20261103141529_initial_geologar_content_schema`
-a `20261123120500_editorial_write_guard`. Tabelas principais:
+13 migrations aplicadas, de `20261103141529_initial_geologar_content_schema`
+a `20261123150000_editor_account_management`. Tabelas principais:
 
 - conteúdo: `homepage_content`, `research_lines`, `projects`, `publications`,
   `institutions`, `institution_categories`, `social_links`, `site_settings`;
@@ -133,7 +140,8 @@ a `20261123120500_editorial_write_guard`. Tabelas principais:
   `page_content`, `site_appearance`;
 - fluxo editorial: `editorial_documents` (rascunhos), `editorial_revisions`
   (histórico imutável), `custom_pages`;
-- acesso: `admin_memberships`;
+- acesso: `admin_memberships` (com troca obrigatória da senha inicial) e
+  `admin_user_events` (histórico das operações sobre Editores);
 - Storage: bucket público `geologar-media`.
 
 Ver [`database-schema.md`](database-schema.md).
@@ -146,7 +154,12 @@ Ver [`database-schema.md`](database-schema.md).
   fluxo de rascunho e publicação; gravação direta é recusada (`GL403`).
 - Rascunhos e histórico só são lidos com a sessão do CMS; o site público lê
   apenas as tabelas publicadas.
-- Operações editoriais usam a sessão do usuário, nunca `service_role`.
+- Operações editoriais usam a sessão do usuário, nunca `service_role`. A
+  chave secreta só existe na Edge Function `admin-editor-management`, que
+  valida JWT e vínculo de administrador antes de usar a API administrativa
+  do Auth (lista fechada de operações; administradores nunca são alterados).
+- Conta com senha inicial (`must_change_password`) não edita nada:
+  `has_cms_role` e as Server Actions recusam até a troca.
 - `/admin` com `Cache-Control: private, no-store`, `noindex` e proteção contra
   exibição em iframe de outros sites.
 - Todas as respostas com `X-Content-Type-Options`, `Referrer-Policy`,
@@ -162,9 +175,10 @@ Ver [`database-schema.md`](database-schema.md).
 | Verificação | Resultado |
 |---|---|
 | Lint e TypeScript | Sem erros |
-| Testes unitários (`npm test`) | 97/97 |
-| Testes de banco pgTAP (8 arquivos, no banco remoto, transação desfeita) | 346/346 (segurança do fluxo editorial: 23/23) |
-| Testes ponta a ponta do visitante (`npm run test:e2e`, Playwright) | 30/30 (6 ignorados de propósito) |
+| Testes unitários (`npm test`) | 128/128 (gerenciamento de Editores: 31) |
+| Testes de banco pgTAP (9 arquivos, no banco remoto, transação desfeita) | 376/376 (gerenciamento de Editores: 30) |
+| Testes ponta a ponta do visitante (`npm run test:e2e`, Playwright) | 32/32 (6 ignorados de propósito) |
+| Edge Function publicada, sem sessão / chave publicável / JWT forjado | 401 |
 | Build OpenNext e `opennextjs-cloudflare preview` | OK |
 | `npm audit --omit=dev` | 0 vulnerabilidades |
 | Fluxo editorial no navegador (sessão admin) | Rascunho, descarte, restauração, criar/publicar/despublicar/arquivar página, conflito entre abas, editor visual |
@@ -193,7 +207,8 @@ Ver [`database-schema.md`](database-schema.md).
 - Página individual de publicação; agendamento de publicação.
 - Histórico de versões para projetos, linhas, publicações e instituições
   (continuam com rascunho/publicado por registro).
-- Gestão de usuários pelo painel.
+- Exclusão de contas e gestão de Administradores pelo painel (de propósito:
+  usa-se a desativação; Administradores seguem pelo procedimento técnico).
 
 ### Da GeoLogar
 
@@ -204,4 +219,5 @@ Ver [`database-schema.md`](database-schema.md).
 - Projetos, publicações, instituições e redes sociais reais.
 - Dados de contato oficiais e credenciais do formulário (Resend, Turnstile).
 - Decisão sobre domínio próprio.
-- Contas da equipe (admin/editor), criadas no painel do Supabase.
+- Contas da equipe: Editores criados pelo Administrador em
+  *Usuários e permissões*; Administradores adicionais, pela equipe técnica.

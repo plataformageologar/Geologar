@@ -18,6 +18,8 @@ export type Database = {
         Row: {
           created_at: string
           is_active: boolean
+          must_change_password: boolean
+          password_change_required_at: string | null
           role: string
           updated_at: string
           user_id: string
@@ -25,6 +27,8 @@ export type Database = {
         Insert: {
           created_at?: string
           is_active?: boolean
+          must_change_password?: boolean
+          password_change_required_at?: string | null
           role: string
           updated_at?: string
           user_id: string
@@ -32,9 +36,44 @@ export type Database = {
         Update: {
           created_at?: string
           is_active?: boolean
+          must_change_password?: boolean
+          password_change_required_at?: string | null
           role?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      admin_user_events: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          detail: string | null
+          event_type: string
+          id: number
+          outcome: string
+          target_email: string | null
+          target_user_id: string | null
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          detail?: string | null
+          event_type: string
+          id?: never
+          outcome: string
+          target_email?: string | null
+          target_user_id?: string | null
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          detail?: string | null
+          event_type?: string
+          id?: never
+          outcome?: string
+          target_email?: string | null
+          target_user_id?: string | null
         }
         Relationships: []
       }

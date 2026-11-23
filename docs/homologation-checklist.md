@@ -42,6 +42,9 @@ Use, se possível, um computador e um celular.
 
 - [ ] Cada pessoa da equipe recebeu a própria conta (não compartilhar
       senhas).
+- [ ] No primeiro acesso de um Editor criado pelo painel, aparece “Defina sua
+      senha pessoal”; nada pode ser editado antes de trocar a senha, e a
+      senha inicial não é aceita como nova senha.
 - [ ] Entrar com e-mail e senha leva ao painel.
 - [ ] “Esqueci minha senha” envia o e-mail de redefinição e a nova senha
       funciona.
@@ -81,12 +84,30 @@ Faça estes testes em um texto que possa ser desfeito.
       “página não encontrada”. Descartar o rascunho do menu depois do teste.
 - [ ] Arquivar a página de teste ao final.
 
-## 7. Permissões
+## 7. Usuários e permissões (administradores)
 
+Use um e-mail de teste da própria equipe e apague as anotações de senha ao
+final.
+
+- [ ] Em **Configurações → Usuários e permissões**, **Adicionar Editor** com
+      e-mail e senha inicial: aparece “Editor criado com sucesso” e a conta
+      aparece na lista como “Ativo” e “Pendente de troca”.
+- [ ] Tentar criar de novo com o mesmo e-mail: o sistema avisa que o e-mail
+      já pertence a um Editor ativo.
+- [ ] Entrar com a nova conta (outro navegador ou janela anônima): o painel
+      pede a troca de senha; depois da troca, o painel abre normalmente e a
+      lista mostra “Já alterada”.
 - [ ] Uma conta de **editor** consegue editar textos, seções, pilares e
       páginas, mas não consegue publicar menus, aparência nem informações
-      institucionais.
-- [ ] Uma conta desativada não consegue entrar na área de edição.
+      institucionais, e não vê “Usuários e permissões” (abrir o endereço
+      direto mostra acesso negado).
+- [ ] **Desativar acesso**: a conta desativada não consegue mais usar a área
+      de edição; os conteúdos feitos por ela continuam no site.
+- [ ] **Reativar acesso**: a conta volta a entrar.
+- [ ] **Redefinir senha**: a senha antiga deixa de funcionar e a nova senha
+      inicial pede troca no próximo acesso.
+- [ ] O **Histórico de operações** mostra cada ação, sem nenhuma senha.
+- [ ] Ao final, desativar a conta de teste.
 
 ## 8. Aprovação
 
@@ -95,5 +116,5 @@ Faça estes testes em um texto que possa ser desfeito.
 | Site público | | | | |
 | Conteúdo e imagens | | | | |
 | Área de edição | | | | |
-| Permissões | | | | |
+| Usuários e permissões | | | | |
 | Decisões pendentes (contato, domínio) | | | | |

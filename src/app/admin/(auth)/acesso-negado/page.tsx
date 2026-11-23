@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { AuthCard } from "@/components/admin/auth-card";
 import { FormMessage } from "@/components/admin/form-controls";
 import { Button } from "@/components/ui/button";
-import { getAdminAccess } from "@/lib/auth/access";
+import { getAdminAccess, INITIAL_PASSWORD_PATH } from "@/lib/auth/access";
 import { signOut } from "@/lib/auth/actions";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +18,7 @@ export default async function AccessDeniedPage() {
   const access = await getAdminAccess();
   if (access.status === "anonymous") redirect("/admin/login");
   if (access.status === "authorized") redirect("/admin");
+  if (access.reason === "password-change") redirect(INITIAL_PASSWORD_PATH);
 
   return (
     <AuthCard title="Acesso não autorizado">

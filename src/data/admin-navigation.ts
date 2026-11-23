@@ -22,11 +22,14 @@ export type AdminNavItem = {
     | "appearance"
     | "site-settings"
     | "social-links"
+    | "users"
     | "profile";
   label: string;
   href?: string;
   /** Destaca o item apenas na rota exata (ex.: /admin). */
   exact?: boolean;
+  /** Só aparece para administradores (a página também verifica no servidor). */
+  adminOnly?: boolean;
 };
 
 export type AdminNavSection = {
@@ -71,6 +74,7 @@ export const adminNavigation: AdminNavSection[] = [
     items: [
       { id: "site-settings", label: "Informações institucionais", href: "/admin/configuracoes" },
       { id: "social-links", label: "Redes sociais", href: "/admin/redes-sociais" },
+      { id: "users", label: "Usuários e permissões", href: "/admin/usuarios", adminOnly: true },
     ],
   },
   { title: "Conta", items: [{ id: "profile", label: "Meu perfil", href: "/admin/perfil" }] },

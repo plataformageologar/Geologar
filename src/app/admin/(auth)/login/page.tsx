@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { AuthCard } from "@/components/admin/auth-card";
 import { FormMessage } from "@/components/admin/form-controls";
 import { LoginForm } from "@/components/admin/login-form";
-import { getAdminAccess } from "@/lib/auth/access";
+import { forbiddenDestination, getAdminAccess } from "@/lib/auth/access";
 import { safeAdminPath } from "@/lib/auth/redirect";
 import { firstParam } from "@/lib/utils/search-params";
 
@@ -33,7 +33,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/admin/logi
   // sem permissão: tela de acesso negado (com opção de sair).
   const access = await getAdminAccess();
   if (access.status === "authorized") redirect(next ?? "/admin");
-  if (access.status === "forbidden") redirect("/admin/acesso-negado");
+  if (access.status === "forbidden") redirect(forbiddenDestination(access));
 
   const notice =
     (firstParam(query.senha) === "redefinida" && notices["senha=redefinida"]) ||

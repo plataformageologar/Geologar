@@ -114,6 +114,7 @@ src/
     content.ts          Formatos de conteúdo derivados do schema
     database.types.ts   Tipos do banco gerados pelo Supabase CLI (não editar)
 tests/
+  admin/                Testes unitários do gerenciamento de Editores (núcleo da Edge Function)
   contact/              Testes unitários do formulário de contato
   site/                 Testes unitários do fluxo editorial, editor, validações, SEO e navegação
   e2e/                  Testes ponta a ponta do visitante (Playwright; somente leitura)
@@ -121,7 +122,8 @@ tests/
 supabase/
   config.toml           Configuração do Supabase CLI (ambiente local)
   migrations/           Migrations SQL versionadas
-  tests/database/       Testes pgTAP de RLS e do fluxo editorial (transação desfeita)
+  functions/            Edge Functions (admin-editor-management) e código compartilhado (_shared)
+  tests/database/       Testes pgTAP de RLS, fluxo editorial e contas (transação desfeita)
 docs/
   admin-auth.md         Autenticação, autorização e primeiro administrador
   cms.md                CMS: módulos, validação, salvamento, exclusão e RLS de escrita
@@ -137,6 +139,7 @@ docs/
   guia-edicao-geologar.md  Guia de edição para a equipe (sem termos técnicos)
   qa-report.md          Auditoria, testes e resultados da Etapa 10
   homologation-checklist.md  Roteiro de homologação para a equipe GeoLogar
+  user-management.md    Gerenciamento de Editores (Edge Function, senha inicial, histórico)
   initial-content-manifest.md  Materiais de referência: o que foi importado, associado ou descartado
   media-library.md      Biblioteca de mídia (Supabase Storage), imagens e exclusão segura
   public-pages.md       Rotas, filtros, consultas e regras das páginas públicas
@@ -192,6 +195,14 @@ em `admin_memberships` (papéis `admin` e `editor`), verificado a cada
 requisição. Não há usuário padrão: o primeiro administrador é criado no painel
 do Supabase e vinculado por SQL. Fluxos, cookies, configuração de Redirect
 URLs e passo a passo em [`docs/admin-auth.md`](docs/admin-auth.md).
+
+**Editores** são criados pelo próprio painel (Etapa 10.5), em
+*Configurações → Usuários e permissões* (`/admin/usuarios`, só
+administradores): e-mail e senha inicial, sem convite por e-mail; troca de
+senha obrigatória no primeiro acesso; desativar, reativar e definir nova senha
+inicial. A API administrativa do Supabase Auth roda apenas na Edge Function
+`admin-editor-management` (a chave secreta não vai para o Worker). Ver
+[`docs/user-management.md`](docs/user-management.md).
 
 ### CMS
 
@@ -345,6 +356,15 @@ npm run db:types
 ```
 
 Para rodar o Supabase localmente (`npx supabase start`) é necessário Docker.
+
+### Edge Functions
+
+`supabase/functions/admin-editor-management` (gerenciamento de Editores) é
+publicada à parte — o push na `main` publica só o Worker:
+
+```bash
+npx supabase functions deploy admin-editor-management --use-api
+```
 
 ## Deploy
 

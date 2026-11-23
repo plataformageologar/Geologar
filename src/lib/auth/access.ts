@@ -16,11 +16,26 @@ export type AdminAccess =
       status: "forbidden";
       userId: string;
       email: string | null;
-      reason: "no-membership" | "inactive";
+      /**
+       * `password-change`: vínculo ativo, mas ainda com a senha inicial
+       * definida pelo administrador. Nenhuma operação do CMS é liberada até a
+       * troca (o banco aplica a mesma regra em `has_cms_role`).
+       */
+      reason: "no-membership" | "inactive" | "password-change";
+      role?: AdminRole;
     }
   | { status: "authorized"; userId: string; email: string | null; role: AdminRole };
 
 type ServerClient = Awaited<ReturnType<typeof createClient>>;
+
+/** Tela da troca obrigatória da senha inicial (Etapa 10.5). */
+export const INITIAL_PASSWORD_PATH = "/admin/trocar-senha-inicial";
+export const ACCESS_DENIED_PATH = "/admin/acesso-negado";
+
+/** Destino de uma conta autenticada que não pode usar o painel. */
+export function forbiddenDestination(access: Extract<AdminAccess, { status: "forbidden" }>) {
+  return access.reason === "password-change" ? INITIAL_PASSWORD_PATH : ACCESS_DENIED_PATH;
+}
 
 function isAdminRole(value: string): value is AdminRole {
   return value === "admin" || value === "editor";
@@ -46,7 +61,7 @@ export async function resolveAdminAccess(supabase: ServerClient): Promise<AdminA
 
   const { data: membership, error: membershipError } = await supabase
     .from("admin_memberships")
-    .select("role, is_active")
+    .select("role, is_active, must_change_password")
     .eq("user_id", userId)
     .maybeSingle();
 
@@ -59,7 +74,10 @@ export async function resolveAdminAccess(supabase: ServerClient): Promise<AdminA
     return { status: "forbidden", userId, email, reason: "no-membership" };
   }
   if (!membership.is_active) {
-    return { status: "forbidden", userId, email, reason: "inactive" };
+    return { status: "forbidden", userId, email, reason: "inactive", role: membership.role };
+  }
+  if (membership.must_change_password) {
+    return { status: "forbidden", userId, email, reason: "password-change", role: membership.role };
   }
   return { status: "authorized", userId, email, role: membership.role };
 }
@@ -81,6 +99,6 @@ export const getAdminAccess = cache(async (): Promise<AdminAccess> =>
 export async function requireAdminAccess() {
   const access = await getAdminAccess();
   if (access.status === "anonymous") redirect("/admin/login");
-  if (access.status === "forbidden") redirect("/admin/acesso-negado");
+  if (access.status === "forbidden") redirect(forbiddenDestination(access));
   return access;
 }
