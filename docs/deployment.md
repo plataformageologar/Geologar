@@ -64,6 +64,11 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 ```
 
 - Ambas são públicas por natureza; a proteção dos dados é feita pelo RLS.
+- Opcional: `NEXT_PUBLIC_SITE_URL` (origem pública, ex.:
+  `https://www.exemplo.org`, sem caminho). Define a base de canonical, Open
+  Graph, `sitemap.xml`, `robots.txt` e o destino padrão dos links de e-mail.
+  Sem ela vale `https://geologar.plataformageologar.workers.dev`. Só cadastre
+  quando o domínio próprio estiver ativo (ver "Domínio oficial").
 - **Não** cadastre `SUPABASE_SECRET_KEY`: o site não a utiliza.
 - Depois de alterar uma variável, dispare um novo build (*Deployments → Retry
   build*, ou um novo push na `main`).
@@ -201,6 +206,15 @@ Redirect URLs, cadastro público) em [`admin-auth.md`](admin-auth.md).
       `Cache-Control: private, no-store`; `/admin/login` em `200`.
 - [ ] Login, painel, "Meu perfil" e "Sair" funcionando com uma conta vinculada.
 - [ ] Observability do Worker sem erros (*Workers → geologar → Logs*).
+- [ ] `GET /robots.txt` em `200`, bloqueando apenas `/admin`, `/api/` e
+      `/auth/`, com a linha `Sitemap:` apontando para o endereço público.
+- [ ] `GET /sitemap.xml` em `200`, só com páginas publicadas (sem rascunhos,
+      páginas arquivadas ou rotas `/admin`).
+- [ ] Cabeçalhos em `/`: `X-Content-Type-Options: nosniff`,
+      `Referrer-Policy: strict-origin-when-cross-origin`,
+      `X-Frame-Options: SAMEORIGIN`, `Permissions-Policy`.
+- [ ] `<link rel="canonical">` e `og:url` das páginas apontando para o endereço
+      público.
 - [ ] `/contato`: sem as variáveis do formulário, apenas canais/aviso vazio e
       nenhum script do Turnstile; `POST /api/contact` em `503`.
 - [ ] Com o formulário ativado: envio real de teste recebido, token inválido
@@ -223,4 +237,30 @@ Redirect URLs, cadastro público) em [`admin-auth.md`](admin-auth.md).
 
 Ainda não configurado. Quando for, a configuração deve ser planejada à parte
 (*Workers → geologar → Settings → Domains & Routes*), sem alterar o DNS atual
-antes da validação.
+antes da validação. Depois de ativar o domínio:
+
+1. Cadastrar `NEXT_PUBLIC_SITE_URL` com a nova origem nas variáveis de build e
+   refazer o build (canonical, Open Graph, sitemap e robots passam a usá-la).
+2. No Supabase, atualizar *Site URL* e acrescentar
+   `https://<domínio>/auth/callback` às Redirect URLs (o endereço
+   `workers.dev` continua aceito pelo código).
+3. No Turnstile, incluir o novo hostname no widget.
+4. Enviar o novo `sitemap.xml` às ferramentas de busca, se desejado.
+
+## Indexação
+
+O site público é **indexável** (decisão da Etapa 10). `src/app/robots.ts`
+bloqueia apenas `/admin`, `/api/` e `/auth/` e aponta o `sitemap.xml`
+(`src/app/sitemap.ts`: páginas fixas, linhas de pesquisa, projetos e páginas
+personalizadas publicados). `robots.txt` **não** é mecanismo de segurança: a
+área administrativa continua protegida por login e papel.
+
+Antes da Etapa 10 não havia `robots.txt` da aplicação (o Cloudflare servia um
+`robots.txt` gerenciado só com comentários, ou seja, sem restrições) nem
+`sitemap.xml`. Se a zona do Cloudflare tiver *Managed robots.txt* ativado, ele
+pode se sobrepor ao da aplicação: confira o conteúdo servido depois do deploy.
+
+Para impedir a indexação durante uma demonstração, troque as regras de
+`robots.ts` por `disallow: "/"` e acrescente `robots: { index: false }` aos
+metadados do layout — e registre a mudança, já que ela é visível aos
+buscadores.

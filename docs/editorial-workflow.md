@@ -36,7 +36,7 @@ já existia antes desta etapa.
 | Sem alterações / Publicado, sem rascunho | Nada pendente. O CMS mostra a versão publicada. |
 | Alterações não salvas | Existe edição só no navegador. Fechar a aba avisa. |
 | Rascunho salvo, diferente da versão publicada | Há rascunho no banco; o site ainda mostra a versão anterior. |
-| Rascunho salvo, igual à versão publicada | Há rascunho, mas o conteúdo coincide com o publicado. |
+| Rascunho salvo, igual à versão publicada — nada a publicar | Há rascunho, mas o conteúdo coincide com o publicado. **Publicar** fica desativado (desde a Etapa 10); use “Descartar rascunho” para limpar. Em páginas personalizadas o rascunho igual pode ser publicado (é assim que uma página despublicada volta ao ar). |
 | Rascunho salvo — ainda não publicado | Unidade nova (página personalizada) que nunca foi publicada. |
 | Conflito | Outra pessoa salvou a mesma unidade depois que você abriu a tela. Nada é sobrescrito. |
 | Falha ao salvar/publicar | Erro de rede, sessão ou validação. A mensagem diz o que fazer; o que foi digitado continua na tela. |
@@ -115,6 +115,10 @@ site público — lê somente as tabelas publicadas (cliente anônimo)
 
 ## Histórico de versões
 
+- Tela `/admin/historico` (item **Histórico de versões** no menu do painel,
+  grupo Revisão): lista todos os conteúdos que o papel pode ver, com a
+  situação (rascunho pendente, revisão publicada) e os links **Ver
+  histórico** e **Editar**.
 - Tela `/admin/historico?documento=<id>`: lista paginada (25 por página) com
   número, operação, autor, data e observação. Cada revisão pode ser comparada
   com a versão publicada ou com a revisão anterior; a comparação é

@@ -22,7 +22,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from "react";
 
 import { saveEditorialDrafts } from "@/lib/admin/editorial-actions";
-import type { PartName } from "@/lib/editorial/content";
+import { hasPublishableDraft, type PartName } from "@/lib/editorial/content";
 import { partSlice, sliceErrors, slicesFromContent } from "@/lib/editorial/editor-slices";
 import {
   DRAFT_SLICES,
@@ -229,7 +229,7 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
   /** Unidade editorial que contém a fatia (nesta página). */
   const unitOf = (slice: DraftSlice) => doc.units.find((unit) => unit.slices.includes(slice)) ?? null;
   const pendingDrafts = doc.units.filter((unit) => unit.hasDraft);
-  const publishable = pendingDrafts.some((unit) => unit.canPublish);
+  const publishable = pendingDrafts.some((unit) => unit.canPublish && hasPublishableDraft(unit));
 
   function firstErrorTarget(found: EditorErrors, sections: EditorDraft["sections"]): EditorTarget | null {
     const sectionOf = (type: string) => {

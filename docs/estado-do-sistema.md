@@ -1,18 +1,21 @@
 # Estado atual do sistema — Portal GeoLogar
 
-Retrato do portal em **23/11/2026**, depois da Etapa 9.6 (rascunhos,
-publicação controlada, histórico de versões e páginas personalizadas). Detalhes de cada parte nos documentos citados.
+Retrato do portal em **23/11/2026**, depois da Etapa 10 (auditoria, QA,
+segurança, SEO e preparação para homologação). Resultados completos em
+[`qa-report.md`](qa-report.md); roteiro para a equipe em
+[`homologation-checklist.md`](homologation-checklist.md). Detalhes de cada parte nos documentos citados.
 
 ## Resumo
 
 | | |
 |---|---|
-| Etapas concluídas | 1 a 9.6 |
-| Último commit | `feat: implement editorial drafts revisions and custom pages` |
+| Etapas concluídas | 1 a 10 |
+| Último commit | `fix: complete GeoLogar QA security and production readiness` |
 | Site em produção | <https://geologar.plataformageologar.workers.dev> (sem domínio próprio) |
 | Deploy | Automático a cada push em `main` (Cloudflare Workers Builds, Worker `geologar`) |
 | Banco e autenticação | Supabase (PostgreSQL + RLS, Auth, Storage) |
-| Próximas etapas | 10 e 11 — **não iniciadas**, aguardando briefing |
+| Próxima etapa | 11 — **não iniciada**, aguardando briefing |
+| Indexação | Site público **indexável**; `robots.txt` bloqueia `/admin`, `/api/` e `/auth/`; `sitemap.xml` só com conteúdo publicado |
 
 ## Tecnologia
 
@@ -32,7 +35,8 @@ Configuração do Worker (`wrangler.jsonc`): bindings `ASSETS`, `IMAGES`,
 contato). Sem ISR, R2, KV ou Durable Objects. Ver [`deployment.md`](deployment.md).
 
 Variáveis de ambiente (nomes, sem valores): `NEXT_PUBLIC_SUPABASE_URL`,
-`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` e as do
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`,
+`NEXT_PUBLIC_SITE_URL` (opcional, para domínio próprio) e as do
 formulário de contato (ver [`contact-form.md`](contact-form.md)).
 
 ## Site público
@@ -100,7 +104,7 @@ Papéis em `admin_memberships`:
 | Pilares | `/admin/pilares` | admin, editor |
 | Textos das páginas | `/admin/textos-das-paginas` | admin, editor |
 | Páginas personalizadas | `/admin/paginas` | admin, editor (despublicar/arquivar publicadas: admin) |
-| Histórico de versões | `/admin/historico` | admin, editor |
+| Histórico de versões | `/admin/historico` (lista de conteúdos) | admin, editor |
 | Linhas de pesquisa | `/admin/linhas-de-pesquisa` | admin, editor (excluir: admin) |
 | Projetos | `/admin/projetos` | admin, editor (excluir: admin) |
 | Publicações | `/admin/publicacoes` | admin, editor (excluir: admin) |
@@ -145,6 +149,9 @@ Ver [`database-schema.md`](database-schema.md).
 - Operações editoriais usam a sessão do usuário, nunca `service_role`.
 - `/admin` com `Cache-Control: private, no-store`, `noindex` e proteção contra
   exibição em iframe de outros sites.
+- Todas as respostas com `X-Content-Type-Options`, `Referrer-Policy`,
+  `X-Frame-Options: SAMEORIGIN` e `Permissions-Policy` (Etapa 10).
+- Cadastro público desativado no Supabase Auth (somente Email).
 - Links e conteúdo validados no navegador, no servidor e no banco; sem HTML
   livre.
 - Next.js 16.4.6 corrige os avisos de segurança da 16.4.4.
@@ -155,18 +162,24 @@ Ver [`database-schema.md`](database-schema.md).
 | Verificação | Resultado |
 |---|---|
 | Lint e TypeScript | Sem erros |
-| Testes unitários (`npm test`) | 88/88 |
-| Testes de banco pgTAP (7 arquivos, no banco remoto, transação desfeita) | 323/323 (fluxo editorial: 61/61) |
+| Testes unitários (`npm test`) | 97/97 |
+| Testes de banco pgTAP (8 arquivos, no banco remoto, transação desfeita) | 346/346 (segurança do fluxo editorial: 23/23) |
+| Testes ponta a ponta do visitante (`npm run test:e2e`, Playwright) | 30/30 (6 ignorados de propósito) |
 | Build OpenNext e `opennextjs-cloudflare preview` | OK |
+| `npm audit --omit=dev` | 0 vulnerabilidades |
 | Fluxo editorial no navegador (sessão admin) | Rascunho, descarte, restauração, criar/publicar/despublicar/arquivar página, conflito entre abas, editor visual |
-| Responsivo (6 tamanhos, telas novas e editor) | Sem rolagem horizontal |
+| Responsivo (6 tamanhos × 16 páginas públicas e do CMS) | Sem rolagem horizontal |
+| Verificação automática de acessibilidade (14 páginas) | Sem problemas (não é auditoria WCAG) |
 
 ## Pendências
 
 ### Técnicas
 
 - Interface com uma conta de papel **editor** real ainda não testada (regras
-  cobertas por pgTAP e pelo servidor).
+  cobertas por pgTAP e pelo servidor); depende de a pessoa entrar com a
+  própria senha.
+- Melhoria opcional: revogar `EXECUTE` das funções antigas de gravação
+  (hoje barradas pela guarda `GL403`).
 - `npm audit` acusa itens só em ferramentas de build e lint (cadeia `glob`
   do OpenNext e `typescript-eslint`), sem efeito no site publicado. Resolver
   quando houver versões novas dessas ferramentas.
@@ -184,7 +197,9 @@ Ver [`database-schema.md`](database-schema.md).
 ### Da GeoLogar
 
 - Textos finais, fotografias reais e logotipos oficiais (incluindo os das
-  instituições parceiras), com direitos de uso confirmados.
+  instituições parceiras), com direitos de uso confirmados. As fotos atuais
+  das linhas de pesquisa têm ~450 × 226 px e aparecem borradas em telas
+  grandes (ver [`qa-report.md`](qa-report.md#8-imagens-a-substituir-geologar)).
 - Projetos, publicações, instituições e redes sociais reais.
 - Dados de contato oficiais e credenciais do formulário (Resend, Turnstile).
 - Decisão sobre domínio próprio.

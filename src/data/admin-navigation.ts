@@ -12,6 +12,7 @@ export type AdminNavItem = {
     | "institutions"
     | "media"
     | "demo"
+    | "history"
     | "visual-editor"
     | "custom-pages"
     | "sections"
@@ -60,7 +61,10 @@ export const adminNavigation: AdminNavSection[] = [
   },
   {
     title: "Revisão",
-    items: [{ id: "demo", label: "Prévia de demonstração", href: "/admin/demonstracao" }],
+    items: [
+      { id: "history", label: "Histórico de versões", href: "/admin/historico" },
+      { id: "demo", label: "Prévia de demonstração", href: "/admin/demonstracao" },
+    ],
   },
   {
     title: "Configurações",

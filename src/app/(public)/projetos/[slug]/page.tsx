@@ -12,6 +12,7 @@ import { RichText } from "@/components/ui/rich-text";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { TextLink } from "@/components/ui/text-link";
 import { getProjectBySlug } from "@/lib/queries/projects";
+import { SITE_OPEN_GRAPH } from "@/lib/site/url";
 import { formatPeriod, safeExternalUrl } from "@/lib/utils/format";
 
 export const dynamic = "force-dynamic";
@@ -23,9 +24,13 @@ export async function generateMetadata({
   const project = await getProjectBySlug(slug);
   if (!project) return {};
 
+  const description = project.short_description ?? undefined;
+  const path = `/projetos/${project.slug}`;
   return {
     title: project.title,
-    description: project.short_description ?? undefined,
+    description,
+    alternates: { canonical: path },
+    openGraph: { ...SITE_OPEN_GRAPH, url: path, title: project.title, description },
   };
 }
 

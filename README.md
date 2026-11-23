@@ -2,13 +2,14 @@
 
 Rede de Pesquisa em Geociências — Recursos Naturais e Sustentabilidade.
 
-Portal institucional da GeoLogar. Nesta fase o repositório contém a homepage
-e as páginas públicas (A Rede, Pesquisa, Projetos, Publicações, Instituições e
-Contato), integradas ao Supabase (leitura pública via RLS), e a área
-administrativa (`/admin`: login, autorização por papel, painel e o CMS de
-homepage, linhas de pesquisa, projetos, publicações, instituições,
-informações institucionais e redes sociais). Upload de imagens e biblioteca de
-mídia virão na próxima etapa.
+Portal institucional da GeoLogar: homepage e páginas públicas (A Rede,
+Pesquisa, Projetos, Publicações, Instituições, Contato e páginas
+personalizadas), integradas ao Supabase (leitura pública via RLS), e a área
+administrativa (`/admin`): login com autorização por papel, CMS de todo o
+conteúdo, biblioteca de mídia, editor visual, rascunhos com publicação
+controlada e histórico de versões. Situação atual em
+[`docs/estado-do-sistema.md`](docs/estado-do-sistema.md); relatório de QA em
+[`docs/qa-report.md`](docs/qa-report.md).
 
 ## Stack
 
@@ -43,6 +44,7 @@ versionado (`.env*` está no `.gitignore`, exceto `.env.example`).
 | `NEXT_PUBLIC_SUPABASE_URL`             | URL do projeto Supabase                                      |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Chave pública `sb_publishable_...` (ou a chave legada `anon`) |
 | `SUPABASE_SECRET_KEY`                  | Chave secreta `sb_secret_...` — **somente servidor**, ignora RLS |
+| `NEXT_PUBLIC_SITE_URL`                 | Opcional. Origem pública do site (ex.: `https://www.exemplo.org`), lida no build para canonical, Open Graph, sitemap e links de e-mail. Sem ela vale `https://geologar.plataformageologar.workers.dev` |
 
 Variáveis com prefixo `NEXT_PUBLIC_` são expostas ao navegador. Nunca use esse
 prefixo para segredos, e nunca coloque a chave secreta / `service_role` no
@@ -65,7 +67,9 @@ painel do Cloudflare em produção e em `.dev.vars` localmente (modelo em
 | `npm run start`     | Executa o build de produção localmente                    |
 | `npm run lint`      | ESLint (regras do Next.js + TypeScript)                   |
 | `npm run typecheck` | Gera os tipos de rotas (`next typegen`) e roda `tsc --noEmit` |
-| `npm test`          | Testes unitários do formulário de contato (`node --test`, sem rede) |
+| `npm test`          | Testes unitários (`node --test`, sem rede): contato, fluxo editorial, validações, SEO e navegação |
+| `npm run test:e2e`  | Testes ponta a ponta do visitante (Playwright) contra um servidor já iniciado — por padrão `npm run preview` (porta 8787); outro endereço em `E2E_BASE_URL` |
+| `npm run preview`   | Build e execução local do Worker (`opennextjs-cloudflare preview`, porta 8787) |
 | `npm run db:types`  | Regenera `src/types/database.types.ts` a partir do projeto Supabase vinculado |
 
 ## Estrutura
@@ -80,6 +84,7 @@ src/
                         (preview) prévia de demonstração
     auth/callback/      Retorno dos links de e-mail do Supabase Auth
     api/contact/        Envio do formulário de contato (POST)
+    robots.ts sitemap.ts  robots.txt e sitemap.xml (somente conteúdo publicado)
   proxy.ts              Sessão do Supabase Auth nas rotas /admin
   assets/brand/         Logotipo oficial (importado via next/image)
   components/
@@ -110,10 +115,13 @@ src/
     database.types.ts   Tipos do banco gerados pelo Supabase CLI (não editar)
 tests/
   contact/              Testes unitários do formulário de contato
+  site/                 Testes unitários do fluxo editorial, editor, validações, SEO e navegação
+  e2e/                  Testes ponta a ponta do visitante (Playwright; somente leitura)
   support/              Resolução de imports .ts para o node --test
 supabase/
   config.toml           Configuração do Supabase CLI (ambiente local)
   migrations/           Migrations SQL versionadas
+  tests/database/       Testes pgTAP de RLS e do fluxo editorial (transação desfeita)
 docs/
   admin-auth.md         Autenticação, autorização e primeiro administrador
   cms.md                CMS: módulos, validação, salvamento, exclusão e RLS de escrita
@@ -122,6 +130,13 @@ docs/
   database-schema.md    Modelo de dados
   deployment.md         Deploy no Cloudflare Workers e checklist de produção
   design-system.md      Tokens, tipografia, componentes e breakpoints
+  editorial-workflow.md Rascunhos, publicação, histórico e restauração
+  custom-pages.md       Páginas personalizadas (/paginas/[slug])
+  visual-editor.md      Editor visual
+  estado-do-sistema.md  Retrato atual do portal
+  guia-edicao-geologar.md  Guia de edição para a equipe (sem termos técnicos)
+  qa-report.md          Auditoria, testes e resultados da Etapa 10
+  homologation-checklist.md  Roteiro de homologação para a equipe GeoLogar
   initial-content-manifest.md  Materiais de referência: o que foi importado, associado ou descartado
   media-library.md      Biblioteca de mídia (Supabase Storage), imagens e exclusão segura
   public-pages.md       Rotas, filtros, consultas e regras das páginas públicas

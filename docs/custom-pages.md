@@ -79,6 +79,17 @@ página; para incluí-la, adicione um link com o endereço indicado e publique a
 navegação. Páginas não publicadas aparecem com o aviso de que o link levaria
 a “página não encontrada”.
 
+Desde a Etapa 10, se algum link **visível** do menu (rascunho atual ou versão
+publicada, cabeçalho ou rodapé) apontar para `/paginas/<endereço>` de uma
+página em rascunho, arquivada ou inexistente, a tela *Navegação* mostra um
+aviso no topo listando cada link e o motivo. O link **não** é removido
+automaticamente: publique a página ou retire o link.
+
+O endereço segue o formato `^[a-z0-9]+(-[a-z0-9]+)*$` (3 a 100 caracteres) e
+fica sempre sob `/paginas/`, então não há colisão com rotas do sistema
+(`/admin`, `/api`…) e nenhum endereço precisa ser reservado; endereços com
+`/`, `..` ou maiúsculas são recusados no formulário e no banco.
+
 ## Permissões
 
 | | Admin | Editor |

@@ -10,7 +10,7 @@ import {
   publishEditorialDocuments,
   restoreEditorialRevision,
 } from "@/lib/admin/editorial-actions";
-import { OPERATION_LABELS, type AnyContent } from "@/lib/editorial/content";
+import { hasPublishableDraft, OPERATION_LABELS, type AnyContent } from "@/lib/editorial/content";
 import type { RevisionListItem } from "@/lib/queries/editorial";
 import type { EditorUnit } from "@/lib/site/editor-document";
 import { cn } from "@/lib/utils/cn";
@@ -122,7 +122,7 @@ export function PublishDialog({
   loginNext: string;
   onPublished: (versions: Record<string, number>, message: string) => void;
 }) {
-  const candidates = units.filter((unit) => unit.hasDraft);
+  const candidates = units.filter(hasPublishableDraft);
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [note, setNote] = useState("");
   const [failure, setFailure] = useState<Failure>(null);

@@ -123,3 +123,41 @@ export const DEFAULT_NAVIGATION: Record<NavLocation, SiteNavItem[]> = {
     page("Contato", "/contato"),
   ],
 };
+
+export type UnavailableLink = { location: NavLocation; label: string; href: string; reason: string };
+
+const CUSTOM_PAGE_HREF = /^\/paginas\/([^/?#]+)\/?(?:[?#].*)?$/;
+
+/**
+ * Links do menu para páginas personalizadas que não estão no ar (rascunho,
+ * arquivada ou inexistente): o visitante veria "página não encontrada". Só
+ * avisa — os links não são removidos automaticamente.
+ */
+export function unavailableCustomPageLinks(
+  menus: Partial<Record<NavLocation, readonly { label: string; href: string; is_visible?: boolean }[]>>,
+  pages: readonly { slug: string; status: string }[],
+): UnavailableLink[] {
+  const statusBySlug = new Map(pages.map((page) => [page.slug, page.status]));
+  const result: UnavailableLink[] = [];
+  for (const location of NAV_LOCATIONS) {
+    for (const item of menus[location] ?? []) {
+      if (item.is_visible === false) continue; // link oculto não aparece ao visitante
+      const match = CUSTOM_PAGE_HREF.exec(item.href.trim());
+      if (!match) continue;
+      const status = statusBySlug.get(decodeURIComponentSafe(match[1]));
+      if (status === "published") continue;
+      const reason =
+        status === "archived" ? "página arquivada" : status === "draft" ? "página não publicada" : "página inexistente";
+      result.push({ location, label: item.label, href: item.href, reason });
+    }
+  }
+  return result;
+}
+
+function decodeURIComponentSafe(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}

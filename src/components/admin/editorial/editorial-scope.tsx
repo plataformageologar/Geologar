@@ -16,7 +16,7 @@ import {
 } from "react";
 
 import { discardEditorialDraft, publishEditorialDocuments } from "@/lib/admin/editorial-actions";
-import { GLOBAL_SCOPE } from "@/lib/editorial/content";
+import { GLOBAL_SCOPE, hasPublishableDraft } from "@/lib/editorial/content";
 import type { EditorialDocInfo } from "@/lib/queries/editorial";
 import { cn } from "@/lib/utils/cn";
 import { formatAdminDateTime } from "@/lib/utils/format";
@@ -88,8 +88,15 @@ export function EditorialScope({
   const [localVersion, setLocalVersion] = useState(doc.version);
   const version = Math.max(localVersion, doc.version);
   const [dirtyKeys, setDirtyKeys] = useState<ReadonlySet<string>>(new Set());
-  // Remonta os formulários quando o conteúdo muda por fora deles (descarte).
+  // Remonta os formulários quando o conteúdo muda por fora deles (descarte),
+  // mas só depois que os dados do servidor já refletem a versão do descarte —
+  // remontar antes manteria nos campos o conteúdo descartado.
   const [resetKey, setResetKey] = useState(0);
+  const [resetAt, setResetAt] = useState<number | null>(null);
+  if (resetAt !== null && doc.version >= resetAt) {
+    setResetAt(null);
+    setResetKey((key) => key + 1);
+  }
 
   const reportDirty = useCallback((key: string, dirty: boolean) => {
     setDirtyKeys((current) => {
@@ -124,7 +131,7 @@ export function EditorialScope({
         previewHref={previewHref ?? null}
         loginNext={loginNext}
         onVersion={(next) => setLocalVersion((current) => Math.max(current, next))}
-        onReset={() => setResetKey((key) => key + 1)}
+        onReset={(atVersion) => setResetAt(atVersion)}
       />
       <div key={resetKey} className="contents">
         {children}
@@ -162,7 +169,9 @@ function StatusLine({ doc, dirty }: { doc: EditorialDocInfo; dirty: boolean }) {
     return (
       <span className="inline-flex items-center gap-2 font-semibold text-foreground">
         <PencilLine aria-hidden="true" className="size-4" />
-        Rascunho salvo, igual à versão publicada
+        {doc.type === "custom"
+          ? "Rascunho salvo, igual à última versão publicada"
+          : "Rascunho salvo, igual à versão publicada — nada a publicar"}
       </span>
     );
   }
@@ -196,7 +205,8 @@ function EditorialBar({
   previewHref: string | null;
   loginNext: string;
   onVersion: (version: number) => void;
-  onReset: () => void;
+  /** Descarte concluído: remontar os formulários ao receber esta versão do servidor. */
+  onReset: (atVersion: number) => void;
 }) {
   const [pending, startTransition] = useTransition();
   const [running, setRunning] = useState<"publish" | "discard" | null>(null);
@@ -207,7 +217,7 @@ function EditorialBar({
   const id = useId();
   const scope = GLOBAL_SCOPE[doc.type];
 
-  const canPublishNow = canPublish && doc.hasDraft && !dirty && !pending;
+  const canPublishNow = canPublish && hasPublishableDraft(doc) && !dirty && !pending;
   const canDiscardNow = doc.hasDraft && doc.hasPublished && !pending;
 
   function publish() {
@@ -236,8 +246,9 @@ function EditorialBar({
       try {
         const result = await discardEditorialDraft({ documentId: doc.id, version });
         if (result.status === "success") {
-          onVersion(result.versions[doc.id] ?? version);
-          onReset();
+          const discardedAt = result.versions[doc.id] ?? version;
+          onVersion(discardedAt);
+          onReset(discardedAt);
           setMessage({ tone: "success", text: result.message });
         } else {
           setMessage({ tone: "error", text: result.message, reason: result.reason });

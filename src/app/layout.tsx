@@ -3,6 +3,7 @@ import { Source_Sans_3, Source_Serif_4 } from "next/font/google";
 
 import { getSiteSettings } from "@/lib/queries/settings";
 import { resolveImageSrc } from "@/lib/queries/shared";
+import { SITE_OPEN_GRAPH, SITE_ORIGIN } from "@/lib/site/url";
 import "./globals.css";
 
 // Texto e interface.
@@ -39,10 +40,14 @@ function favicon(path: string | null) {
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
 
+  const description = settings.short_description ?? settings.institutional_name ?? undefined;
   return {
+    // Base das URLs absolutas (canonical, Open Graph). Ver src/lib/site/url.ts.
+    metadataBase: new URL(SITE_ORIGIN),
     title: { default: settings.site_name, template: `%s | ${settings.site_name}` },
-    description: settings.short_description ?? settings.institutional_name,
+    description,
     icons: { icon: [favicon(settings.favicon_path)] },
+    openGraph: { ...SITE_OPEN_GRAPH, siteName: settings.site_name, title: settings.site_name, description },
   };
 }
 

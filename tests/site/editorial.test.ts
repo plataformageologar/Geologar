@@ -5,6 +5,7 @@ import { documentToken, parseDocumentToken } from "../../src/lib/admin/editorial
 import {
   diffContent,
   documentEditHref,
+  hasPublishableDraft,
   pageContentDocument,
   parseContent,
   type NavItem,
@@ -76,6 +77,26 @@ describe("conteúdo das unidades editoriais", () => {
     assert.deepEqual(pageContentDocument("contato"), { type: "page", key: "contato" });
     assert.equal(documentEditHref("custom", DOC), `/admin/paginas/${DOC}`);
     assert.equal(documentEditHref("page", "projetos"), "/admin/textos-das-paginas?pagina=projetos");
+  });
+});
+
+describe("o que pode ser publicado", () => {
+  it("sem rascunho não há o que publicar", () => {
+    assert.equal(hasPublishableDraft({ type: "home", hasDraft: false, differs: false }), false);
+    assert.equal(hasPublishableDraft({ type: "custom", hasDraft: false, differs: false }), false);
+  });
+
+  it("rascunho igual ao publicado não habilita Publicar", () => {
+    assert.equal(hasPublishableDraft({ type: "home", hasDraft: true, differs: false }), false);
+    assert.equal(hasPublishableDraft({ type: "navigation", hasDraft: true, differs: false }), false);
+  });
+
+  it("rascunho com diferenças pode ser publicado", () => {
+    assert.equal(hasPublishableDraft({ type: "page", hasDraft: true, differs: true }), true);
+  });
+
+  it("página personalizada aceita rascunho igual (republicar depois de despublicar)", () => {
+    assert.equal(hasPublishableDraft({ type: "custom", hasDraft: true, differs: false }), true);
   });
 });
 

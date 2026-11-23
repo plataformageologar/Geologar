@@ -9,6 +9,7 @@ import type { ListVersion } from "@/lib/site/lists";
 import { DEFAULT_NAVIGATION, type NavDraft, type NavLocation, type SiteNavItem } from "@/lib/site/navigation";
 import {
   DEFAULT_PAGE_CONTENT,
+  PAGE_CONTENT_LABELS,
   type PageContentKey,
   type PageContentRecord,
 } from "@/lib/site/page-content";
@@ -21,6 +22,7 @@ import {
   type SectionSettings,
   type SectionType,
 } from "@/lib/site/sections";
+import { SITE_OPEN_GRAPH } from "@/lib/site/url";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 
@@ -157,10 +159,12 @@ export async function getPageMetadata(
   const image = resolveImageSrc(content.seo_image_path);
   const title = content.seo_title ?? fallback.title;
   const description = content.seo_description ?? fallback.description ?? undefined;
+  const path = PAGE_CONTENT_LABELS[key].path;
   return {
     title,
     description,
-    ...(image ? { openGraph: { title, description, images: [{ url: image }] } } : {}),
+    alternates: { canonical: path },
+    openGraph: { ...SITE_OPEN_GRAPH, url: path, title, description, ...(image ? { images: [{ url: image }] } : {}) },
   };
 }
 

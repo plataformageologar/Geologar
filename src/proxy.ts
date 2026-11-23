@@ -83,9 +83,9 @@ export async function proxy(request: NextRequest) {
 
   // Páginas administrativas nunca entram em cache compartilhado e só podem
   // ser exibidas em iframe pelo próprio portal (tela do editor visual).
+  // `X-Frame-Options: SAMEORIGIN` vem de next.config.ts (todas as rotas).
   response.headers.set("Cache-Control", "private, no-store");
   response.headers.set("Content-Security-Policy", "frame-ancestors 'self'");
-  response.headers.set("X-Frame-Options", "SAMEORIGIN");
   return response;
 }
 

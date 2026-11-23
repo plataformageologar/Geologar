@@ -437,6 +437,15 @@ export function pageContentDocument(key: string): { type: DocType; key: string }
 }
 
 /** Tela do CMS onde a unidade é editada. */
+/**
+ * Há algo a publicar: rascunho diferente da versão publicada (ou unidade
+ * nunca publicada). Páginas personalizadas também aceitam um rascunho igual
+ * ao publicado, usado para publicá-las de novo depois de despublicar.
+ */
+export function hasPublishableDraft(unit: { type: DocType; hasDraft: boolean; differs: boolean }): boolean {
+  return unit.hasDraft && (unit.differs || unit.type === "custom");
+}
+
 export function documentEditHref(type: DocType, key: string): string {
   switch (type) {
     case "home":

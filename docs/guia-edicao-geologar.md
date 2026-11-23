@@ -104,7 +104,7 @@ A barra no topo de cada tela do CMS (e o status no editor visual) mostra:
 | Publicado — sem rascunho pendente | O que você vê é o que está no site. |
 | Alterações não salvas | Você mudou algo e ainda não salvou. |
 | Rascunho salvo, diferente da versão publicada | Há mudanças guardadas que ainda não estão no site. |
-| Rascunho salvo, igual à versão publicada | Há rascunho, mas igual ao site. |
+| Rascunho salvo, igual à versão publicada — nada a publicar | Há rascunho, mas igual ao site. O botão **Publicar** fica desativado; use **Descartar rascunho** se quiser limpar. |
 | Rascunho salvo — ainda não publicado | Página nova que nunca foi publicada. |
 
 ### Desfazer, descartar, restaurar, despublicar
@@ -119,8 +119,10 @@ A barra no topo de cada tela do CMS (e o status no editor visual) mostra:
 
 ## Histórico de versões
 
-- No CMS: botão **Histórico de versões** na barra do topo. No editor visual:
-  ícone de relógio.
+- No CMS: botão **Histórico de versões** na barra do topo, ou o item
+  **Histórico de versões** no menu lateral (grupo Revisão), que lista todos os
+  conteúdos e mostra quais têm rascunho esperando publicação. No editor
+  visual: ícone de relógio.
 - Cada linha mostra o número da versão, o que aconteceu (rascunho salvo,
   publicação, restauração), quem fez, quando e a observação.
 - **Ver e comparar** mostra as diferenças em relação à versão publicada ou à

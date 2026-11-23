@@ -179,6 +179,43 @@ export async function getEditorialDocuments(
   return { status: "ready", data: result };
 }
 
+const DOC_TYPE_ORDER: Record<DocType, number> = {
+  home: 0,
+  rede: 1,
+  page: 2,
+  pillars: 3,
+  custom: 4,
+  navigation: 5,
+  appearance: 6,
+  settings: 7,
+};
+
+/**
+ * Todas as unidades que o papel do usuário pode ver (RLS), para o índice do
+ * histórico. São poucas dezenas de linhas pequenas; a ordem segue o painel.
+ */
+export async function getEditorialIndex(): Promise<AdminResult<EditorialView[]>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("editorial_documents")
+    .select(`${documentColumns}, page:custom_pages(title, status)`)
+    .returns<(DocumentRow & { page: { title: string; status: string } | null })[]>();
+  if (error) {
+    logQueryError("editorial_documents (índice)", error);
+    return { status: "error" };
+  }
+  const pageStatus: Record<string, string> = { draft: "fora do site", archived: "arquivada" };
+  const views = data
+    .map((row) => {
+      const view = toView(row, row.page?.title);
+      const status = row.page ? pageStatus[row.page.status] : undefined;
+      return view && status ? { ...view, label: `${view.label} (${status})` } : view;
+    })
+    .filter((view): view is EditorialView => view !== null)
+    .sort((a, b) => DOC_TYPE_ORDER[a.type] - DOC_TYPE_ORDER[b.type] || a.label.localeCompare(b.label, "pt-BR"));
+  return { status: "ready", data: views };
+}
+
 // Histórico ------------------------------------------------------------------------
 
 export const REVISIONS_PAGE_SIZE = 25;

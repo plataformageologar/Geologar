@@ -166,10 +166,11 @@ alterada pelo código.
 - Somente **Email** habilitado; OAuth, telefone e login anônimo desativados.
 - **Desativar o cadastro público**: desligue *Allow new users to sign up*
   (equivale a `enable_signup = false`). Usuários existentes continuam entrando;
-  convites pelo painel continuam funcionando. Em 03/11/2026 o projeto ainda
-  estava com o cadastro **habilitado** (`disable_signup: false` em
-  `/auth/v1/settings`) — sem página de cadastro no site, mas a API aceitaria
-  `signUp`. Uma conta criada assim não tem vínculo e cai em "acesso negado".
+  convites pelo painel continuam funcionando. **Situação em 23/11/2026
+  (Etapa 10): cadastro público desativado** (`disable_signup: true` em
+  `/auth/v1/settings`); somente o provedor Email habilitado. Mesmo que o
+  cadastro fosse reativado por engano, uma conta sem vínculo em
+  `admin_memberships` cai em "acesso negado".
 - Mantenha a confirmação de e-mail ativa e, de preferência, senha mínima de
   8 caracteres (a aplicação exige 8 ao definir nova senha).
 

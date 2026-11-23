@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { getSectionsData } from "@/lib/queries/homepage";
 import { getPublishedCustomPage } from "@/lib/queries/editorial";
 import { isValidSlug, resolveImageSrc } from "@/lib/queries/shared";
+import { SITE_OPEN_GRAPH } from "@/lib/site/url";
 
 export const dynamic = "force-dynamic";
 
@@ -27,11 +28,12 @@ export async function generateMetadata({ params }: PageProps<"/paginas/[slug]">)
   const title = page.content.seo_title ?? page.content.title ?? "Página";
   const description = page.content.seo_description ?? page.content.description ?? undefined;
   const image = resolveImageSrc(page.content.seo_image_path);
+  const path = `/paginas/${page.slug}`;
   return {
     title,
     description,
-    alternates: { canonical: `/paginas/${page.slug}` },
-    ...(image ? { openGraph: { title, description, images: [{ url: image }] } } : {}),
+    alternates: { canonical: path },
+    openGraph: { ...SITE_OPEN_GRAPH, url: path, title, description, ...(image ? { images: [{ url: image }] } : {}) },
   };
 }
 

@@ -470,8 +470,9 @@ para o editor visual. Desde a Etapa 9.6 todas estas telas gravam
 | `/admin/pilares` | admin, editor | Pilares da rede (título, descrição, ícone da lista fixa) | `pillars` |
 | `/admin/textos-das-paginas?pagina=` | admin, editor | Rótulo, título, introdução e SEO de rede, pesquisa, projetos, publicações, instituições e contato | `rede` / `page` |
 | `/admin/paginas` | admin, editor | Páginas personalizadas (ver [`custom-pages.md`](custom-pages.md)) | `custom` |
+| `/admin/historico` | admin, editor | Lista dos conteúdos com a situação de cada um (Etapa 10) | — |
 | `/admin/historico?documento=` | admin, editor | Histórico de versões, comparação e restauração | — |
-| `/admin/navegacao?menu=header\|footer` | admin (editor vê a versão publicada) | Links do cabeçalho e do rodapé; lista de páginas personalizadas | `navigation` |
+| `/admin/navegacao?menu=header\|footer` | admin (editor vê a versão publicada) | Links do cabeçalho e do rodapé; lista de páginas personalizadas; aviso de links para páginas fora do ar | `navigation` |
 | `/admin/aparencia` | admin | Cores, fundo, botões, cantos, fonte dos títulos, cards | `appearance` |
 | `/admin/configuracoes` | admin (editor vê a versão publicada) | Informações institucionais + “Cabeçalho e rodapé” | `settings` |
 

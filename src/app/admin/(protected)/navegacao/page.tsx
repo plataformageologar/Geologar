@@ -10,7 +10,12 @@ import { requireAdminAccess } from "@/lib/auth/access";
 import { toNavDrafts } from "@/lib/editorial/content";
 import { docInfo, getCustomPagesForAdmin, getEditorialDocument } from "@/lib/queries/editorial";
 import { getNavigationForEdit } from "@/lib/queries/site-config";
-import { NAV_LOCATION_LABELS, NAV_LOCATIONS, type NavLocation } from "@/lib/site/navigation";
+import {
+  NAV_LOCATION_LABELS,
+  NAV_LOCATIONS,
+  unavailableCustomPageLinks,
+  type NavLocation,
+} from "@/lib/site/navigation";
 import { firstParam } from "@/lib/utils/search-params";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +40,17 @@ export default async function NavigationPage({ searchParams }: PageProps<"/admin
     getCustomPagesForAdmin(),
   ]);
 
+  // Aviso (sem remover nada): links do menu para páginas que não estão no ar.
+  const menus = isAdmin
+    ? doc?.status === "ready" && doc.data
+      ? { header: doc.data.current.header ?? [], footer: doc.data.current.footer ?? [] }
+      : null
+    : navigation?.status === "ready"
+      ? { header: navigation.data.header.items, footer: navigation.data.footer.items }
+      : null;
+  const brokenLinks =
+    menus && customPages.status === "ready" ? unavailableCustomPageLinks(menus, customPages.data) : [];
+
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <SitePageIntro
@@ -52,6 +68,25 @@ export default async function NavigationPage({ searchParams }: PageProps<"/admin
           }))}
         />
       </SitePageIntro>
+
+      {brokenLinks.length > 0 && (
+        <FormMessage tone="warning">
+          <span className="flex flex-col gap-1">
+            <span>
+              {brokenLinks.length === 1 ? "Um link do menu leva" : `${brokenLinks.length} links do menu levam`} a uma
+              página personalizada que não está no ar — o visitante verá “página não encontrada”. Publique a página ou
+              remova o link{isAdmin ? "" : " (peça a um administrador)"}.
+            </span>
+            <span className="flex flex-col">
+              {brokenLinks.map((link, index) => (
+                <span key={`${link.location}-${index}`} className="break-all">
+                  {NAV_LOCATION_LABELS[link.location]}: “{link.label}” → {link.href} ({link.reason})
+                </span>
+              ))}
+            </span>
+          </span>
+        </FormMessage>
+      )}
 
       {!isAdmin && (
         <FormMessage tone="warning">

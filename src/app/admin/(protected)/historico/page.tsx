@@ -13,6 +13,7 @@ import { requireAdminAccess } from "@/lib/auth/access";
 import { diffContent, documentEditHref, OPERATION_LABELS, parseContent } from "@/lib/editorial/content";
 import {
   getEditorialDocumentById,
+  getEditorialIndex,
   getRevision,
   getRevisionContentByNumber,
   getRevisions,
@@ -35,7 +36,8 @@ export const metadata: Metadata = {
 export default async function HistoryPage({ searchParams }: PageProps<"/admin/historico">) {
   await requireAdminAccess();
   const query = await searchParams;
-  const documentId = firstParam(query.documento) ?? "";
+  const documentId = firstParam(query.documento);
+  if (documentId === undefined) return <HistoryIndex />;
   if (!isUuid(documentId)) notFound();
   const pageNumber = Math.max(1, Math.min(10000, Number.parseInt(firstParam(query.pagina) ?? "1", 10) || 1));
   const revisionId = firstParam(query.revisao);
@@ -198,6 +200,62 @@ export default async function HistoryPage({ searchParams }: PageProps<"/admin/hi
           hrefForPage={(page) => `${base}&pagina=${page}`}
         />
       </section>
+    </div>
+  );
+}
+
+/** Sem "documento": lista as unidades editoriais visíveis ao papel, com o estado e o link do histórico. */
+async function HistoryIndex() {
+  const index = await getEditorialIndex();
+  return (
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
+      <div className="flex flex-col gap-3">
+        <h1 className="text-h1">Histórico de versões</h1>
+        <p className="text-body text-muted-foreground">
+          Escolha um conteúdo para ver as versões salvas, comparar com a versão publicada e restaurar uma versão
+          anterior como rascunho.
+        </p>
+      </div>
+      {index.status === "error" ? (
+        <LoadError subject="a lista de conteúdos" />
+      ) : index.data.length === 0 ? (
+        <p className="text-body-sm text-muted-foreground">Nenhum conteúdo com histórico disponível para o seu perfil.</p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {index.data.map((view) => (
+            <li
+              key={view.id}
+              className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-3 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span className="break-words text-label">{view.label}</span>
+                <span className="text-caption text-muted-foreground">
+                  {view.differs
+                    ? "Rascunho com alterações não publicadas"
+                    : view.hasDraft
+                      ? "Rascunho salvo, igual à versão publicada"
+                      : "Sem rascunho pendente"}
+                  {view.publishedRevision ? ` · publicada: revisão ${view.publishedRevision}` : " · nunca publicado"}
+                </span>
+              </div>
+              <div className="flex shrink-0 flex-wrap gap-2">
+                <Link
+                  href={`/admin/historico?documento=${view.id}`}
+                  className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-label hover:border-primary/40 hover:text-primary"
+                >
+                  Ver histórico<span className="sr-only">: {view.label}</span>
+                </Link>
+                <Link
+                  href={documentEditHref(view.type, view.key)}
+                  className="inline-flex min-h-11 items-center rounded-full px-4 text-label text-primary underline-offset-2 hover:underline"
+                >
+                  Editar<span className="sr-only">: {view.label}</span>
+                </Link>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

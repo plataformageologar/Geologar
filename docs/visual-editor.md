@@ -60,7 +60,8 @@ editorial: [`guia-edicao-geologar.md`](guia-edicao-geologar.md).
   enviadas numa **única** chamada `saveEditorialDrafts` (uma transação no
   banco). Se uma unidade falhar, nada é gravado; os erros voltam por parte e
   o primeiro elemento com erro é selecionado.
-- **Publicar**: diálogo com as unidades que têm rascunho, aviso para as
+- **Publicar**: diálogo com as unidades que têm rascunho diferente do
+  publicado (rascunho igual não entra; páginas personalizadas são exceção), aviso para as
   globais (menus, aparência, informações institucionais) e observação
   opcional; `publishEditorialDocuments` publica as marcadas numa única
   transação. Só é possível com tudo salvo.

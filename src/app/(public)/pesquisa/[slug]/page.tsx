@@ -15,6 +15,7 @@ import {
   getPublishedResearchLines,
   getResearchLineBySlug,
 } from "@/lib/queries/research-lines";
+import { SITE_OPEN_GRAPH } from "@/lib/site/url";
 
 export const dynamic = "force-dynamic";
 
@@ -25,9 +26,13 @@ export async function generateMetadata({
   const line = await getResearchLineBySlug(slug);
   if (!line) return {};
 
+  const description = line.short_description ?? undefined;
+  const path = `/pesquisa/${line.slug}`;
   return {
     title: line.title,
-    description: line.short_description ?? undefined,
+    description,
+    alternates: { canonical: path },
+    openGraph: { ...SITE_OPEN_GRAPH, url: path, title: line.title, description },
   };
 }
 

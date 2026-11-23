@@ -1,4 +1,5 @@
 import { editorHref } from "@/lib/site/editor-pages";
+import { SITE_ORIGIN, WORKERS_DEV_ORIGIN } from "@/lib/site/url";
 
 /**
  * Destinos permitidos após login ou links de e-mail: apenas caminhos
@@ -30,10 +31,11 @@ export function safeAdminPath(value: unknown, fallback = "/admin"): string {
  * O Supabase também valida o destino contra a lista de Redirect URLs do
  * projeto; esta lista evita montar links a partir de um cabeçalho arbitrário.
  */
-export const PRODUCTION_ORIGIN = "https://geologar.plataformageologar.workers.dev";
+export const PRODUCTION_ORIGIN = SITE_ORIGIN;
 
 const ALLOWED_ORIGINS = new Set([
   PRODUCTION_ORIGIN,
+  WORKERS_DEV_ORIGIN, // continua válido depois de um domínio próprio
   "http://localhost:3000", // npm run dev
   "http://localhost:8787", // npm run preview
 ]);

@@ -9,6 +9,7 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./tests/support/register.mjs --test \"tests/**/*.test.ts\"",
+    "test:e2e": "playwright test -c tests/e2e",
     "preview": "npm run build && opennextjs-cloudflare preview",
     "deploy": "node scripts/assert-no-secret-env.mjs && npm run build && opennextjs-cloudflare deploy",
     "upload": "node scripts/assert-no-secret-env.mjs && npm run build && opennextjs-cloudflare upload",
@@ -27,6 +28,7 @@
   },
   "devDependencies": {
     "@opennextjs/cloudflare": "1.20.15",
+    "@playwright/test": "1.65.0",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
