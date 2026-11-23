@@ -1,26 +1,24 @@
 "use server";
 
-import type { PostgrestError } from "@supabase/supabase-js";
+import { refresh } from "next/cache";
 
 import { getAdminAccess, type AdminRole } from "@/lib/auth/access";
-import { MEDIA_MISSING_MESSAGE } from "@/lib/media/references";
-import { homepageEditColumns } from "@/lib/queries/admin";
 import { createClient } from "@/lib/supabase/server";
 
+import type { RecordFailure } from "./action-results";
+import { DRAFT_SAVED_MESSAGE, parseDocumentToken, saveDraftParts } from "./editorial";
 import {
   homepageFields,
-  parseHomepageValues,
   toFormValues,
   type HomepageFieldErrors,
   type HomepageFormValues,
-  type HomepageRecord,
 } from "./homepage";
 
 /**
- * Server Actions do CMS. Cada action é um ponto de entrada público (POST):
- * verifica sessão e vínculo a cada chamada e grava com a sessão do próprio
- * usuário, sujeita às policies RLS. A chave secreta não é usada.
- * Os logs registram apenas códigos de erro, nunca o conteúdo enviado.
+ * Homepage no CMS (Etapa 9.6): o formulário grava RASCUNHO da unidade
+ * "Página inicial" pelo mesmo núcleo do fluxo editorial. Verifica sessão e
+ * vínculo a cada chamada e grava com a sessão do próprio usuário (RLS). A
+ * publicação é uma ação separada. Os logs registram apenas códigos de erro.
  */
 
 export type SaveFailure =
@@ -34,7 +32,7 @@ export type SaveFailure =
 
 export type HomepageSaveState =
   | { status: "idle" }
-  | { status: "success"; message: string; values: HomepageFormValues; updatedAt: string }
+  | { status: "success"; message: string; values: HomepageFormValues; version: number }
   | { status: "error"; reason: SaveFailure; message: string; fieldErrors?: HomepageFieldErrors };
 
 /** Papéis que podem editar a homepage (o banco aplica a mesma regra via RLS). */
@@ -46,26 +44,32 @@ const messages: Record<SaveFailure, string> = {
     "Sua sessão expirou. Entre novamente em outra aba e depois salve de novo: o texto digitado continua neste formulário.",
   forbidden: "Sua conta não tem permissão para editar a homepage.",
   conflict:
-    "A homepage foi alterada por outra pessoa enquanto você editava. Copie o que deseja manter e recarregue a página para revisar a versão atual.",
+    "A homepage foi alterada por outra pessoa (ou em outra aba) enquanto você editava. Copie o que deseja manter e recarregue a página para revisar a versão atual.",
   "not-found":
     "O registro da homepage não foi encontrado no banco de dados. Nada foi salvo; contate a equipe técnica.",
   connection:
     "Não foi possível conectar ao banco de dados. Verifique sua conexão e tente novamente; nada foi perdido.",
-  unexpected: "Não foi possível salvar as alterações. Tente novamente em instantes.",
+  unexpected: "Não foi possível salvar o rascunho. Tente novamente em instantes.",
 };
 
-function fail(reason: SaveFailure, fieldErrors?: HomepageFieldErrors): HomepageSaveState {
-  return { status: "error", reason, message: messages[reason], fieldErrors };
+function fail(reason: SaveFailure, fieldErrors?: HomepageFieldErrors, message?: string): HomepageSaveState {
+  return { status: "error", reason, message: message ?? messages[reason], fieldErrors };
 }
 
-function databaseFailure(scope: string, error: PostgrestError, status: number): HomepageSaveState {
-  console.error(`[cms] Falha na ${scope} de homepage_content:`, error.code || status);
-  if (status === 0 || !error.code) return fail("connection");
-  if (status === 401 || error.code.startsWith("PGRST3")) return fail("session");
-  if (error.code === "42501") return fail("forbidden");
-  // Imagem excluída da biblioteca entre a seleção e o envio (trigger).
-  if (error.code === "GL422") return fail("validation", { hero_image_path: MEDIA_MISSING_MESSAGE });
-  return fail("unexpected");
+function toSaveFailure(reason: RecordFailure): SaveFailure {
+  switch (reason) {
+    case "validation":
+    case "media-missing":
+      return "validation";
+    case "session":
+    case "forbidden":
+    case "conflict":
+    case "not-found":
+    case "connection":
+      return reason;
+    default:
+      return "unexpected";
+  }
 }
 
 function readText(formData: FormData, field: string) {
@@ -85,63 +89,31 @@ export async function saveHomepage(
       return fail("forbidden");
     }
 
-    const supabase = await createClient();
+    // 2. Unidade e versão carregadas no formulário (conflito de edição).
+    const token = parseDocumentToken(formData.get("document"));
+    if (!token) return fail("conflict");
 
-    // 2. Registro único: o id vem do banco, não do formulário.
-    const current = await supabase
-      .from("homepage_content")
-      .select("id, updated_at, hero_image_path")
-      .maybeSingle();
-    if (current.error) return databaseFailure("leitura", current.error, current.status);
-    if (!current.data) return fail("not-found");
-
-    // 3. Validação definitiva no servidor.
+    // 3. Validação definitiva no servidor e gravação do rascunho (uma transação).
     const values = Object.fromEntries(
       homepageFields.map((field) => [field, readText(formData, field)]),
     ) as HomepageFormValues;
-    const { data: patch, errors } = parseHomepageValues(values, {
-      currentImagePath: current.data.hero_image_path,
-    });
-    if (Object.keys(errors).length > 0) return fail("validation", errors);
-
-    // 4. Edição simultânea: a versão carregada no formulário precisa ser a atual.
-    if (readText(formData, "updated_at") !== current.data.updated_at) return fail("conflict");
-
-    // 5. UPDATE apenas dos campos editoriais, filtrado por id e versão.
-    const saved = await supabase
-      .from("homepage_content")
-      .update(patch)
-      .eq("id", current.data.id)
-      .eq("updated_at", current.data.updated_at)
-      .select(homepageEditColumns)
-      .maybeSingle<HomepageRecord & { updated_at: string }>();
-    if (saved.error) return databaseFailure("gravação", saved.error, saved.status);
-
-    if (!saved.data) {
-      // Nenhuma linha alterada: outra gravação no intervalo ou recusa do RLS
-      // (vínculo desativado entre a verificação e o UPDATE).
-      const after = await supabase.from("homepage_content").select("updated_at").maybeSingle();
-      if (after.data && after.data.updated_at !== current.data.updated_at) return fail("conflict");
-      console.warn("[cms] UPDATE de homepage_content não alterou nenhuma linha (RLS).");
-      return fail("forbidden");
+    const supabase = await createClient();
+    const outcome = await saveDraftParts(supabase, access.role === "admin", [
+      { ...token, parts: { homepage: values } },
+    ]);
+    if (outcome.status === "error") {
+      const fieldErrors = outcome.partErrors?.[`${token.documentId}:homepage`]?.fieldErrors;
+      return fail(toSaveFailure(outcome.reason), fieldErrors, outcome.message);
     }
 
-    // 6. Confirmação: o banco devolveu exatamente os valores enviados.
-    const row = saved.data;
-    const confirmed = (Object.keys(patch) as (keyof HomepageRecord)[]).every(
-      (field) => row[field] === patch[field],
-    );
-    if (!confirmed) {
-      console.error("[cms] Valores devolvidos pelo banco diferem dos enviados.");
-      return fail("unexpected");
-    }
-
-    const { updated_at, ...record } = row;
+    const saved = outcome.documents[0];
+    if (!saved.content.homepage) return fail("unexpected");
+    refresh();
     return {
       status: "success",
-      message: "Alterações salvas com sucesso.",
-      values: toFormValues(record),
-      updatedAt: updated_at,
+      message: DRAFT_SAVED_MESSAGE,
+      values: toFormValues(saved.content.homepage),
+      version: saved.version,
     };
   } catch (error) {
     console.error("[cms] Erro ao salvar a homepage:", error instanceof Error ? error.name : "desconhecido");

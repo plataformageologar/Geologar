@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 
+import { EditorialScope } from "@/components/admin/editorial/editorial-scope";
 import { FormMessage } from "@/components/admin/form-controls";
 import { HomepageForm } from "@/components/admin/homepage/homepage-form";
 import { VisualEditLink } from "@/components/admin/site/page-intro";
-import { toFormValues } from "@/lib/admin/homepage";
 import { requireAdminAccess } from "@/lib/auth/access";
-import { getHomepageForEdit } from "@/lib/queries/admin";
+import { toHomepageValues } from "@/lib/editorial/content";
+import { docInfo, getEditorialDocument } from "@/lib/queries/editorial";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,8 @@ export const metadata: Metadata = {
 
 export default async function AdminHomepagePage() {
   await requireAdminAccess();
-  const homepage = await getHomepageForEdit();
+  const doc = await getEditorialDocument("home", "home");
+  const homepage = doc.status === "ready" ? doc.data?.current.homepage : undefined;
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
@@ -31,7 +33,7 @@ export default async function AdminHomepagePage() {
               <Link href="/admin/secoes" className="font-semibold text-primary underline underline-offset-2">
                 Seções e blocos
               </Link>
-              .
+              . Salvar guarda um rascunho; o site público muda só quando você publicar.
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-3 self-start">
@@ -42,35 +44,33 @@ export default async function AdminHomepagePage() {
               rel="noopener"
               className="inline-flex min-h-11 shrink-0 items-center gap-2 self-start rounded-full border border-primary px-5 text-label text-primary transition-colors hover:bg-primary-soft"
             >
-              Visualizar homepage
+              Ver site publicado
               <ExternalLink aria-hidden="true" className="size-4" />
               <span className="sr-only">(abre em nova aba)</span>
             </a>
           </div>
         </div>
-        {homepage.status === "ready" && (
-          <FormMessage tone="info">
-            Ao salvar, as alterações aparecem imediatamente no site público: não há rascunho
-            nem etapa de publicação separada.
-          </FormMessage>
-        )}
       </div>
 
-      {homepage.status === "ready" && (
-        <HomepageForm
-          initialValues={toFormValues(homepage.record)}
-          initialUpdatedAt={homepage.updatedAt}
-        />
-      )}
-
-      {homepage.status === "error" && (
+      {doc.status === "error" && (
         <FormMessage tone="error">
           Não foi possível carregar o conteúdo atual da homepage. Nada foi alterado. Recarregue a
           página em instantes; se o problema continuar, contate a equipe técnica.
         </FormMessage>
       )}
 
-      {homepage.status === "missing" && (
+      {doc.status === "ready" && doc.data && homepage && (
+        <EditorialScope
+          doc={docInfo(doc.data)}
+          canPublish
+          previewHref="/admin/editor?pagina=%2F"
+          loginNext="/admin/homepage"
+        >
+          <HomepageForm initialValues={toHomepageValues(homepage)} />
+        </EditorialScope>
+      )}
+
+      {doc.status === "ready" && !homepage && (
         <div className="flex flex-col gap-3 rounded-2xl border border-dashed border-border p-6">
           <h2 className="text-h4 font-sans">Configuração pendente</h2>
           <p className="text-body-sm text-muted-foreground">

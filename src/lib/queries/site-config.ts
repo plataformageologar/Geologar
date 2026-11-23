@@ -9,16 +9,14 @@ import type { ListVersion } from "@/lib/site/lists";
 import { DEFAULT_NAVIGATION, type NavDraft, type NavLocation, type SiteNavItem } from "@/lib/site/navigation";
 import {
   DEFAULT_PAGE_CONTENT,
-  PAGE_CONTENT_KEYS,
   type PageContentKey,
   type PageContentRecord,
 } from "@/lib/site/page-content";
-import { DEFAULT_PILLARS, isPillarIcon, type Pillar, type PillarDraft } from "@/lib/site/pillars";
+import { DEFAULT_PILLARS, isPillarIcon, type Pillar } from "@/lib/site/pillars";
 import {
   DEFAULT_SECTIONS,
   isSectionType,
   sanitizeSectionSettings,
-  type SectionDraft,
   type SectionPage,
   type SectionSettings,
   type SectionType,
@@ -168,34 +166,12 @@ export async function getPageMetadata(
 
 // CMS (sessão do usuário) ----------------------------------------------------------
 
+/**
+ * Leituras da versão PUBLICADA para telas somente de consulta (editores em
+ * Navegação, Aparência e no editor visual). A edição usa as unidades
+ * editoriais (src/lib/queries/editorial.ts).
+ */
 export type ListForEdit<T> = { items: T[]; versions: ListVersion[] };
-
-export async function getPillarsForEdit(): Promise<AdminResult<ListForEdit<PillarDraft>>> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("site_pillars")
-    .select("id, title, description, icon, is_visible, updated_at")
-    .order("sort_order")
-    .order("created_at");
-  if (error) {
-    logQueryError("site_pillars (CMS)", error);
-    return { status: "error" };
-  }
-  return {
-    status: "ready",
-    data: {
-      items: data.map((row) => ({
-        id: row.id,
-        key: row.id,
-        title: row.title,
-        description: row.description ?? "",
-        icon: isPillarIcon(row.icon) ? row.icon : "microscope",
-        is_visible: row.is_visible,
-      })),
-      versions: data.map(({ id, updated_at }) => ({ id, updated_at })),
-    },
-  };
-}
 
 export async function getNavigationForEdit(): Promise<AdminResult<Record<NavLocation, ListForEdit<NavDraft>>>> {
   const supabase = await createClient();
@@ -223,59 +199,6 @@ export async function getNavigationForEdit(): Promise<AdminResult<Record<NavLoca
       is_visible: row.is_visible,
     });
     result[row.location].versions.push({ id: row.id, updated_at: row.updated_at });
-  }
-  return { status: "ready", data: result };
-}
-
-export async function getSectionsForEdit(page: SectionPage): Promise<AdminResult<ListForEdit<SectionDraft>>> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("page_sections")
-    .select("id, section_type, is_visible, settings, updated_at")
-    .eq("page_key", page)
-    .order("sort_order")
-    .order("created_at");
-  if (error) {
-    logQueryError("page_sections (CMS)", error);
-    return { status: "error" };
-  }
-  return {
-    status: "ready",
-    data: {
-      items: data.flatMap((row) =>
-        isSectionType(row.section_type)
-          ? [
-              {
-                id: row.id,
-                key: row.id,
-                section_type: row.section_type,
-                is_visible: row.is_visible,
-                settings: sanitizeSectionSettings(row.section_type, row.settings),
-              },
-            ]
-          : [],
-      ),
-      versions: data.map(({ id, updated_at }) => ({ id, updated_at })),
-    },
-  };
-}
-
-export type PageContentForEdit = { record: PageContentRecord; updatedAt: string };
-
-export async function getPageContentForEdit(): Promise<
-  AdminResult<Partial<Record<PageContentKey, PageContentForEdit>>>
-> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("page_content").select(`${pageContentColumns}, updated_at`);
-  if (error) {
-    logQueryError("page_content (CMS)", error);
-    return { status: "error" };
-  }
-  const result: Partial<Record<PageContentKey, PageContentForEdit>> = {};
-  for (const { page_key, updated_at, ...record } of data) {
-    if ((PAGE_CONTENT_KEYS as readonly string[]).includes(page_key)) {
-      result[page_key as PageContentKey] = { record, updatedAt: updated_at };
-    }
   }
   return { status: "ready", data: result };
 }

@@ -45,6 +45,8 @@ type SaveBarProps = {
   submitLabel?: string;
   /** Texto do estado sem alterações. */
   idleLabel?: string;
+  /** Texto do botão que desfaz as alterações ainda não salvas. */
+  cancelLabel?: string;
 };
 
 /**
@@ -59,6 +61,7 @@ export function SaveBar({
   onCancel,
   submitLabel = "Salvar alterações",
   idleLabel = "Nenhuma alteração pendente",
+  cancelLabel = "Cancelar alterações",
 }: SaveBarProps) {
   return (
     <div className="sticky bottom-0 z-10 -mx-4 flex flex-col gap-3 border-t border-border bg-background/95 px-4 py-4 backdrop-blur-sm sm:mx-0 sm:rounded-2xl sm:border sm:px-5">
@@ -84,7 +87,7 @@ export function SaveBar({
         <div className="grid grid-cols-2 gap-3 sm:flex">
           {/* Em telas estreitas os dois botões dividem a linha (barra fixa mais baixa). */}
           <Button type="button" variant="secondary" onClick={onCancel} disabled={!dirty || pending}>
-            Cancelar alterações
+            {cancelLabel}
           </Button>
           <Button type="submit" disabled={!dirty || pending}>
             {pending ? "Salvando…" : submitLabel}

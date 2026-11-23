@@ -13,7 +13,7 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import type { Pillar } from "@/lib/site/pillars";
 import {
   resolveBackground,
-  type SectionPage,
+  type SectionScope,
   type SectionSettings,
   type SectionType,
 } from "@/lib/site/sections";
@@ -79,7 +79,7 @@ function PillarsSection({
 }
 
 /** Se a seção tem algo a mostrar com os dados atuais (vazias somem do site). */
-export function sectionHasContent(page: SectionPage, section: RenderableSection, data: SectionsData): boolean {
+export function sectionHasContent(page: SectionScope, section: RenderableSection, data: SectionsData): boolean {
   const { homepage } = data;
   switch (section.section_type) {
     case "hero":
@@ -103,7 +103,7 @@ export function sectionHasContent(page: SectionPage, section: RenderableSection,
   }
 }
 
-export function renderSection(page: SectionPage, section: RenderableSection, data: SectionsData) {
+export function renderSection(page: SectionScope, section: RenderableSection, data: SectionsData) {
   const { settings, key } = section;
   switch (section.section_type) {
     case "hero":
@@ -160,7 +160,7 @@ export function PageSections({
   sections,
   data,
 }: {
-  page: SectionPage;
+  page: SectionScope;
   sections: RenderableSection[];
   data: SectionsData;
 }) {

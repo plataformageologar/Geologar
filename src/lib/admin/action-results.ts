@@ -48,7 +48,9 @@ export type Entity =
   | "page-sections"
   | "page-content"
   | "appearance"
-  | "homepage";
+  | "homepage"
+  | "editorial"
+  | "custom-page";
 
 /** Gênero gramatical, para mensagens como "foi excluída"/"foi excluído". */
 export type Gender = "f" | "m";
@@ -131,6 +133,18 @@ export const entityNouns: Record<Entity, { the: string; a: string; gender: Gende
     a: "um conteúdo da homepage",
     gender: "m",
     notFound: "O registro da homepage não foi encontrado no banco de dados. Contate a equipe técnica.",
+  },
+  editorial: {
+    the: "este conteúdo",
+    a: "um conteúdo",
+    gender: "m",
+    notFound: "O conteúdo não foi encontrado (pode ter sido removido). Recarregue a página.",
+  },
+  "custom-page": {
+    the: "a página",
+    a: "uma página",
+    gender: "f",
+    notFound: "A página não foi encontrada (pode ter sido removida). Volte à lista de páginas.",
   },
   "site-settings": {
     the: "as informações institucionais",
@@ -219,6 +233,8 @@ export function classifyDatabaseError(
       return "has-dependencies";
     case "GL409":
       return "conflict";
+    case "GL403":
+      return "forbidden";
     case "GL404":
       return "not-found";
     case "GL422":

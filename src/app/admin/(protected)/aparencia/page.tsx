@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 
 import { FormMessage } from "@/components/admin/form-controls";
+import { EditorialScope } from "@/components/admin/editorial/editorial-scope";
 import { AppearanceEditor } from "@/components/admin/site/cms-editors";
 import { LoadError, SitePageIntro } from "@/components/admin/site/page-intro";
 import { requireAdminAccess } from "@/lib/auth/access";
-import { getAppearanceForEdit } from "@/lib/queries/site-config";
+import { docInfo, getEditorialDocument } from "@/lib/queries/editorial";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,8 @@ export const metadata: Metadata = {
 export default async function AppearancePage() {
   const access = await requireAdminAccess();
   const isAdmin = access.role === "admin";
-  const appearance = isAdmin ? await getAppearanceForEdit() : null;
+  const doc = isAdmin ? await getEditorialDocument("appearance", "appearance") : null;
+  const current = doc?.status === "ready" ? doc.data?.current.appearance : undefined;
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
@@ -27,10 +29,17 @@ export default async function AppearancePage() {
 
       {!isAdmin ? (
         <FormMessage tone="warning">A aparência do site é alterada somente por administradores.</FormMessage>
-      ) : appearance?.status === "error" ? (
+      ) : doc?.status === "error" ? (
         <LoadError subject="a aparência do site" />
-      ) : appearance?.status === "ready" && appearance.data ? (
-        <AppearanceEditor initial={appearance.data} />
+      ) : doc?.status === "ready" && doc.data && current ? (
+        <EditorialScope
+          doc={docInfo(doc.data)}
+          canPublish
+          previewHref="/admin/editor?pagina=%2F"
+          loginNext="/admin/aparencia"
+        >
+          <AppearanceEditor initial={current} />
+        </EditorialScope>
       ) : (
         <FormMessage tone="warning">
           O registro de aparência não existe no banco de dados; o site usa a aparência padrão. A equipe técnica

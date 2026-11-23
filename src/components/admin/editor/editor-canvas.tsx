@@ -120,8 +120,17 @@ function Placeholder({ title, text }: { title: string; text: string }) {
   );
 }
 
-function pageHeaderProps(key: PageContentKey, values: PageContentValues | null, homepage: HomepageContent) {
+function pageHeaderProps(
+  key: PageContentKey | "custom",
+  values: PageContentValues | null,
+  homepage: HomepageContent,
+  label: string,
+) {
   const value = (field: "eyebrow" | "title" | "description") => values?.[field]?.trim() || null;
+  // Página personalizada: o título é obrigatório e não há texto padrão.
+  if (key === "custom") {
+    return { eyebrow: value("eyebrow") ?? undefined, title: value("title") ?? label, description: value("description") };
+  }
   return resolvePageHeader(key, { eyebrow: value("eyebrow"), title: value("title"), description: value("description") }, homepage);
 }
 
@@ -245,7 +254,8 @@ function CanvasContent({ state }: { state: CanvasState }) {
   const sectionData = sectionPage === "home" ? { ...data, homepage: withAvailableHeroLinks(homepage, anchors) } : data;
   const isSelected = (target: EditorTarget) => selected === target;
 
-  const pageKey: PageContentKey | null = page.kind === "rede" ? "rede" : page.kind === "list" ? page.key : null;
+  const pageKey: PageContentKey | "custom" | null =
+    page.kind === "rede" ? "rede" : page.kind === "list" ? page.key : page.kind === "custom" ? "custom" : null;
 
   return (
     <>
@@ -265,7 +275,7 @@ function CanvasContent({ state }: { state: CanvasState }) {
           <Target id="page-header" label="Título da página" selected={isSelected("page-header")}>
             <PageHeader
               breadcrumb={[{ label: "Início", href: "/" }, { label: page.label }]}
-              {...pageHeaderProps(pageKey, draft.pageContent, homepage)}
+              {...pageHeaderProps(pageKey, draft.pageContent, homepage, page.label)}
             />
           </Target>
         )}

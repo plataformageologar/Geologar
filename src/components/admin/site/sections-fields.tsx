@@ -14,6 +14,7 @@ import {
   type BlockType,
   type SectionDraft,
   type SectionFieldErrors,
+  type SectionScope,
 } from "@/lib/site/sections";
 import { cn } from "@/lib/utils/cn";
 
@@ -54,7 +55,7 @@ export function SectionsFields({
   canUpload,
   institutions,
 }: {
-  page: "home" | "rede";
+  page: SectionScope;
   items: SectionDraft[];
   onChange: (items: SectionDraft[]) => void;
   errors?: Record<string, SectionFieldErrors>;

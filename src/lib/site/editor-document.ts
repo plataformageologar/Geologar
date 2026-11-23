@@ -15,11 +15,16 @@ import type {
 
 import type { Appearance, AppearanceFieldErrors } from "./appearance";
 import type { EditorPage } from "./editor-pages";
-import type { ListVersion } from "./lists";
 import type { NavDraft, NavFieldErrors, SiteNavItem } from "./navigation";
 import type { PageContentFieldErrors, PageContentKey, PageContentValues } from "./page-content";
 import type { Pillar, PillarDraft, PillarFieldErrors } from "./pillars";
-import { SECTION_LABELS, type SectionDraft, type SectionFieldErrors, type SectionType } from "./sections";
+import {
+  SECTION_LABELS,
+  type SectionDraft,
+  type SectionFieldErrors,
+  type SectionScope,
+  type SectionType,
+} from "./sections";
 
 /**
  * Documento do editor visual: o rascunho editável (mesmos formatos usados
@@ -54,15 +59,37 @@ export const DRAFT_SLICES: readonly DraftSlice[] = [
   "appearance",
 ];
 
-export type EditorVersions = {
-  homepage: string | null;
-  settings: string | null;
-  pillars: ListVersion[];
-  sections: ListVersion[];
-  pageContent: string | null;
-  navHeader: ListVersion[];
-  navFooter: ListVersion[];
-  appearance: string | null;
+/** Parte da unidade editorial que cada fatia do rascunho do editor grava. */
+export const SLICE_PARTS = {
+  homepage: "homepage",
+  settings: "settings",
+  pillars: "items",
+  sections: "sections",
+  pageContent: "page",
+  navHeader: "header",
+  navFooter: "footer",
+  appearance: "appearance",
+} as const satisfies Record<DraftSlice, string>;
+
+/**
+ * Unidade editorial carregada no editor (Etapa 9.6): situação, versão
+ * (conflito) e as fatias do rascunho que ela contém nesta página.
+ */
+export type EditorUnit = {
+  id: string;
+  type: "home" | "rede" | "page" | "pillars" | "navigation" | "appearance" | "settings" | "custom";
+  label: string;
+  version: number;
+  hasDraft: boolean;
+  differs: boolean;
+  hasPublished: boolean;
+  publishedRevision: number | null;
+  draftUpdatedAt: string | null;
+  /** Aviso de abrangência (publicação que muda mais de uma página). */
+  scope: string | null;
+  /** O papel do usuário pode publicar esta unidade. */
+  canPublish: boolean;
+  slices: DraftSlice[];
 };
 
 export type EditorErrors = {
@@ -93,10 +120,15 @@ export type EditorDocument = {
   page: EditorPage;
   role: "admin" | "editor";
   /** Seção da página editada (lista de seções) e textos (page_content). */
-  sectionPage: "home" | "rede" | null;
-  pageContentKey: PageContentKey | null;
+  sectionPage: SectionScope | null;
+  pageContentKey: PageContentKey | "custom" | null;
+  /** Rascunho atual de cada unidade (ou a versão publicada, sem rascunho). */
   draft: EditorDraft;
-  versions: EditorVersions;
+  /** Versão publicada das mesmas fatias ("Ver versão publicada"). */
+  published: EditorDraft;
+  units: EditorUnit[];
+  /** Página personalizada aberta no editor. */
+  customPage: { id: string; status: "draft" | "published" | "archived" } | null;
   /** Partes que o papel do usuário pode alterar (o servidor confere de novo). */
   editable: Record<DraftSlice, boolean>;
   render: EditorRenderData;
@@ -206,7 +238,7 @@ export type RecordRef =
 
 export type CanvasState = {
   page: EditorPage;
-  sectionPage: "home" | "rede" | null;
+  sectionPage: SectionScope | null;
   draft: EditorDraft;
   render: EditorRenderData;
   selected: EditorTarget | null;

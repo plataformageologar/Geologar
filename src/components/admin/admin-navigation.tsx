@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   BookOpen,
   Building2,
+  Files,
   FlaskConical,
   Images,
   Info,
@@ -44,6 +45,7 @@ const icons: Record<AdminNavItem["id"], LucideIcon> = {
   media: Images,
   demo: Presentation,
   "visual-editor": MousePointerClick,
+  "custom-pages": Files,
   sections: Rows3,
   pillars: Shapes,
   "page-texts": TextCursorInput,

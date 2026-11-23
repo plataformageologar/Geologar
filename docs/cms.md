@@ -24,8 +24,8 @@ src/components/admin/homepage/homepage-form.tsx  Formulário (Client Component)
 src/components/admin/form-controls.tsx         Field, TextInput, TextArea, FormSection, FormMessage
 src/lib/admin/validation.ts                    Textos, links e botões (navegador + servidor)
 src/lib/admin/homepage.ts                      Campos editáveis, limites e parseHomepageValues
-src/lib/admin/actions.ts                       Server Action saveHomepage
-src/lib/queries/admin.ts                       getHomepageForEdit (leitura para o CMS)
+src/lib/admin/actions.ts                       Server Action saveHomepage (grava rascunho)
+src/lib/queries/editorial.ts                   getEditorialDocument (rascunho ou versão publicada)
 supabase/migrations/20261109152838_enable_homepage_cms_updates.sql
 supabase/tests/database/homepage_content_rls.test.sql
 
@@ -88,16 +88,17 @@ Edita o registro único de `homepage_content`, em três blocos:
 - **Imagem do banner**: somente visualização. `hero_image_path` não é editável
   até a etapa do Storage; `hero_image_alt` só aparece (e é obrigatório) quando
   há imagem cadastrada.
-- **Sem rascunho**: salvar atualiza o site público imediatamente. Por isso não
-  existe botão "Publicar".
+- **Rascunho (Etapa 9.6)**: “Salvar rascunho” grava em
+  `editorial_documents` (unidade `home`); o site só muda com “Publicar
+  alterações”. Ver [`editorial-workflow.md`](editorial-workflow.md).
 - Título vazio em "Apresentação da rede" ou "Chamada para cooperação" oculta a
   seção correspondente na homepage; título do banner é obrigatório porque sem
   ele o banner inteiro some.
 
 ### Leitura
 
-`getHomepageForEdit()` lê o registro com a sessão do editor e **nunca** usa
-`fallbackHomepageContent`. Falha de leitura mostra um erro; registro ausente
+`getEditorialDocument("home", "home")` lê o rascunho (ou a versão publicada)
+com a sessão do editor e **nunca** usa `fallbackHomepageContent`. Falha de leitura mostra um erro; registro ausente
 mostra "Configuração pendente" (nada é criado automaticamente). O fallback
 continua valendo apenas para o site público.
 
@@ -117,15 +118,20 @@ Feita no navegador para retorno imediato e repetida na Server Action:
 ### Salvamento
 
 ```
-Formulário → saveHomepage (Server Action)
+Formulário → saveHomepage (Server Action)            [Etapa 9.6]
   1. getAdminAccess(): sessão válida + vínculo ativo admin/editor
-  2. lê id, updated_at e hero_image_path do registro (o id nunca vem do navegador)
-  3. valida e normaliza os campos (parseHomepageValues)
-  4. compara o updated_at enviado com o atual (edição simultânea)
-  5. UPDATE ... WHERE id = ? AND updated_at = ? RETURNING (sessão do usuário, RLS)
-  6. confere que o banco devolveu exatamente os valores enviados
-→ resposta estruturada: sucesso (novos valores + versão) ou erro com motivo
+  2. lê o token "documento:versão" do campo oculto (nunca o id de tabela)
+  3. saveDraftParts: lê a unidade `home`, confere a versão (edição simultânea),
+     valida e normaliza a parte `homepage` (parseHomepageValues)
+  4. RPC save_editorial_drafts (sessão do usuário, RLS): grava o rascunho e a
+     revisão `draft_saved` numa transação
+  5. confere que o banco devolveu a unidade enviada
+→ resposta estruturada: sucesso (valores + nova versão) ou erro com motivo
 ```
+
+O site público só muda com “Publicar alterações” (RPC
+`publish_editorial_documents`). Detalhes em
+[`editorial-workflow.md`](editorial-workflow.md).
 
 Motivos de erro tratados: validação, sessão expirada, sem permissão, conflito
 de edição, registro inexistente, falha de conexão e erro inesperado. As
@@ -448,31 +454,43 @@ rascunhos são lidos com a sessão do usuário (RLS libera apenas admin/editor
 ativos); o layout `/admin` aplica `noindex, nofollow`. A prévia não grava
 nada. Pendências do cliente em [`content-handover.md`](content-handover.md).
 
-## Personalização do site (Etapa 9.5)
+## Personalização do site (Etapas 9.5 e 9.6)
 
 Grupo **Site** no menu do painel. Cada tela tem o link “Editar visualmente”
-para o editor visual, que grava pelas mesmas actions.
+para o editor visual. Desde a Etapa 9.6 todas estas telas gravam
+**rascunhos**: a barra editorial no topo mostra o estado e oferece
+“Publicar alterações”, “Visualizar rascunho”, “Histórico de versões” e
+“Descartar rascunho” (ver [`editorial-workflow.md`](editorial-workflow.md)).
 
-| Tela | Papel | Conteúdo | Action |
+| Tela | Papel | Conteúdo | Unidade editorial |
 | --- | --- | --- | --- |
 | `/admin/editor?pagina=/` | admin, editor | Editor visual (ver [`visual-editor.md`](visual-editor.md)) | todas abaixo |
-| `/admin/secoes?pagina=home\|rede` | admin, editor | Ordem, visibilidade e opções das seções; blocos texto, imagem + texto, chamada, galeria e logotipos | `savePageSections` |
-| `/admin/pilares` | admin, editor | Pilares da rede (título, descrição, ícone da lista fixa) | `savePillars` |
-| `/admin/textos-das-paginas?pagina=` | admin, editor | Rótulo, título, introdução e SEO de rede, pesquisa, projetos, publicações, instituições e contato | `savePageContent` |
-| `/admin/navegacao?menu=header\|footer` | admin (editor só consulta) | Links do cabeçalho e do rodapé | `saveNavigation` |
-| `/admin/aparencia` | admin | Cores, fundo, botões, cantos, fonte dos títulos, cards | `saveAppearance` |
-| `/admin/configuracoes` | admin | + seção “Cabeçalho e rodapé” (estilo do cabeçalho, logotipo e textos do rodapé) | `saveSiteSettings` |
+| `/admin/homepage` | admin, editor | Textos da página inicial | `home` |
+| `/admin/secoes?pagina=home\|rede` | admin, editor | Ordem, visibilidade e opções das seções; blocos texto, imagem + texto, chamada, galeria e logotipos | `home` / `rede` |
+| `/admin/pilares` | admin, editor | Pilares da rede (título, descrição, ícone da lista fixa) | `pillars` |
+| `/admin/textos-das-paginas?pagina=` | admin, editor | Rótulo, título, introdução e SEO de rede, pesquisa, projetos, publicações, instituições e contato | `rede` / `page` |
+| `/admin/paginas` | admin, editor | Páginas personalizadas (ver [`custom-pages.md`](custom-pages.md)) | `custom` |
+| `/admin/historico?documento=` | admin, editor | Histórico de versões, comparação e restauração | — |
+| `/admin/navegacao?menu=header\|footer` | admin (editor vê a versão publicada) | Links do cabeçalho e do rodapé; lista de páginas personalizadas | `navigation` |
+| `/admin/aparencia` | admin | Cores, fundo, botões, cantos, fonte dos títulos, cards | `appearance` |
+| `/admin/configuracoes` | admin (editor vê a versão publicada) | Informações institucionais + “Cabeçalho e rodapé” | `settings` |
 
-Arquivos: `src/app/admin/(protected)/{secoes,pilares,textos-das-paginas,navegacao,aparencia}/`,
-`src/components/admin/site/` (campos compartilhados com o editor),
-`src/lib/site/` (validação), `src/lib/admin/site-config-actions.ts`,
-`src/lib/queries/site-config.ts`.
+Arquivos: `src/app/admin/(protected)/{homepage,secoes,pilares,textos-das-paginas,paginas,historico,navegacao,aparencia,configuracoes}/`,
+`src/components/admin/site/` (campos e editores compartilhados com o editor
+visual), `src/components/admin/editorial/` (barra editorial, histórico,
+páginas), `src/lib/site/` (validação), `src/lib/admin/editorial.ts` e
+`src/lib/admin/editorial-actions.ts` (Server Actions do fluxo),
+`src/lib/queries/editorial.ts`.
 
 Regras:
 
-- Listas (pilares, menus, seções) são salvas inteiras por funções atômicas
-  (`save_site_pillars`, `save_site_navigation`, `save_page_sections`), com
-  detecção de edição simultânea pelos pares `(id, updated_at)` (`GL409`).
+- Cada tela salva só a sua parte da unidade (ex.: `sections` da `home`) por
+  `saveEditorialDrafts`, que valida com as mesmas regras da Etapa 9.5 e
+  grava pela RPC `save_editorial_drafts`. A edição simultânea é detectada
+  pela versão da unidade (`GL409`). As funções de gravação direta da Etapa
+  9.5 (`save_site_pillars`, `save_site_navigation`, `save_page_sections`) e
+  as actions antigas (`site-config-actions.ts`) foram aposentadas: o banco
+  recusa gravação fora do fluxo editorial (`GL403`).
 - Seções nativas (hero, apresentação, pilares, pesquisa, projetos,
   publicações, instituições, cooperação) podem ser ocultadas e reordenadas,
   não removidas nem duplicadas. Blocos podem ser adicionados, duplicados e
@@ -493,9 +511,11 @@ Regras:
 
 ## Limitações atuais
 
-- Sem rich text, histórico de versões ou agendamento. A homepage não tem
-  rascunho.
-- Sem redirecionamento de slugs antigos.
+- Sem rich text nem agendamento de publicação.
+- Sem redirecionamento de slugs antigos. O endereço de páginas
+  personalizadas fica fixo depois da primeira publicação.
+- Projetos, linhas, publicações, instituições e redes sociais mantêm o fluxo
+  por registro (sem histórico de versões).
 - Ordenação por número (`sort_order`) ou botões subir/descer, sem arrastar e
   soltar.
 - Imagens sem recorte ou compressão no navegador (ver
@@ -516,3 +536,7 @@ Regras:
 - Etapa 9.5 concluída: editor visual e personalização do site
   ([`visual-editor.md`](visual-editor.md),
   [`guia-edicao-geologar.md`](guia-edicao-geologar.md)).
+- Etapa 9.6 concluída: rascunhos, publicação controlada, histórico de
+  versões e páginas personalizadas
+  ([`editorial-workflow.md`](editorial-workflow.md),
+  [`custom-pages.md`](custom-pages.md)).

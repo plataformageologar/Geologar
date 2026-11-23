@@ -30,7 +30,7 @@ export function PageContentFields({
   canUpload,
   showSeo = true,
 }: {
-  page: PageContentKey;
+  page: PageContentKey | "custom";
   values: PageContentValues;
   onChange: (values: PageContentValues) => void;
   errors?: PageContentFieldErrors;
@@ -38,7 +38,7 @@ export function PageContentFields({
   canUpload: boolean;
   showSeo?: boolean;
 }) {
-  const hints = PAGE_CONTENT_FALLBACK_HINTS[page] ?? {};
+  const hints = (page === "custom" ? undefined : PAGE_CONTENT_FALLBACK_HINTS[page]) ?? {};
   const field = (key: keyof typeof LABELS, extraHint?: string) => {
     const id = `pagina-${page}-${key}`;
     const rule: { max: number; multiline?: boolean } = PAGE_CONTENT_RULES[key];

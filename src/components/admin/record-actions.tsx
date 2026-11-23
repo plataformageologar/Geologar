@@ -28,7 +28,16 @@ type RecordAction = (state: RecordActionState, data: FormData) => Promise<Record
 /** Entidades com ações na listagem (site_settings é um registro único). */
 export type ListEntity = Exclude<
   Entity,
-  "site-settings" | "media" | "pillars" | "navigation" | "page-sections" | "page-content" | "appearance" | "homepage"
+  | "site-settings"
+  | "media"
+  | "pillars"
+  | "navigation"
+  | "page-sections"
+  | "page-content"
+  | "appearance"
+  | "homepage"
+  | "editorial"
+  | "custom-page"
 >;
 
 const actions: Record<ListEntity, { toggle?: RecordAction; remove: RecordAction }> = {

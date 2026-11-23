@@ -128,8 +128,11 @@ máquina publicaria a chave junto com o código. Por isso:
 
 A homepage e as páginas internas usam `export const dynamic = "force-dynamic"`:
 cada requisição lê o Supabase (7 consultas em paralelo, ~0,8 s no total). Dentro de uma requisição
-as leituras são compartilhadas com `cache` do React. Alterações publicadas no
-banco aparecem imediatamente, sem novo deploy.
+as leituras são compartilhadas com `cache` do React. Alterações **publicadas**
+no CMS (botão “Publicar alterações”, Etapa 9.6) aparecem na próxima
+requisição, sem novo deploy; rascunhos nunca chegam ao site público. Páginas
+personalizadas (`/paginas/[slug]`) também são dinâmicas e respondem 404 quando
+não estão publicadas.
 
 `cacheComponents` e `partialPrefetching` estão **desativados** em
 `next.config.ts`. Motivo (causa confirmada do HTTP 500 em produção):

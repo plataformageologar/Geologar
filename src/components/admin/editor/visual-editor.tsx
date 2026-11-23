@@ -3,28 +3,27 @@
 import {
   Check,
   CircleAlert,
+  CloudUpload,
+  Eye,
+  History,
   LoaderCircle,
   LogOut,
   Monitor,
   PanelRight,
+  PencilLine,
   Redo2,
   Smartphone,
   Tablet,
+  Trash2,
   Undo2,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from "react";
 
-import { saveHomepage } from "@/lib/admin/actions";
-import {
-  saveAppearance,
-  saveNavigation,
-  savePageContent,
-  savePageSections,
-  savePillars,
-} from "@/lib/admin/site-config-actions";
-import { saveSiteSettings } from "@/lib/admin/site-settings-actions";
+import { saveEditorialDrafts } from "@/lib/admin/editorial-actions";
+import type { PartName } from "@/lib/editorial/content";
+import { partSlice, sliceErrors, slicesFromContent } from "@/lib/editorial/editor-slices";
 import {
   DRAFT_SLICES,
   EDITOR_MESSAGE,
@@ -40,21 +39,30 @@ import {
   type EditorErrors,
   type EditorKey,
   type EditorTarget,
-  type EditorVersions,
   type RecordRef,
   type ToCanvasMessage,
+  SLICE_PARTS,
 } from "@/lib/site/editor-document";
 import { EDITOR_PAGES } from "@/lib/site/editor-pages";
 import { cn } from "@/lib/utils/cn";
 
-import { buildFormData, FailureAction, useUnsavedChangesWarning } from "../save-bar";
+import { FailureAction, useUnsavedChangesWarning } from "../save-bar";
+import {
+  DiscardDraftDialog,
+  HistoryDialog,
+  PublishDialog,
+  RestoreButton,
+  type RevisionPreviewState,
+} from "./editor-editorial";
 import { historyReducer, initHistory } from "./editor-history";
 import { cmsHrefFor, PropertiesPanel } from "./properties-panel";
 
 /**
  * Editor visual: barra de ferramentas, tela (iframe com os componentes
- * públicos) e painel de propriedades. Grava pelas mesmas Server Actions das
- * telas do CMS, que conferem sessão, papel, validação e conflitos.
+ * públicos) e painel de propriedades. "Salvar rascunho" grava todas as partes
+ * alteradas numa única transação, pela mesma Server Action das telas do CMS
+ * (sessão, papel, validação e conflitos conferidos no servidor). Publicar,
+ * descartar o rascunho e restaurar versões são ações separadas e explícitas.
  */
 
 type Device = "desktop" | "tablet" | "mobile";
@@ -68,17 +76,6 @@ const DEVICES: { id: Device; label: string; width: number | null; icon: typeof M
 const CONNECTION_ERROR =
   "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente; nada foi perdido.";
 
-const SAVE_ORDER: DraftSlice[] = [
-  "homepage",
-  "pillars",
-  "sections",
-  "pageContent",
-  "settings",
-  "navHeader",
-  "navFooter",
-  "appearance",
-];
-
 const HEADER_SETTINGS = new Set(["site_name", "institutional_name", "logo_path", "header_style", "favicon_path", "tagline", "short_description"]);
 
 type Status =
@@ -87,9 +84,8 @@ type Status =
   | { kind: "saved" }
   | { kind: "error"; message: string; reason?: string };
 
-type SliceResult =
-  | { ok: true; patch: Partial<EditorDraft>; versions: Partial<EditorVersions> }
-  | { ok: false; message: string; reason: string; errors: EditorErrors };
+/** Visualização somente leitura na tela: versão publicada ou uma revisão. */
+type Preview = { kind: "published" } | ({ kind: "revision" } & RevisionPreviewState);
 
 function same(a: unknown, b: unknown) {
   return JSON.stringify(a) === JSON.stringify(b);
@@ -140,7 +136,16 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
   const [history, dispatch] = useReducer(historyReducer, doc.draft, initHistory);
   const draft = history.present;
   const [saved, setSaved] = useState<EditorDraft>(doc.draft);
-  const [versions, setVersions] = useState<EditorVersions>(doc.versions);
+  // Versão de cada unidade editorial (conflito): a maior entre a do servidor
+  // (atualizada após cada ação) e a devolvida pelas ações.
+  const [localVersions, setLocalVersions] = useState<Record<string, number>>({});
+  const versionOf = useCallback(
+    (id: string) => Math.max(localVersions[id] ?? 0, doc.units.find((unit) => unit.id === id)?.version ?? 0),
+    [localVersions, doc.units],
+  );
+  const [dialog, setDialog] = useState<"publish" | "discard-draft" | "history" | null>(null);
+  const [preview, setPreview] = useState<Preview | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [errors, setErrors] = useState<EditorErrors>({});
   const [selected, setSelected] = useState<EditorTarget | null>(null);
   const [record, setRecord] = useState<RecordRef | null>(null);
@@ -157,6 +162,7 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
 
   const isDetail = doc.page.kind === "project" || doc.page.kind === "research-line";
   const saving = status.kind === "saving";
+  const loginNext = `/admin/editor?pagina=${encodeURIComponent(doc.page.path)}`;
   const dirtySlices = DRAFT_SLICES.filter((slice) => doc.editable[slice] && !same(draft[slice], saved[slice]));
   const dirty = dirtySlices.length > 0;
   useUnsavedChangesWarning(dirty);
@@ -190,95 +196,40 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
     return () => window.removeEventListener("message", onMessage);
   }, [select]);
 
+  // O que a tela mostra: o rascunho em edição ou, em modo de visualização,
+  // a versão publicada / uma revisão do histórico (somente leitura).
+  const shown: EditorDraft = useMemo(
+    () =>
+      !preview
+        ? draft
+        : preview.kind === "published"
+          ? { ...draft, ...doc.published }
+          : {
+              ...draft,
+              ...slicesFromContent(doc.units.find((unit) => unit.id === preview.unitId)?.slices ?? [], preview.content),
+            },
+    [preview, draft, doc.published, doc.units],
+  );
+
   // Envia o rascunho para a tela sempre que algo muda.
   useEffect(() => {
     if (!canvasReady || isDetail) return;
     const state: CanvasState = {
       page: doc.page,
       sectionPage: doc.sectionPage,
-      draft,
+      draft: shown,
       render: doc.render,
-      selected,
+      selected: preview ? null : selected,
       scroll,
     };
     const message: ToCanvasMessage = { source: EDITOR_MESSAGE, type: "state", state };
     iframeRef.current?.contentWindow?.postMessage(message, window.location.origin);
-  }, [canvasReady, draft, selected, scroll, doc, isDetail]);
+  }, [canvasReady, shown, selected, scroll, doc, isDetail, preview]);
 
-  async function saveSlice(slice: DraftSlice): Promise<SliceResult> {
-    const failure = (result: { message: string; reason: string }, errors: EditorErrors): SliceResult => ({
-      ok: false,
-      message: result.message,
-      reason: result.reason,
-      errors,
-    });
-    switch (slice) {
-      case "homepage": {
-        if (!draft.homepage || !versions.homepage) break;
-        const result = await saveHomepage(
-          { status: "idle" },
-          buildFormData({ ...draft.homepage, updated_at: versions.homepage }),
-        );
-        if (result.status === "success") {
-          return { ok: true, patch: { homepage: result.values }, versions: { homepage: result.updatedAt } };
-        }
-        if (result.status === "error") return failure(result, { homepage: result.fieldErrors });
-        break;
-      }
-      case "settings": {
-        if (!draft.settings || !versions.settings) break;
-        const result = await saveSiteSettings(
-          { status: "idle" },
-          buildFormData({ ...draft.settings, updated_at: versions.settings }),
-        );
-        if (result.status === "success") {
-          return { ok: true, patch: { settings: result.values }, versions: { settings: result.updatedAt } };
-        }
-        if (result.status === "error") return failure(result, { settings: result.fieldErrors });
-        break;
-      }
-      case "pillars": {
-        const result = await savePillars({ versions: versions.pillars, items: draft.pillars });
-        return result.status === "success"
-          ? { ok: true, patch: { pillars: result.items }, versions: { pillars: result.versions } }
-          : failure(result, { pillars: result.itemErrors });
-      }
-      case "sections": {
-        if (!doc.sectionPage) break;
-        const result = await savePageSections({ page: doc.sectionPage, versions: versions.sections, items: draft.sections });
-        return result.status === "success"
-          ? { ok: true, patch: { sections: result.items }, versions: { sections: result.versions } }
-          : failure(result, { sections: result.itemErrors });
-      }
-      case "pageContent": {
-        if (!doc.pageContentKey || !versions.pageContent) break;
-        const result = await savePageContent({
-          page: doc.pageContentKey,
-          values: draft.pageContent,
-          updatedAt: versions.pageContent,
-        });
-        return result.status === "success"
-          ? { ok: true, patch: { pageContent: result.values }, versions: { pageContent: result.updatedAt } }
-          : failure(result, { pageContent: result.fieldErrors });
-      }
-      case "navHeader":
-      case "navFooter": {
-        const location = slice === "navHeader" ? "header" : "footer";
-        const result = await saveNavigation({ location, versions: versions[slice], items: draft[slice] });
-        return result.status === "success"
-          ? { ok: true, patch: { [slice]: result.items }, versions: { [slice]: result.versions } }
-          : failure(result, { [slice]: result.itemErrors });
-      }
-      case "appearance": {
-        if (!versions.appearance) break;
-        const result = await saveAppearance({ values: draft.appearance, updatedAt: versions.appearance });
-        return result.status === "success"
-          ? { ok: true, patch: { appearance: result.values }, versions: { appearance: result.updatedAt } }
-          : failure(result, { appearance: result.fieldErrors });
-      }
-    }
-    return { ok: false, message: "Esta parte não pôde ser salva. Recarregue a página.", reason: "unexpected", errors: {} };
-  }
+  /** Unidade editorial que contém a fatia (nesta página). */
+  const unitOf = (slice: DraftSlice) => doc.units.find((unit) => unit.slices.includes(slice)) ?? null;
+  const pendingDrafts = doc.units.filter((unit) => unit.hasDraft);
+  const publishable = pendingDrafts.some((unit) => unit.canPublish);
 
   function firstErrorTarget(found: EditorErrors, sections: EditorDraft["sections"]): EditorTarget | null {
     const sectionOf = (type: string) => {
@@ -307,32 +258,56 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
   }
 
   async function save() {
-    if (!dirty || saving) return;
+    if (!dirty || saving || preview) return;
     setStatus({ kind: "saving" });
     setConfirmDiscard(false);
+    setNotice(null);
     const before = draft;
-    const patch: Partial<EditorDraft> = {};
-    let nextVersions = versions;
-    const nextErrors: EditorErrors = {};
-    let failure: { message: string; reason: string } | null = null;
 
-    for (const slice of SAVE_ORDER) {
-      if (!dirtySlices.includes(slice)) continue;
-      try {
-        const result = await saveSlice(slice);
-        if (result.ok) {
-          Object.assign(patch, result.patch);
-          nextVersions = { ...nextVersions, ...result.versions };
-        } else {
-          Object.assign(nextErrors, result.errors);
-          failure ??= { message: result.message, reason: result.reason };
-        }
-      } catch {
-        failure ??= { message: CONNECTION_ERROR, reason: "connection" };
-      }
+    // Uma entrada por unidade editorial, com as partes alteradas.
+    const requests = new Map<string, { documentId: string; version: number; parts: Partial<Record<PartName, unknown>> }>();
+    for (const slice of dirtySlices) {
+      const unit = unitOf(slice);
+      if (!unit) continue;
+      const request = requests.get(unit.id) ?? { documentId: unit.id, version: versionOf(unit.id), parts: {} };
+      request.parts[SLICE_PARTS[slice]] = draft[slice];
+      requests.set(unit.id, request);
     }
 
-    // Seções novas recebem o id do banco como chave: mantém a seleção.
+    let result: Awaited<ReturnType<typeof saveEditorialDrafts>>;
+    try {
+      result = await saveEditorialDrafts({ documents: [...requests.values()] });
+    } catch {
+      setStatus({ kind: "error", message: CONNECTION_ERROR, reason: "connection" });
+      return;
+    }
+
+    if (result.status !== "success") {
+      // Uma transação: nada foi gravado. Mostra os erros de cada parte.
+      const nextErrors: EditorErrors = {};
+      for (const [key, partErrors] of Object.entries(result.partErrors ?? {})) {
+        const slice = partSlice(key.slice(key.indexOf(":") + 1) as PartName);
+        if (slice) Object.assign(nextErrors, sliceErrors(slice, partErrors));
+      }
+      const listError = Object.values(result.partErrors ?? {}).find((errors) => errors.listError)?.listError;
+      setErrors(nextErrors);
+      setStatus({ kind: "error", message: listError ?? result.message, reason: result.reason });
+      const target = firstErrorTarget(nextErrors, before.sections);
+      if (target) select(target, { scroll: true });
+      return;
+    }
+
+    // Conteúdo gravado (normalizado pelo servidor) → fatias enviadas.
+    const patch: Partial<EditorDraft> = {};
+    const nextVersions: Record<string, number> = {};
+    for (const savedDoc of result.documents) {
+      const unit = doc.units.find((item) => item.id === savedDoc.documentId);
+      if (!unit) continue;
+      nextVersions[unit.id] = savedDoc.version;
+      Object.assign(patch, slicesFromContent(unit.slices.filter((slice) => dirtySlices.includes(slice)), savedDoc.content));
+    }
+
+    // Itens novos recebem outra chave depois de salvos: mantém a seleção pela posição.
     let nextSelected = selected;
     const selectedKey = targetSectionKey(selected);
     if (selectedKey && patch.sections && before.sections) {
@@ -342,19 +317,11 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
     }
 
     setSaved((current) => ({ ...current, ...patch }));
-    setVersions(nextVersions);
-    setErrors(nextErrors);
+    setLocalVersions((current) => ({ ...current, ...nextVersions }));
+    setErrors({});
     dispatch({ type: "saved", patch });
-
-    if (failure) {
-      setStatus({ kind: "error", message: failure.message, reason: failure.reason });
-      const target = firstErrorTarget(nextErrors, { ...before, ...patch }.sections);
-      if (target) select(target, { scroll: true });
-      else setSelected(nextSelected);
-    } else {
-      setStatus({ kind: "saved" });
-      setSelected(nextSelected);
-    }
+    setStatus({ kind: "saved" });
+    setSelected(nextSelected);
   }
 
   function discard() {
@@ -367,11 +334,13 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
   }
 
   function command(key: EditorKey) {
+    if (dialog) return;
     if (key === "save") void save();
     else if (key === "undo" && !saving) dispatch({ type: "undo" });
     else if (key === "redo" && !saving) dispatch({ type: "redo" });
     else if (key === "escape") {
-      if (confirmDiscard) setConfirmDiscard(false);
+      if (preview) setPreview(null);
+      else if (confirmDiscard) setConfirmDiscard(false);
       else if (panelOpen && window.matchMedia("(max-width: 1279px)").matches) {
         setPanelOpen(false);
         panelToggleRef.current?.focus();
@@ -416,15 +385,20 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
         <span aria-hidden="true" className="size-2 rounded-full bg-earth" />
         Alterações não salvas
       </span>
+    ) : pendingDrafts.some((unit) => unit.differs || !unit.hasPublished) ? (
+      <span className="inline-flex items-center gap-1.5 text-earth">
+        <PencilLine aria-hidden="true" className="size-4" />
+        {status.kind === "saved" ? "Rascunho salvo — " : "Rascunho "}não publicado
+      </span>
     ) : status.kind === "saved" ? (
       <span className="inline-flex items-center gap-1.5 text-secondary">
         <Check aria-hidden="true" className="size-4" />
-        Salvo com sucesso
+        Rascunho salvo
       </span>
     ) : (
       <span className="inline-flex items-center gap-1.5 text-muted-foreground">
         <Check aria-hidden="true" className="size-4" />
-        Tudo salvo
+        Publicado, sem alterações
       </span>
     );
 
@@ -447,7 +421,7 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
               if (dirty && !window.confirm("Há alterações não salvas. Trocar de página e descartá-las?")) return;
               router.push(`/admin/editor?pagina=${encodeURIComponent(path)}`);
             }}
-            className="min-h-10 w-full min-w-0 rounded-lg border border-border bg-surface px-2 text-label md:w-auto md:max-w-[12rem]"
+            className="min-h-10 w-full min-w-24 rounded-lg border border-border bg-surface px-2 text-label md:w-auto md:max-w-[12rem]"
           >
             {!EDITOR_PAGES.some((item) => item.path === doc.page.path) && (
               <option value="">
@@ -463,15 +437,31 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
         </div>
 
         {/* Celular: salvar, painel e sair ficam na primeira linha. */}
-        <div className="order-2 flex items-center gap-1.5 md:order-9">
+        <div className="order-2 flex shrink-0 items-center gap-1 sm:gap-1.5 md:order-9">
           <button
             type="button"
             onClick={() => void save()}
-            disabled={!dirty || saving}
-            title="Salvar (Ctrl+S)"
-            className="inline-flex min-h-10 items-center rounded-lg bg-primary px-4 text-label text-primary-foreground hover:bg-primary-hover disabled:opacity-40"
+            disabled={!dirty || saving || preview !== null}
+            title="Salvar rascunho (Ctrl+S). O site público não muda."
+            className="inline-flex min-h-10 items-center rounded-lg border border-primary px-3 text-label text-primary hover:bg-primary-soft disabled:opacity-40"
           >
-            {saving ? "Salvando…" : "Salvar"}
+            {saving ? (
+              "Salvando…"
+            ) : (
+              <>
+                Salvar<span className="hidden sm:inline">&nbsp;rascunho</span>
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setDialog("publish")}
+            disabled={saving || !publishable}
+            title={dirty ? "Salve o rascunho antes de publicar" : "Publicar alterações no site"}
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-primary px-3 text-label text-primary-foreground hover:bg-primary-hover disabled:opacity-40"
+          >
+            <CloudUpload aria-hidden="true" className="hidden size-4 sm:block" />
+            <span>Publicar</span>
           </button>
           <ToolbarButton
             ref={panelToggleRef}
@@ -528,7 +518,25 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
           {statusView}
         </p>
 
-        <div className="order-4 ml-auto flex items-center gap-1.5">
+        <div className="order-4 ml-auto flex flex-wrap items-center gap-1.5">
+          <ToolbarButton label="Histórico de versões" onClick={() => setDialog("history")} disabled={saving || doc.units.length === 0}>
+            <History aria-hidden="true" className="size-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            label={preview?.kind === "published" ? "Voltar ao rascunho" : "Ver versão publicada"}
+            pressed={preview?.kind === "published"}
+            onClick={() => setPreview((current) => (current?.kind === "published" ? null : { kind: "published" }))}
+            disabled={saving || isDetail}
+          >
+            <Eye aria-hidden="true" className="size-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            label="Descartar rascunho salvo"
+            onClick={() => setDialog("discard-draft")}
+            disabled={saving || !pendingDrafts.some((unit) => unit.hasPublished)}
+          >
+            <Trash2 aria-hidden="true" className="size-4" />
+          </ToolbarButton>
           <a href={cmsHrefFor(doc, selected, draft.sections)} className={cn(linkClasses, "hidden md:inline-flex")}>
             Abrir no CMS
           </a>
@@ -537,7 +545,7 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
           </a>
           {confirmDiscard ? (
             <span role="group" aria-label="Confirmar descarte" className="flex items-center gap-1.5">
-              <span className="text-caption font-semibold">Descartar tudo?</span>
+              <span className="text-caption font-semibold">Descartar o que não foi salvo?</span>
               <button
                 type="button"
                 onClick={discard}
@@ -559,9 +567,11 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
               type="button"
               onClick={() => setConfirmDiscard(true)}
               disabled={!dirty || saving}
+              title="Descartar alterações não salvas (volta ao último rascunho salvo)"
               className="inline-flex min-h-10 items-center rounded-lg border border-border px-3 text-label disabled:opacity-40"
             >
-              Descartar
+              <span className="hidden sm:inline">Descartar não salvas</span>
+              <span className="sm:hidden">Descartar</span>
             </button>
           )}
         </div>
@@ -571,7 +581,47 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
         <div role="alert" className="flex flex-wrap items-center gap-2 border-b border-danger/30 bg-surface px-4 py-2 text-body-sm text-danger">
           <CircleAlert aria-hidden="true" className="size-4 shrink-0" />
           {status.message}
-          {status.reason && <FailureAction reason={status.reason} loginNext={`/admin/editor?pagina=${encodeURIComponent(doc.page.path)}`} />}
+          {status.reason && <FailureAction reason={status.reason} loginNext={loginNext} />}
+        </div>
+      )}
+
+      {notice && (
+        <div role="status" className="flex flex-wrap items-center gap-2 border-b border-secondary/30 bg-surface px-4 py-2 text-body-sm text-secondary">
+          <Check aria-hidden="true" className="size-4 shrink-0" />
+          {notice}
+          <button type="button" onClick={() => setNotice(null)} className="ml-auto inline-flex min-h-10 items-center px-2 text-label" aria-label="Fechar aviso">
+            <X aria-hidden="true" className="size-4" />
+          </button>
+        </div>
+      )}
+
+      {preview && (
+        <div role="status" className="flex flex-wrap items-center gap-2 border-b border-primary/30 bg-primary-soft px-4 py-2 text-body-sm text-primary">
+          <Eye aria-hidden="true" className="size-4 shrink-0" />
+          <span className="font-semibold">
+            {preview.kind === "published"
+              ? "Visualizando a versão publicada (somente leitura)."
+              : `Visualizando a revisão ${preview.number} de ${preview.label} (somente leitura).`}
+          </span>
+          <span className="flex flex-wrap items-center gap-2 sm:ml-auto">
+            {preview.kind === "revision" && (
+              <RestoreButton
+                revisionId={preview.revisionId}
+                number={preview.number}
+                version={versionOf(preview.unitId)}
+                dirty={dirty}
+                hasDraft={doc.units.find((unit) => unit.id === preview.unitId)?.hasDraft ?? false}
+                loginNext={loginNext}
+              />
+            )}
+            <button
+              type="button"
+              onClick={() => setPreview(null)}
+              className="inline-flex min-h-10 items-center rounded-lg border border-primary px-3 text-label"
+            >
+              Voltar ao rascunho
+            </button>
+          </span>
         </div>
       )}
 
@@ -617,7 +667,12 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
               Parte do conteúdo não pôde ser carregada e não será alterada. Recarregue a página em instantes.
             </p>
           )}
-          <fieldset disabled={saving} className="min-w-0">
+          {preview && (
+            <p className="mb-4 rounded-xl border border-primary/40 p-3 text-body-sm text-primary">
+              Modo de visualização: a edição fica bloqueada até você voltar ao rascunho.
+            </p>
+          )}
+          <fieldset disabled={saving || preview !== null} className="min-w-0">
             <PropertiesPanel
               doc={doc}
               draft={draft}
@@ -625,7 +680,7 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
               errors={errors}
               selected={selected}
               record={record}
-              disabled={saving}
+              disabled={saving || preview !== null}
               onChange={change}
               onSelect={(target) => {
                 if (target) {
@@ -640,6 +695,42 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
           </fieldset>
         </aside>
       </div>
+
+      <PublishDialog
+        open={dialog === "publish"}
+        onClose={() => setDialog(null)}
+        units={doc.units}
+        versionOf={versionOf}
+        dirty={dirty}
+        loginNext={loginNext}
+        onPublished={(published, message) => {
+          setLocalVersions((current) => ({ ...current, ...published }));
+          setDialog(null);
+          setPreview(null);
+          setStatus({ kind: "idle" });
+          setNotice(message);
+        }}
+      />
+      <DiscardDraftDialog
+        open={dialog === "discard-draft"}
+        onClose={() => setDialog(null)}
+        units={doc.units}
+        versionOf={versionOf}
+        dirty={dirty}
+        loginNext={loginNext}
+      />
+      <HistoryDialog
+        open={dialog === "history"}
+        onClose={() => setDialog(null)}
+        units={doc.units}
+        versionOf={versionOf}
+        dirty={dirty}
+        loginNext={loginNext}
+        onPreview={(revision) => {
+          setPreview({ kind: "revision", ...revision });
+          setDialog(null);
+        }}
+      />
     </div>
   );
 }

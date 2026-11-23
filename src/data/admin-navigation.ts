@@ -13,6 +13,7 @@ export type AdminNavItem = {
     | "media"
     | "demo"
     | "visual-editor"
+    | "custom-pages"
     | "sections"
     | "pillars"
     | "page-texts"
@@ -49,6 +50,7 @@ export const adminNavigation: AdminNavSection[] = [
     title: "Site",
     items: [
       { id: "visual-editor", label: "Editor visual", href: "/admin/editor?pagina=%2F" },
+      { id: "custom-pages", label: "Páginas", href: "/admin/paginas" },
       { id: "sections", label: "Seções e blocos", href: "/admin/secoes" },
       { id: "pillars", label: "Pilares da rede", href: "/admin/pilares" },
       { id: "page-texts", label: "Textos das páginas", href: "/admin/textos-das-paginas" },

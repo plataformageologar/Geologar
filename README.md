@@ -266,6 +266,19 @@ RLS por papel e gravação atômica das listas. Documentação técnica em
 [`docs/visual-editor.md`](docs/visual-editor.md); guia para a equipe em
 [`docs/guia-edicao-geologar.md`](docs/guia-edicao-geologar.md).
 
+### Rascunhos, publicação, histórico e páginas novas (Etapa 9.6)
+
+**Salvar não publica.** Toda edição de conteúdo do site (CMS ou editor
+visual) vira um rascunho guardado no Supabase; o site só muda com
+**Publicar alterações**, que aplica tudo numa única transação. Cada rascunho,
+publicação e restauração entra num histórico de versões imutável
+(`/admin/historico`), com comparação e “Restaurar como rascunho”. A equipe
+também cria páginas institucionais novas em `/admin/paginas`, publicadas em
+`/paginas/<endereço>` com os mesmos blocos da página inicial. Um trigger no
+banco recusa qualquer gravação fora desse fluxo. Documentação em
+[`docs/editorial-workflow.md`](docs/editorial-workflow.md) e
+[`docs/custom-pages.md`](docs/custom-pages.md).
+
 ## Supabase
 
 O projeto usa o Supabase para banco de dados (PostgreSQL com Row Level

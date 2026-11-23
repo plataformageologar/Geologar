@@ -1,31 +1,27 @@
-import { toFormValues } from "@/lib/admin/homepage";
 import { toSiteSettingsFormValues } from "@/lib/admin/site-settings";
 import type { AdminRole } from "@/lib/auth/access";
+import { ADMIN_DOC_TYPES, documentLabel, GLOBAL_SCOPE, pageContentDocument, type DocType } from "@/lib/editorial/content";
+import { slicesFromContent } from "@/lib/editorial/editor-slices";
 import { DEFAULT_APPEARANCE } from "@/lib/site/appearance";
-import type { EditorDocument, EditorDraft, EditorVersions, DraftSlice } from "@/lib/site/editor-document";
+import type { DraftSlice, EditorDocument, EditorDraft, EditorUnit } from "@/lib/site/editor-document";
 import type { EditorPage } from "@/lib/site/editor-pages";
-import { toPageContentValues, type PageContentKey } from "@/lib/site/page-content";
+import type { PageContentKey } from "@/lib/site/page-content";
+import type { SectionScope } from "@/lib/site/sections";
 import { createClient } from "@/lib/supabase/server";
 
-import { getHomepageForEdit } from "./admin";
 import { getSiteSettingsForEdit } from "./admin-institutional";
+import { getEditorialDocuments } from "./editorial";
 import { getSectionsData } from "./homepage";
 import { getPublishedProjects } from "./projects";
 import { getActiveSocialLinks } from "./settings";
 import { logQueryError } from "./shared";
-import {
-  getAppearanceForEdit,
-  getInstitutionOptionsForSections,
-  getNavigationForEdit,
-  getPageContentForEdit,
-  getPillarsForEdit,
-  getSectionsForEdit,
-} from "./site-config";
+import { getAppearanceForEdit, getInstitutionOptionsForSections, getNavigationForEdit } from "./site-config";
 
 /**
  * Carrega o documento do editor visual para uma página permitida. Os dados
- * editáveis vêm das mesmas consultas do CMS (sessão do usuário, RLS); os de
- * pré-visualização, das consultas públicas (somente registros publicados).
+ * editáveis são as unidades editoriais (rascunho ou versão publicada), lidas
+ * com a sessão do usuário (RLS); os de pré-visualização vêm das consultas
+ * públicas (somente registros publicados).
  */
 
 async function getRecordIds() {
@@ -60,43 +56,64 @@ async function getDetail(page: EditorPage): Promise<EditorDocument["detail"]> {
   return { title: data.title, editHref: `${base}/${data.id}/editar`, published: data.is_published };
 }
 
-export async function getEditorDocument(page: EditorPage, role: AdminRole): Promise<EditorDocument> {
-  const sectionPage = page.kind === "home" ? "home" : page.kind === "rede" ? "rede" : null;
-  const pageContentKey: PageContentKey | null =
-    page.kind === "rede" ? "rede" : page.kind === "list" ? page.key : null;
+type DocRef = { type: DocType; key: string };
 
-  const [
-    homepage,
-    settings,
-    pillars,
-    sections,
-    pageContent,
-    navigation,
-    appearance,
-    sectionsData,
-    socialLinks,
-    records,
-    institutionOptions,
-    detail,
-    projectList,
-  ] = await Promise.all([
-    getHomepageForEdit(),
-    getSiteSettingsForEdit(),
-    getPillarsForEdit(),
-    sectionPage ? getSectionsForEdit(sectionPage) : null,
-    pageContentKey ? getPageContentForEdit() : null,
-    getNavigationForEdit(),
-    getAppearanceForEdit(),
-    getSectionsData({ researchLineLimit: 50 }),
-    getActiveSocialLinks(),
-    getRecordIds(),
-    sectionPage ? getInstitutionOptionsForSections() : null,
-    getDetail(page),
-    page.kind === "list" && page.key === "projetos" ? getPublishedProjects({ page: 1 }) : null,
-  ]);
+/** Fatias que cada unidade cobre nesta página. */
+function unitSlices(type: DocType, page: EditorPage): DraftSlice[] {
+  switch (type) {
+    case "home":
+      return page.kind === "home" ? ["homepage", "sections"] : ["homepage"];
+    case "rede":
+    case "custom":
+      return ["pageContent", "sections"];
+    case "page":
+      return ["pageContent"];
+    case "pillars":
+      return ["pillars"];
+    case "navigation":
+      return ["navHeader", "navFooter"];
+    case "appearance":
+      return ["appearance"];
+    case "settings":
+      return ["settings"];
+  }
+}
 
-  const loadErrors: DraftSlice[] = [];
+export async function getEditorDocument(
+  page: EditorPage,
+  role: AdminRole,
+  customPage: { id: string; status: "draft" | "published" | "archived" } | null = null,
+): Promise<EditorDocument> {
   const isAdmin = role === "admin";
+  const sectionPage: SectionScope | null =
+    page.kind === "home" ? "home" : page.kind === "rede" ? "rede" : page.kind === "custom" ? "custom" : null;
+  const pageContentKey: PageContentKey | "custom" | null =
+    page.kind === "rede" ? "rede" : page.kind === "list" ? page.key : page.kind === "custom" ? "custom" : null;
+
+  // Unidades editoriais desta página. Menus, aparência e informações
+  // institucionais são só de administradores (o RLS também não as entrega a
+  // editores, que veem a versão publicada, somente leitura).
+  // A unidade da própria página vem primeiro (histórico e publicação abrem nela).
+  const refs: DocRef[] = [];
+  if (page.kind === "rede") refs.push({ type: "rede", key: "rede" });
+  if (page.kind === "list") refs.push(pageContentDocument(page.key));
+  if (page.kind === "custom" && customPage) refs.push({ type: "custom", key: customPage.id });
+  refs.push({ type: "home", key: "home" }, { type: "pillars", key: "pillars" });
+  if (isAdmin) refs.push({ type: "settings", key: "settings" }, { type: "navigation", key: "navigation" }, { type: "appearance", key: "appearance" });
+
+  const [documents, settings, navigation, appearance, sectionsData, socialLinks, records, institutionOptions, detail, projectList] =
+    await Promise.all([
+      getEditorialDocuments(refs),
+      isAdmin ? null : getSiteSettingsForEdit(),
+      isAdmin ? null : getNavigationForEdit(),
+      isAdmin ? null : getAppearanceForEdit(),
+      getSectionsData({ researchLineLimit: 50 }),
+      getActiveSocialLinks(),
+      getRecordIds(),
+      sectionPage ? getInstitutionOptionsForSections() : null,
+      getDetail(page),
+      page.kind === "list" && page.key === "projetos" ? getPublishedProjects({ page: 1 }) : null,
+    ]);
 
   const draft: EditorDraft = {
     homepage: null,
@@ -108,63 +125,57 @@ export async function getEditorDocument(page: EditorPage, role: AdminRole): Prom
     navFooter: null,
     appearance: null,
   };
-  const versions: EditorVersions = {
-    homepage: null,
-    settings: null,
-    pillars: [],
-    sections: [],
-    pageContent: null,
-    navHeader: [],
-    navFooter: [],
-    appearance: null,
-  };
+  const published: EditorDraft = { ...draft };
+  const units: EditorUnit[] = [];
+  const loadErrors: DraftSlice[] = [];
 
-  if (homepage.status === "ready") {
-    draft.homepage = toFormValues(homepage.record);
-    versions.homepage = homepage.updatedAt;
-  } else loadErrors.push("homepage");
-
-  if (settings.status === "ready" && settings.data) {
-    draft.settings = toSiteSettingsFormValues(settings.data.record);
-    versions.settings = settings.data.updatedAt;
-  } else loadErrors.push("settings");
-
-  if (pillars.status === "ready") {
-    draft.pillars = pillars.data.items;
-    versions.pillars = pillars.data.versions;
-  } else loadErrors.push("pillars");
-
-  if (sections) {
-    if (sections.status === "ready") {
-      draft.sections = sections.data.items;
-      versions.sections = sections.data.versions;
-    } else loadErrors.push("sections");
+  const views = documents.status === "ready" ? documents.data : {};
+  for (const ref of refs) {
+    const view = views[`${ref.type}:${ref.key}`];
+    const slices = unitSlices(ref.type, page);
+    if (!view) {
+      loadErrors.push(...slices);
+      continue;
+    }
+    Object.assign(draft, slicesFromContent(slices, view.current));
+    Object.assign(published, slicesFromContent(slices, view.published ?? view.current));
+    units.push({
+      id: view.id,
+      type: view.type,
+      label: view.type === "custom" && page.kind === "custom" ? documentLabel("custom", view.key, page.label) : view.label,
+      version: view.version,
+      hasDraft: view.hasDraft,
+      differs: view.differs,
+      hasPublished: view.published !== null,
+      publishedRevision: view.publishedRevision,
+      draftUpdatedAt: view.draftUpdatedAt,
+      scope: GLOBAL_SCOPE[view.type] ?? null,
+      canPublish: !ADMIN_DOC_TYPES.includes(view.type) || isAdmin,
+      slices,
+    });
+    for (const slice of slices) if (draft[slice] === null) loadErrors.push(slice);
   }
 
-  if (pageContent && pageContentKey) {
-    const current = pageContent.status === "ready" ? pageContent.data[pageContentKey] : undefined;
-    if (current) {
-      draft.pageContent = toPageContentValues(current.record);
-      versions.pageContent = current.updatedAt;
-    } else loadErrors.push("pageContent");
+  // Editores: versão publicada, somente leitura.
+  if (settings) {
+    if (settings.status === "ready" && settings.data) {
+      draft.settings = published.settings = toSiteSettingsFormValues(settings.data.record);
+    } else loadErrors.push("settings");
   }
-
-  if (navigation.status === "ready") {
-    draft.navHeader = navigation.data.header.items;
-    draft.navFooter = navigation.data.footer.items;
-    versions.navHeader = navigation.data.header.versions;
-    versions.navFooter = navigation.data.footer.versions;
-  } else loadErrors.push("navHeader", "navFooter");
-
-  if (appearance.status === "ready" && appearance.data) {
-    draft.appearance = appearance.data.values;
-    versions.appearance = appearance.data.updatedAt;
-  } else {
-    draft.appearance = DEFAULT_APPEARANCE;
-    loadErrors.push("appearance");
+  if (navigation) {
+    if (navigation.status === "ready") {
+      draft.navHeader = published.navHeader = navigation.data.header.items;
+      draft.navFooter = published.navFooter = navigation.data.footer.items;
+    } else loadErrors.push("navHeader", "navFooter");
   }
+  if (appearance) {
+    if (appearance.status === "ready" && appearance.data) draft.appearance = published.appearance = appearance.data.values;
+    else loadErrors.push("appearance");
+  }
+  if (!draft.appearance) draft.appearance = published.appearance = DEFAULT_APPEARANCE;
 
-  const editableFor = (slice: DraftSlice, allowed: boolean) => allowed && !loadErrors.includes(slice);
+  const editableFor = (slice: DraftSlice, allowed: boolean) =>
+    allowed && !loadErrors.includes(slice) && units.some((unit) => unit.slices.includes(slice));
 
   return {
     page,
@@ -172,7 +183,9 @@ export async function getEditorDocument(page: EditorPage, role: AdminRole): Prom
     sectionPage,
     pageContentKey,
     draft,
-    versions,
+    published,
+    units,
+    customPage,
     editable: {
       homepage: editableFor("homepage", true),
       pillars: editableFor("pillars", true),
@@ -194,6 +207,6 @@ export async function getEditorDocument(page: EditorPage, role: AdminRole): Prom
     records,
     institutionOptions: institutionOptions?.status === "ready" ? institutionOptions.data : [],
     detail,
-    loadErrors,
+    loadErrors: [...new Set(loadErrors)],
   };
 }

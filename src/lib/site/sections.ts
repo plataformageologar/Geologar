@@ -11,6 +11,8 @@ import { isUuid, normalizeText, validateHref, validateText, type TextRule } from
 
 export const SECTION_PAGES = ["home", "rede"] as const;
 export type SectionPage = (typeof SECTION_PAGES)[number];
+/** Onde uma lista de seções vive: páginas fixas ou uma página personalizada (só blocos). */
+export type SectionScope = SectionPage | "custom";
 
 export const BUILTIN_SECTION_TYPES = [
   "hero",
@@ -104,9 +106,10 @@ export const LOGOS_MAX_INSTITUTIONS = 24;
 export const SECTIONS_MAX = 40;
 
 /** Seções nativas de cada página (uma de cada; só podem ser ocultadas). */
-export const PAGE_BUILTINS: Record<SectionPage, readonly BuiltinSectionType[]> = {
+export const PAGE_BUILTINS: Record<SectionScope, readonly BuiltinSectionType[]> = {
   home: ["hero", "about", "research", "projects", "publications", "institutions", "cooperation"],
   rede: ["pillars", "research", "cooperation"],
+  custom: [],
 };
 
 export const SECTION_LABELS: Record<SectionType, string> = {
@@ -430,7 +433,7 @@ export type SectionListErrors = Record<string, SectionFieldErrors>;
  * novos só podem ser blocos; seções nativas da página não podem sumir.
  */
 export function validateSectionList(
-  page: SectionPage,
+  page: SectionScope,
   raw: unknown,
   current: ReadonlyMap<string, { section_type: SectionType; images: ReadonlySet<string> }>,
 ): { items: Omit<SectionDraft, "key">[]; errors: SectionListErrors; listError: string | null } {
@@ -457,7 +460,7 @@ export function validateSectionList(
       listError = "Tipo de seção desconhecido.";
       return;
     }
-    if (id === null && !isBlockType(type)) {
+    if ((id === null || page === "custom") && !isBlockType(type)) {
       listError = "Seções nativas não podem ser adicionadas novamente.";
       return;
     }

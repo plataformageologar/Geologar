@@ -1,4 +1,4 @@
-# Editor visual — GeoLogar (Etapa 9.5)
+# Editor visual — GeoLogar (Etapas 9.5 e 9.6)
 
 O portal tem dois modos de edição sobre **a mesma fonte de verdade** (tabelas
 do Supabase):
@@ -8,15 +8,17 @@ do Supabase):
 | CMS tradicional | `/admin/...` | Formulários completos, listas, filtros, registros (projetos, publicações etc.) |
 | Editor visual | `/admin/editor?pagina=/` | Clicar no elemento da página e editar com prévia ao vivo |
 
-Os dois gravam pelas **mesmas Server Actions** e com as mesmas validações; não
-existe uma segunda cópia do conteúdo. Guia para a equipe editorial:
-[`guia-edicao-geologar.md`](guia-edicao-geologar.md).
+Os dois gravam **rascunhos** pelo mesmo fluxo editorial e com as mesmas
+validações; o site público só muda ao publicar (Etapa 9.6, ver
+[`editorial-workflow.md`](editorial-workflow.md)). Guia para a equipe
+editorial: [`guia-edicao-geologar.md`](guia-edicao-geologar.md).
 
 ## Arquitetura
 
 ```
 /admin/editor?pagina=/              Server Component (requireAdminAccess)
- └─ getEditorDocument(page, role)   lê tudo o que a página usa (src/lib/queries/editor.ts)
+ └─ getEditorDocument(page, role)   unidades editoriais da página (rascunho + publicado)
+                                    e dados de prévia (src/lib/queries/editor.ts)
  └─ <VisualEditor doc>              Client Component: barra, painel, histórico, salvar
      └─ <iframe src="/admin/editor/canvas">
           <EditorCanvas>            renderiza os COMPONENTES PÚBLICOS reais com o rascunho
@@ -47,22 +49,38 @@ existe uma segunda cópia do conteúdo. Guia para a equipe editorial:
 - **Histórico** (`editor-history.ts`): desfazer/refazer com até 100 passos;
   digitação contínua no mesmo grupo de campos em menos de 1 s vira um passo só.
   O histórico recomeça depois de salvar.
-- **Salvar**: cada “fatia” alterada (`homepage`, `settings`, `pillars`,
-  `sections`, `pageContent`, `navHeader`, `navFooter`, `appearance`) é gravada
-  em sequência pela action correspondente (`saveHomepage`,
-  `saveSiteSettings`, `savePillars`, `saveNavigation`, `savePageSections`,
-  `savePageContent`, `saveAppearance`). Uma falha não descarta o rascunho; o
-  primeiro elemento com erro é selecionado.
-- **Conflito**: cada fatia leva o `updated_at` (ou os pares `id, updated_at`
-  das listas) carregado. Se outra pessoa salvou antes, a gravação é recusada
-  (`GL409`) e o editor mostra a mensagem mantendo o rascunho.
+- **Unidades** (`doc.units`): a página reúne as unidades editoriais que usa
+  (a da própria página primeiro, depois `home`, `pillars` e, para
+  administradores, `settings`, `navigation`, `appearance`). Cada fatia do
+  rascunho (`homepage`, `settings`, `pillars`, `sections`, `pageContent`,
+  `navHeader`, `navFooter`, `appearance`) pertence a uma unidade
+  (`SLICE_PARTS`). Editores veem menus, aparência e informações
+  institucionais na versão publicada, somente leitura.
+- **Salvar rascunho**: as fatias alteradas são agrupadas por unidade e
+  enviadas numa **única** chamada `saveEditorialDrafts` (uma transação no
+  banco). Se uma unidade falhar, nada é gravado; os erros voltam por parte e
+  o primeiro elemento com erro é selecionado.
+- **Publicar**: diálogo com as unidades que têm rascunho, aviso para as
+  globais (menus, aparência, informações institucionais) e observação
+  opcional; `publishEditorialDocuments` publica as marcadas numa única
+  transação. Só é possível com tudo salvo.
+- **Histórico de versões**: escolhe a unidade, lista as revisões (25 por vez,
+  “Carregar versões mais antigas”), **Ver na tela** mostra a revisão na tela
+  em modo somente leitura e **Restaurar como rascunho** cria um novo
+  rascunho. **Ver versão publicada** mostra o que está no site.
+- **Descartar rascunho salvo**: por unidade, com confirmação.
+- **Conflito**: cada unidade leva a sua `version`. Se outra pessoa salvou ou
+  publicou antes, a gravação é recusada (`GL409`) e o editor mantém o que foi
+  digitado.
 
 ### Páginas editáveis
 
 `resolveEditorPage` (`src/lib/site/editor-pages.ts`) aceita apenas:
 `/`, `/rede`, `/pesquisa`, `/projetos`, `/publicacoes`, `/instituicoes`,
-`/contato` e detalhes `/projetos/<slug>` e `/pesquisa/<slug>` com slug no
-formato válido. Qualquer outro valor (URL externa, `//`, `/admin`, `..`,
+`/contato`, detalhes `/projetos/<slug>` e `/pesquisa/<slug>` e páginas
+personalizadas `/paginas/<endereço>` (Etapa 9.6), com slug no formato
+válido. Páginas personalizadas arquivadas ou inexistentes mostram um aviso
+em vez do editor. Qualquer outro valor (URL externa, `//`, `/admin`, `..`,
 query string) mostra a lista de páginas sem abrir o endereço.
 
 Nas páginas de **detalhe** a tela mostra a página pública real e o painel
@@ -98,6 +116,8 @@ cards reais; filtros e paginação não são interativos na prévia.
 | Cabeçalho, rodapé, contatos, redes sociais (`site_settings`) | ✔ | — |
 | Navegação (menus) | ✔ | somente leitura |
 | Aparência | ✔ | — |
+| Páginas personalizadas (blocos e cabeçalho) | ✔ | ✔ |
+| Publicar unidades globais (menus, aparência, informações) | ✔ | — |
 
 As regras valem em três camadas: o painel esconde o que o papel não pode
 editar (`doc.editable`), cada Server Action verifica o papel com
@@ -130,11 +150,13 @@ coluna recusam a gravação no banco (`has_cms_role`). Ver
 - **Celular (< 768 px)**: painel como gaveta inferior; seletor de dispositivo
   oculto (a tela já ocupa a largura disponível).
 - **Atalhos**: `Ctrl+Z` desfazer, `Ctrl+Shift+Z`/`Ctrl+Y` refazer, `Ctrl+S`
-  salvar, `Esc` fecha o painel/gaveta ou volta à estrutura (funcionam também
+  salvar rascunho, `Esc` fecha o painel/gaveta ou volta à estrutura (funcionam também
   com o foco dentro da tela).
 - Foco volta ao botão do painel ao fechar a gaveta; status em
-  `role="status"` (“Tudo salvo”, “Alterações não salvas”, “Salvando...”,
-  “Salvo com sucesso”).
+  `role="status"` (“Publicado, sem alterações”, “Alterações não salvas”,
+  “Salvando…”, “Rascunho salvo — não publicado”).
+- Celular: “Salvar” e “Publicar” ficam na primeira linha da barra, ao lado
+  do seletor de página; histórico, versão publicada e descarte na segunda.
 - Aviso ao sair (fechar aba, trocar de página no seletor) com alterações não
   salvas; “Descartar” pede confirmação.
 - Avisos ao trocar o logotipo e ao escolher cores com contraste baixo.
@@ -146,7 +168,8 @@ src/app/admin/(preview)/editor/page.tsx          Editor (servidor)
 src/app/admin/(preview)/editor/canvas/page.tsx   Tela (iframe)
 src/app/api/editor-access/route.ts               Verificação do botão público
 src/components/admin/editor/                     visual-editor, editor-canvas, properties-panel,
-                                                 editor-fields, editor-history
+                                                 editor-fields, editor-history, editor-editorial
+                                                 (publicar, histórico, descartar rascunho)
 src/components/admin/site/                       Campos reutilizados pelo CMS e pelo editor
 src/components/site/                             Seções e blocos públicos (page-sections, blocks)
 src/lib/site/                                    Validação: sections, navigation, pillars,
@@ -154,7 +177,8 @@ src/lib/site/                                    Validação: sections, navigati
                                                  editor-document (protocolo e rascunho)
 src/lib/queries/editor.ts                        getEditorDocument
 src/lib/queries/site-config.ts                   Leituras do CMS e do site público
-src/lib/admin/site-config-actions.ts             Server Actions das novas tabelas
+src/lib/admin/editorial-actions.ts               Server Actions do fluxo editorial (Etapa 9.6)
+src/lib/editorial/                               Conteúdo das unidades, comparação, fatias do editor
 src/lib/auth/editor-hint.ts                      Cookie do botão “Editar esta página”
 supabase/migrations/20261120090000_visual_editor_customization.sql
 supabase/tests/database/visual_editor_customization.test.sql
@@ -183,7 +207,6 @@ tests/site/                                      Testes unitários (validação,
   a interface com uma conta editor real não foi testada (não há conta e o
   projeto não cria usuários automaticamente).
 - Sem arrastar e soltar: a ordem muda pelos botões subir/descer.
-- Sem rascunho publicado separadamente: salvar publica.
 - Listagens aparecem simplificadas na tela do editor.
-- Páginas novas (criadas pelo editor) não fazem parte desta etapa; o modelo de
-  seções (`page_sections.page_key`) pode ser estendido para elas.
+- Páginas personalizadas são criadas em *Site → Páginas* (o editor visual
+  edita páginas já criadas).

@@ -11,7 +11,8 @@ export type EditorPage =
   | { kind: "rede"; path: "/rede"; label: string }
   | { kind: "list"; key: EditorListKey; path: string; label: string }
   | { kind: "project"; slug: string; path: string; label: string }
-  | { kind: "research-line"; slug: string; path: string; label: string };
+  | { kind: "research-line"; slug: string; path: string; label: string }
+  | { kind: "custom"; slug: string; path: string; label: string };
 
 export const EDITOR_PAGES: readonly EditorPage[] = [
   { kind: "home", path: "/", label: "Página inicial" },
@@ -29,6 +30,13 @@ export function resolveEditorPage(value: unknown): EditorPage | null {
   if (typeof value !== "string" || value.length > 200) return null;
   const fixed = EDITOR_PAGES.find((page) => page.path === value);
   if (fixed) return fixed;
+
+  const custom = /^\/paginas\/([^/?#]+)$/.exec(value);
+  if (custom) {
+    const slug = custom[1];
+    if (slug.length < 3 || slug.length > 100 || !SLUG.test(slug)) return null;
+    return { kind: "custom", slug, path: value, label: "Página personalizada" };
+  }
 
   const detail = /^\/(projetos|pesquisa)\/([^/?#]+)$/.exec(value);
   if (!detail || detail[2].length > 160 || !SLUG.test(detail[2])) return null;

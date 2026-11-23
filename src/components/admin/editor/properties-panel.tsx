@@ -85,20 +85,25 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
 
 /** Link do CMS para o elemento selecionado (ou a página). */
 export function cmsHrefFor(doc: EditorDocument, target: EditorTarget | null, sections: SectionDraft[] | null) {
+  // Página personalizada: tudo dela fica na tela da própria página.
+  const customHref = doc.customPage ? `/admin/paginas/${doc.customPage.id}` : null;
   if (target === "header") return doc.role === "admin" ? "/admin/navegacao" : "/admin/configuracoes";
   if (target === "footer") return "/admin/configuracoes";
   if (target === "appearance") return "/admin/aparencia";
-  if (target === "page-header" && doc.pageContentKey) return `/admin/textos-das-paginas?pagina=${doc.pageContentKey}`;
+  if (target === "page-header" && doc.pageContentKey) {
+    return customHref ?? `/admin/textos-das-paginas?pagina=${doc.pageContentKey}`;
+  }
   const key = targetSectionKey(target);
   const section = key ? sections?.find((item) => item.key === key) : undefined;
   if (section) {
     if (["hero", "about", "cooperation"].includes(section.section_type)) return "/admin/homepage";
     if (section.section_type === "pillars") return "/admin/pilares";
-    return `/admin/secoes?pagina=${doc.sectionPage ?? "home"}`;
+    return customHref ?? `/admin/secoes?pagina=${doc.sectionPage ?? "home"}`;
   }
   if (doc.detail) return doc.detail.editHref;
   if (doc.page.kind === "home") return "/admin/homepage";
   if (doc.page.kind === "rede") return "/admin/secoes?pagina=rede";
+  if (customHref) return customHref;
   if (doc.pageContentKey) return `/admin/textos-das-paginas?pagina=${doc.pageContentKey}`;
   return "/admin";
 }
@@ -459,14 +464,15 @@ export function PropertiesPanel(props: PanelProps) {
         />
       ) : (
         <FormMessage tone="warning">
-          Os textos de {PAGE_CONTENT_LABELS[doc.pageContentKey].label} não puderam ser carregados. Recarregue a página.
+          Os textos de {doc.pageContentKey === "custom" ? doc.page.label : PAGE_CONTENT_LABELS[doc.pageContentKey].label} não
+          puderam ser carregados. Recarregue a página.
         </FormMessage>
       );
   } else if (selected === "appearance") {
     body =
       doc.editable.appearance && draft.appearance ? (
         <div className="flex flex-col gap-4">
-          <FormMessage tone="info">Vale para todo o site depois de salvar. Confira em mais de uma página.</FormMessage>
+          <FormMessage tone="info">Vale para todo o site depois de publicar. Confira em mais de uma página antes.</FormMessage>
           <AppearanceFields
             values={draft.appearance}
             onChange={(values) => onChange("appearance", values, "appearance")}

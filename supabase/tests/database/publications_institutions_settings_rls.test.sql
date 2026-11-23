@@ -12,6 +12,12 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
+-- Etapa 9.6: estas tabelas só aceitam escrita pelo fluxo editorial (trigger
+-- editorial_guard). Este teste verifica as regras da camada de baixo (RLS,
+-- GRANTs e CHECKs usados pela publicação), então liga a mesma chave que as
+-- funções do fluxo ligam. O fluxo em si: editorial_workflow.test.sql.
+select set_config('geologar.editorial_write', 'on', true);
+
 select plan(71);
 
 -- Fixtures ---------------------------------------------------------------------

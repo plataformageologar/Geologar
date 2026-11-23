@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 
+import { EditorialScope } from "@/components/admin/editorial/editorial-scope";
 import { SectionsEditor } from "@/components/admin/site/cms-editors";
 import { LoadError, PageTabs, SitePageIntro } from "@/components/admin/site/page-intro";
 import { requireAdminAccess } from "@/lib/auth/access";
-import { getInstitutionOptionsForSections, getSectionsForEdit } from "@/lib/queries/site-config";
+import { toSectionDrafts } from "@/lib/editorial/content";
+import { docInfo, getEditorialDocument } from "@/lib/queries/editorial";
+import { getInstitutionOptionsForSections } from "@/lib/queries/site-config";
 import { SECTION_PAGES, type SectionPage } from "@/lib/site/sections";
 import { firstParam } from "@/lib/utils/search-params";
 
@@ -26,8 +29,8 @@ export default async function SectionsPage({ searchParams }: PageProps<"/admin/s
     ? (param as SectionPage)
     : "home";
 
-  const [sections, institutions] = await Promise.all([
-    getSectionsForEdit(page),
+  const [doc, institutions] = await Promise.all([
+    getEditorialDocument(page, page),
     getInstitutionOptionsForSections(),
   ]);
 
@@ -35,7 +38,7 @@ export default async function SectionsPage({ searchParams }: PageProps<"/admin/s
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
       <SitePageIntro
         title="Seções e blocos"
-        description="Escolha a ordem das seções, oculte as que não devem aparecer e adicione blocos de texto, imagem, chamada, galeria ou logos. Seções sem conteúdo publicado não aparecem no site."
+        description="Escolha a ordem das seções, oculte as que não devem aparecer e adicione blocos de texto, imagem, chamada, galeria ou logos. Seções sem conteúdo não aparecem no site. Salvar guarda um rascunho; o site muda só ao publicar."
         visualHref={`/admin/editor?pagina=${encodeURIComponent(PAGES[page].path)}`}
       >
         <PageTabs
@@ -49,16 +52,23 @@ export default async function SectionsPage({ searchParams }: PageProps<"/admin/s
         />
       </SitePageIntro>
 
-      {sections.status === "error" ? (
+      {doc.status === "error" || !doc.data ? (
         <LoadError subject="as seções da página" />
       ) : (
-        <SectionsEditor
+        <EditorialScope
           key={page}
-          page={page}
-          initial={sections.data}
-          institutions={institutions.status === "ready" ? institutions.data : []}
-          canUpload
-        />
+          doc={docInfo(doc.data)}
+          canPublish
+          previewHref={`/admin/editor?pagina=${encodeURIComponent(PAGES[page].path)}`}
+          loginNext={`/admin/secoes?pagina=${page}`}
+        >
+          <SectionsEditor
+            page={page}
+            initial={toSectionDrafts(doc.data.current.sections ?? [])}
+            institutions={institutions.status === "ready" ? institutions.data : []}
+            canUpload
+          />
+        </EditorialScope>
       )}
     </div>
   );

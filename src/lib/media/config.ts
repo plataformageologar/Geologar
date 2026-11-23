@@ -86,7 +86,7 @@ export const mediaTypeLabels: Record<string, string> = {
 };
 
 /** Página de edição do conteúdo que usa um arquivo (entidades de media_usage). */
-export function mediaUsageHref(entity: string, recordId: string): string | null {
+export function mediaUsageHref(entity: string, recordId: string | null, label = ""): string | null {
   switch (entity) {
     case "homepage":
       return "/admin/homepage";
@@ -98,7 +98,20 @@ export function mediaUsageHref(entity: string, recordId: string): string | null 
       return `/admin/instituicoes/${recordId}/editar`;
     case "site-logo":
     case "site-favicon":
+    case "site-footer-logo":
       return "/admin/configuracoes";
+    case "page-content":
+      return "/admin/textos-das-paginas";
+    case "custom-page":
+      return recordId ? `/admin/paginas/${recordId}` : "/admin/paginas";
+    case "page-section":
+      // Para páginas personalizadas o id é o da página; para as demais, o da seção.
+      if (label.includes("personalizada")) return recordId ? `/admin/paginas/${recordId}` : "/admin/paginas";
+      return label.includes("rede") ? "/admin/secoes?pagina=rede" : "/admin/secoes";
+    case "editorial-draft":
+    case "editorial-revision":
+      // Rascunhos e histórico: o id é o da unidade editorial.
+      return recordId ? `/admin/historico?documento=${recordId}` : null;
     default:
       return null;
   }

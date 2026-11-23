@@ -613,7 +613,7 @@ function MediaDetailDialog({
             ) : (
               <ul className="flex flex-col gap-1 text-body-sm">
                 {usage.usage.map((use) => {
-                  const href = mediaUsageHref(use.entity, use.recordId);
+                  const href = mediaUsageHref(use.entity, use.recordId, use.label);
                   return (
                     <li key={`${use.entity}-${use.recordId}`}>
                       {href ? (

@@ -9,21 +9,6 @@ export function isUuidOrNull(value: unknown): value is string | null {
 /** Versões carregadas (id, updated_at) — formato aceito pelas funções do banco. */
 export type ListVersion = { id: string; updated_at: string };
 
-export function isListVersions(value: unknown): value is ListVersion[] {
-  return (
-    Array.isArray(value) &&
-    value.length <= 100 &&
-    value.every(
-      (item) =>
-        typeof item === "object" &&
-        item !== null &&
-        isUuid((item as ListVersion).id) &&
-        typeof (item as ListVersion).updated_at === "string" &&
-        (item as ListVersion).updated_at.length <= 40,
-    )
-  );
-}
-
 /** Move o item `index` uma posição para cima (-1) ou para baixo (+1). */
 export function moveItem<T>(items: readonly T[], index: number, offset: -1 | 1): T[] {
   const target = index + offset;

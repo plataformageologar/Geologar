@@ -20,12 +20,13 @@ import { countCharacters, EMAIL_MAX_LENGTH } from "@/lib/admin/validation";
 
 import { describedBy, Field, FormMessage, FormSection, Select, TextArea, TextInput } from "../form-controls";
 import { MediaField } from "../media/media-field";
+import { useOptionalEditorial, useReportDirty } from "../editorial/editorial-scope";
 import { buildFormData, FailureAction, SaveBar, useUnsavedChangesWarning } from "../save-bar";
 
 type SiteSettingsFormProps = {
+  /** Rascunho atual (ou versão publicada); para editores, a versão publicada. */
   initialValues: SiteSettingsFormValues;
-  initialUpdatedAt: string;
-  /** Editores consultam; somente administradores salvam. */
+  /** Editores consultam; somente administradores salvam (dentro de EditorialScope). */
   readOnly: boolean;
 };
 
@@ -54,13 +55,10 @@ const emailHint = "Opcional. Exibido no rodapé e na página de contato.";
 const phoneHint = "Opcional. Gravado exatamente como digitado (ex.: +55 41 3360-0000).";
 
 /** Informações institucionais (registro único de site_settings). */
-export function SiteSettingsForm({
-  initialValues,
-  initialUpdatedAt,
-  readOnly,
-}: SiteSettingsFormProps) {
+export function SiteSettingsForm({ initialValues, readOnly }: SiteSettingsFormProps) {
+  const editorial = useOptionalEditorial();
   const [values, setValues] = useState(initialValues);
-  const [saved, setSaved] = useState({ values: initialValues, updatedAt: initialUpdatedAt });
+  const [saved, setSaved] = useState({ values: initialValues });
   const [errors, setErrors] = useState<SiteSettingsFieldErrors>({});
   const [clientMessage, setClientMessage] = useState<string | null>(null);
   const [state, formAction, pending] = useActionState<SiteSettingsSaveState, FormData>(submit, {
@@ -71,7 +69,7 @@ export function SiteSettingsForm({
   if (state !== handledState) {
     setHandledState(state);
     if (state.status === "success") {
-      setSaved({ values: state.values, updatedAt: state.updatedAt });
+      setSaved({ values: state.values });
       setValues(state.values);
       setErrors({});
     } else if (state.status === "error") {
@@ -82,12 +80,16 @@ export function SiteSettingsForm({
   const dirty = isDirty(values, saved.values);
   const submitting = useRef(false);
 
+  // Atualiza a versão do escopo editorial (pai) depois da renderização.
+  const setEditorialVersion = editorial?.setVersion;
   useEffect(() => {
     submitting.current = false;
+    if (state.status === "success") setEditorialVersion?.(state.version);
     if (state.status === "error" && state.fieldErrors) focusFirstError(state.fieldErrors);
-  }, [state]);
+  }, [state, setEditorialVersion]);
 
   useUnsavedChangesWarning(dirty && !readOnly);
+  useReportDirty("settings", dirty && !readOnly);
 
   function update(field: SiteSettingsField, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -102,7 +104,7 @@ export function SiteSettingsForm({
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (readOnly || pending || submitting.current) return;
+    if (readOnly || !editorial || pending || submitting.current) return;
     const { errors: found } = parseSiteSettingsValues(values, {
       logoPath: saved.values.logo_path || null,
       faviconPath: saved.values.favicon_path || null,
@@ -116,7 +118,7 @@ export function SiteSettingsForm({
     }
     submitting.current = true;
     setClientMessage(null);
-    const formData = buildFormData({ ...values, updated_at: saved.updatedAt });
+    const formData = buildFormData({ ...values, document: editorial.token });
     startTransition(() => formAction(formData));
   }
 
@@ -373,7 +375,9 @@ export function SiteSettingsForm({
           pending={pending}
           dirty={dirty}
           onCancel={cancel}
-          submitLabel="Salvar informações"
+          submitLabel="Salvar rascunho"
+          cancelLabel="Descartar alterações não salvas"
+          idleLabel="Nenhuma alteração fora do rascunho"
         />
       )}
     </form>

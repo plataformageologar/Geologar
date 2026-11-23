@@ -38,6 +38,203 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_pages: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          eyebrow: string | null
+          first_published_at: string | null
+          id: string
+          published_at: string | null
+          seo_description: string | null
+          seo_image_path: string | null
+          seo_title: string | null
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          eyebrow?: string | null
+          first_published_at?: string | null
+          id?: string
+          published_at?: string | null
+          seo_description?: string | null
+          seo_image_path?: string | null
+          seo_title?: string | null
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          eyebrow?: string | null
+          first_published_at?: string | null
+          id?: string
+          published_at?: string | null
+          seo_description?: string | null
+          seo_image_path?: string | null
+          seo_title?: string | null
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      editorial_documents: {
+        Row: {
+          created_at: string
+          custom_page_id: string | null
+          doc_key: string
+          doc_type: string
+          draft: Json | null
+          draft_base_revision_id: string | null
+          draft_updated_at: string | null
+          draft_updated_by: string | null
+          draft_updated_by_email: string | null
+          id: string
+          published_at: string | null
+          published_by: string | null
+          published_by_email: string | null
+          published_revision_id: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          custom_page_id?: string | null
+          doc_key: string
+          doc_type: string
+          draft?: Json | null
+          draft_base_revision_id?: string | null
+          draft_updated_at?: string | null
+          draft_updated_by?: string | null
+          draft_updated_by_email?: string | null
+          id?: string
+          published_at?: string | null
+          published_by?: string | null
+          published_by_email?: string | null
+          published_revision_id?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          custom_page_id?: string | null
+          doc_key?: string
+          doc_type?: string
+          draft?: Json | null
+          draft_base_revision_id?: string | null
+          draft_updated_at?: string | null
+          draft_updated_by?: string | null
+          draft_updated_by_email?: string | null
+          id?: string
+          published_at?: string | null
+          published_by?: string | null
+          published_by_email?: string | null
+          published_revision_id?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "editorial_documents_custom_page_id_fkey"
+            columns: ["custom_page_id"]
+            isOneToOne: true
+            referencedRelation: "custom_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "editorial_documents_draft_base_revision"
+            columns: ["draft_base_revision_id"]
+            isOneToOne: false
+            referencedRelation: "editorial_revisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "editorial_documents_published_revision"
+            columns: ["published_revision_id"]
+            isOneToOne: false
+            referencedRelation: "editorial_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      editorial_revisions: {
+        Row: {
+          author_email: string | null
+          author_id: string | null
+          base_revision_id: string | null
+          content: Json
+          created_at: string
+          document_id: string
+          id: string
+          note: string | null
+          operation: string
+          restored_from_id: string | null
+          revision_number: number
+        }
+        Insert: {
+          author_email?: string | null
+          author_id?: string | null
+          base_revision_id?: string | null
+          content: Json
+          created_at?: string
+          document_id: string
+          id?: string
+          note?: string | null
+          operation: string
+          restored_from_id?: string | null
+          revision_number: number
+        }
+        Update: {
+          author_email?: string | null
+          author_id?: string | null
+          base_revision_id?: string | null
+          content?: Json
+          created_at?: string
+          document_id?: string
+          id?: string
+          note?: string | null
+          operation?: string
+          restored_from_id?: string | null
+          revision_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "editorial_revisions_base_revision_id_fkey"
+            columns: ["base_revision_id"]
+            isOneToOne: false
+            referencedRelation: "editorial_revisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "editorial_revisions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "editorial_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "editorial_revisions_restored_from_id_fkey"
+            columns: ["restored_from_id"]
+            isOneToOne: false
+            referencedRelation: "editorial_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       homepage_content: {
         Row: {
           about_description: string | null
@@ -235,6 +432,7 @@ export type Database = {
       page_sections: {
         Row: {
           created_at: string
+          custom_page_id: string | null
           id: string
           is_visible: boolean
           page_key: string
@@ -245,6 +443,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          custom_page_id?: string | null
           id?: string
           is_visible?: boolean
           page_key: string
@@ -255,6 +454,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          custom_page_id?: string | null
           id?: string
           is_visible?: boolean
           page_key?: string
@@ -263,7 +463,15 @@ export type Database = {
           sort_order?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "page_sections_custom_page_id_fkey"
+            columns: ["custom_page_id"]
+            isOneToOne: false
+            referencedRelation: "custom_pages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       project_research_lines: {
         Row: {
@@ -769,10 +977,127 @@ export type Database = {
         Args: { p_current: Json; p_expected: Json }
         Returns: undefined
       }
+      create_custom_page: {
+        Args: { p_description: string; p_slug: string; p_title: string }
+        Returns: string
+      }
+      discard_editorial_draft: {
+        Args: { p_document_id: string; p_expected_version: number }
+        Returns: Json
+      }
+      editorial_add_revision: {
+        Args: {
+          p_base_revision_id: string
+          p_content: Json
+          p_document_id: string
+          p_note: string
+          p_operation: string
+          p_restored_from_id: string
+        }
+        Returns: {
+          author_email: string | null
+          author_id: string | null
+          base_revision_id: string | null
+          content: Json
+          created_at: string
+          document_id: string
+          id: string
+          note: string | null
+          operation: string
+          restored_from_id: string | null
+          revision_number: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "editorial_revisions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      editorial_apply_page_content: {
+        Args: { p_page_key: string; p_values: Json }
+        Returns: undefined
+      }
+      editorial_can_edit: { Args: { p_doc_type: string }; Returns: boolean }
+      editorial_document_label: {
+        Args: { p_doc_key: string; p_doc_type: string }
+        Returns: string
+      }
+      editorial_image_paths: { Args: { p_content: Json }; Returns: string[] }
+      editorial_item_list: {
+        Args: { p_allowed: string[]; p_max: number; p_value: Json }
+        Returns: boolean
+      }
+      editorial_lock_document: {
+        Args: { p_document_id: string; p_expected_version: number }
+        Returns: {
+          created_at: string
+          custom_page_id: string | null
+          doc_key: string
+          doc_type: string
+          draft: Json | null
+          draft_base_revision_id: string | null
+          draft_updated_at: string | null
+          draft_updated_by: string | null
+          draft_updated_by_email: string | null
+          id: string
+          published_at: string | null
+          published_by: string | null
+          published_by_email: string | null
+          published_revision_id: string | null
+          updated_at: string
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "editorial_documents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      editorial_page_snapshot: { Args: { p_page_key: string }; Returns: Json }
+      editorial_publish_one: {
+        Args: {
+          p_document_id: string
+          p_expected_version: number
+          p_note: string
+        }
+        Returns: Json
+      }
+      editorial_record_draft: {
+        Args: {
+          p_content: Json
+          p_document_id: string
+          p_expected_version: number
+          p_operation: string
+          p_restored_from_id: string
+        }
+        Returns: Json
+      }
+      editorial_section_versions: {
+        Args: { p_custom_page_id: string; p_page_key: string }
+        Returns: Json
+      }
+      editorial_sections_snapshot: {
+        Args: { p_custom_page_id: string; p_page_key: string }
+        Returns: Json
+      }
+      editorial_snapshot: {
+        Args: { p_doc_key: string; p_doc_type: string }
+        Returns: Json
+      }
+      editorial_text_object: {
+        Args: { p_allowed: string[]; p_value: Json }
+        Returns: boolean
+      }
       has_cms_role: { Args: { allowed_roles: string[] }; Returns: boolean }
       is_media_object_name: { Args: { value: string }; Returns: boolean }
       is_short_text: {
         Args: { max_length: number; value: Json }
+        Returns: boolean
+      }
+      is_valid_editorial_content: {
+        Args: { p_content: Json; p_doc_type: string }
         Returns: boolean
       }
       is_valid_image_reference: { Args: { value: string }; Returns: boolean }
@@ -810,10 +1135,44 @@ export type Database = {
           record_id: string
         }[]
       }
+      publish_editorial_documents: {
+        Args: { p_items: Json; p_note: string }
+        Returns: Json
+      }
+      restore_editorial_revision: {
+        Args: {
+          p_content: Json
+          p_expected_version: number
+          p_revision_id: string
+        }
+        Returns: Json
+      }
+      save_custom_page_sections: {
+        Args: { p_items: Json; p_page_id: string }
+        Returns: {
+          created_at: string
+          custom_page_id: string | null
+          id: string
+          is_visible: boolean
+          page_key: string
+          section_type: string
+          settings: Json
+          sort_order: number
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "page_sections"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      save_editorial_drafts: { Args: { p_items: Json }; Returns: Json }
       save_page_sections: {
         Args: { p_expected: Json; p_items: Json; p_page_key: string }
         Returns: {
           created_at: string
+          custom_page_id: string | null
           id: string
           is_visible: boolean
           page_key: string
@@ -964,6 +1323,14 @@ export type Database = {
         }
       }
       section_image_paths: { Args: { p_settings: Json }; Returns: string[] }
+      set_custom_page_status: {
+        Args: { p_action: string; p_page_id: string }
+        Returns: string
+      }
+      update_custom_page_slug: {
+        Args: { p_page_id: string; p_slug: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

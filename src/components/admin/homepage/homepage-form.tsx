@@ -15,12 +15,12 @@ import { countCharacters, LINK_MAX_LENGTH } from "@/lib/admin/validation";
 
 import { describedBy, Field, FormSection, TextArea, TextInput } from "../form-controls";
 import { MediaField } from "../media/media-field";
+import { useEditorial, useReportDirty } from "../editorial/editorial-scope";
 import { FailureAction, SaveBar, useUnsavedChangesWarning } from "../save-bar";
 
 type HomepageFormProps = {
+  /** Valores do rascunho atual (ou da versão publicada, sem rascunho). */
   initialValues: HomepageFormValues;
-  /** Versão do registro carregado (detecção de edição simultânea). */
-  initialUpdatedAt: string;
 };
 
 // Ordem visual dos campos (foco no primeiro erro).
@@ -71,9 +71,10 @@ function focusFirstError(errors: HomepageFieldErrors) {
  * falha ao salvar nunca apaga o que foi digitado. A validação aqui é apenas
  * para retorno imediato; a definitiva acontece na Server Action.
  */
-export function HomepageForm({ initialValues, initialUpdatedAt }: HomepageFormProps) {
+export function HomepageForm({ initialValues }: HomepageFormProps) {
+  const editorial = useEditorial();
   const [values, setValues] = useState(initialValues);
-  const [saved, setSaved] = useState({ values: initialValues, updatedAt: initialUpdatedAt });
+  const [saved, setSaved] = useState({ values: initialValues });
   const [errors, setErrors] = useState<HomepageFieldErrors>({});
   const [clientMessage, setClientMessage] = useState<string | null>(null);
   const [state, formAction, pending] = useActionState<HomepageSaveState, FormData>(
@@ -86,7 +87,7 @@ export function HomepageForm({ initialValues, initialUpdatedAt }: HomepageFormPr
   if (state !== handledState) {
     setHandledState(state);
     if (state.status === "success") {
-      setSaved({ values: state.values, updatedAt: state.updatedAt });
+      setSaved({ values: state.values });
       setValues(state.values);
       setErrors({});
     } else if (state.status === "error") {
@@ -99,12 +100,17 @@ export function HomepageForm({ initialValues, initialUpdatedAt }: HomepageFormPr
   // Trava síncrona contra envio duplo (dois cliques antes de `pending` renderizar).
   const submitting = useRef(false);
 
+  // A versão do escopo editorial (componente pai) só é atualizada depois da
+  // renderização: atualizar o pai durante a renderização do filho é proibido.
+  const setEditorialVersion = editorial.setVersion;
   useEffect(() => {
     submitting.current = false;
+    if (state.status === "success") setEditorialVersion(state.version);
     if (state.status === "error" && state.fieldErrors) focusFirstError(state.fieldErrors);
-  }, [state]);
+  }, [state, setEditorialVersion]);
 
   useUnsavedChangesWarning(dirty);
+  useReportDirty("homepage", dirty);
 
   function update(field: HomepageField, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -219,7 +225,8 @@ export function HomepageForm({ initialValues, initialUpdatedAt }: HomepageFormPr
 
   return (
     <form action={formAction} onSubmit={handleSubmit} noValidate className="flex flex-col gap-8">
-      <input type="hidden" name="updated_at" value={saved.updatedAt} />
+      {/* Unidade editorial e versão (conflito de edição). */}
+      <input type="hidden" name="document" value={editorial.token} />
 
       <fieldset disabled={pending} className="flex min-w-0 flex-col gap-8">
         <FormSection
@@ -289,6 +296,9 @@ export function HomepageForm({ initialValues, initialUpdatedAt }: HomepageFormPr
         pending={pending}
         dirty={dirty}
         onCancel={cancel}
+        submitLabel="Salvar rascunho"
+        cancelLabel="Descartar alterações não salvas"
+        idleLabel="Nenhuma alteração fora do rascunho"
       />
     </form>
   );

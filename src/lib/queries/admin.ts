@@ -1,4 +1,3 @@
-import { homepageFields, type HomepageRecord } from "@/lib/admin/homepage";
 import { createClient } from "@/lib/supabase/server";
 
 import { logQueryError } from "./shared";
@@ -37,38 +36,4 @@ export async function getPublishedContentCounts(): Promise<ContentCount[]> {
       return { ...table, total: error ? null : count };
     }),
   );
-}
-
-export const homepageEditColumns = [...homepageFields, "updated_at"].join(", ");
-
-export type HomepageForEdit =
-  | {
-      status: "ready";
-      record: HomepageRecord;
-      /** Versão carregada, usada para detectar edições simultâneas. */
-      updatedAt: string;
-    }
-  | { status: "missing" }
-  | { status: "error" };
-
-/**
- * Registro único de `homepage_content` para o CMS, lido com a sessão do
- * editor. Diferente de `getHomepageContent()`, nunca recorre ao fallback
- * editorial: falha de leitura e registro ausente são informados como tais.
- */
-export async function getHomepageForEdit(): Promise<HomepageForEdit> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("homepage_content")
-    .select(homepageEditColumns)
-    .maybeSingle<HomepageRecord & { updated_at: string }>();
-
-  if (error) {
-    logQueryError("homepage_content (CMS)", error);
-    return { status: "error" };
-  }
-  if (!data) return { status: "missing" };
-
-  const { updated_at, ...record } = data;
-  return { status: "ready", record, updatedAt: updated_at };
 }

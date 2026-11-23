@@ -420,12 +420,60 @@ Regras no banco:
 - Funções `save_site_pillars`, `save_site_navigation` e `save_page_sections`
   (SECURITY INVOKER, sujeitas a RLS) gravam a lista inteira numa transação e
   recusam com `GL409` se algum par `(id, updated_at)` mudou
-  (`assert_list_unchanged`).
+  (`assert_list_unchanged`). **Aposentadas na Etapa 9.6**: o guarda editorial
+  recusa a gravação delas (`GL403`); o conteúdo só muda pelo fluxo de
+  rascunho e publicação.
 - Políticas com `has_cms_role(...)`; nenhuma usa `USING (true)` para escrita
   nem SECURITY DEFINER.
 
 Testes: `supabase/tests/database/visual_editor_customization.test.sql`
 (pgTAP, em transação desfeita no final).
+
+## Etapa 9.6 — rascunhos, publicação, histórico e páginas personalizadas
+
+Migrations `20261123120000_editorial_drafts_revisions_custom_pages.sql` e
+`20261123120500_editorial_write_guard.sql`. As tabelas da Etapa 9.5, mais
+`homepage_content` e `site_settings`, continuam sendo a **versão publicada**
+(o site público só lê delas). Detalhes do fluxo em
+[`editorial-workflow.md`](editorial-workflow.md) e
+[`custom-pages.md`](custom-pages.md).
+
+| Tabela | Conteúdo | Leitura | Escrita |
+| --- | --- | --- | --- |
+| `editorial_documents` | Uma linha por unidade (`doc_type`, `doc_key`): `draft` JSONB, `version`, revisão publicada, autor e data do rascunho e da publicação | admin/editor ativos (editor não lê `navigation`, `appearance`, `settings`) | só pelas RPCs do fluxo |
+| `editorial_revisions` | Histórico imutável: `revision_number`, `operation` (`draft_saved`, `published`, `restored`), `content` completo, autor, nota (≤ 300), origem da restauração | admin/editor ativos | só inclusão, pelas RPCs |
+| `custom_pages` | Páginas `/paginas/<slug>`: slug único (3–100, minúsculas e hífens), `status` (`draft`, `published`, `archived`), título, introdução, SEO, `first_published_at`, `archived_at` | visitantes: só `published`; CMS: todas | só pelas RPCs |
+| `page_sections` (+) | `custom_page_id`; `page_key = 'custom'` exige a página e aceita só blocos | blocos de páginas personalizadas só com a página publicada | só pelas RPCs |
+
+Funções (todas SECURITY INVOKER, `search_path` vazio, `EXECUTE` apenas para
+`authenticated`):
+
+| Função | Faz |
+| --- | --- |
+| `save_editorial_drafts(p_items)` | Grava rascunhos de várias unidades numa transação (cada item: id, versão esperada, conteúdo) |
+| `publish_editorial_documents(p_items, p_note)` | Aplica os rascunhos às tabelas publicadas e registra a revisão `published` — tudo ou nada |
+| `discard_editorial_draft(p_document_id, p_expected_version)` | Remove o rascunho |
+| `restore_editorial_revision(p_revision_id, p_expected_version, p_content)` | Revisão antiga → novo rascunho (`restored`) |
+| `create_custom_page(p_title, p_slug, p_description)` | Cria página, documento e revisão 1 |
+| `update_custom_page_slug(p_page_id, p_slug)` | Muda o endereço; recusa (`GL423`) depois da primeira publicação |
+| `set_custom_page_status(p_page_id, p_action)` | `unpublish`, `archive`, `unarchive` (admin para páginas já publicadas) |
+| `editorial_guard()` (trigger) | Recusa INSERT/UPDATE/DELETE de `anon`/`authenticated` nas tabelas editoriais fora das RPCs (`GL403`) |
+
+Regras:
+
+- Conteúdo dos rascunhos validado no banco por tipo
+  (`is_valid_editorial_content`) além da validação no servidor.
+- Conflito pela `version` da unidade (`GL409`); publicar sem rascunho `GL404`;
+  imagem ausente `GL422`; estado inválido `GL423`.
+- `media_usage` considera imagens citadas em rascunhos e revisões.
+- Chaves estrangeiras `on delete restrict`; nenhum registro é excluído pelo
+  fluxo (páginas são arquivadas, não apagadas).
+- A migração criou um documento por unidade com a revisão 1 (“Versão
+  publicada inicial”) a partir do conteúdo existente.
+
+Testes: `supabase/tests/database/editorial_workflow.test.sql` (pgTAP, 61
+verificações, transação desfeita). Os testes anteriores ligam
+`geologar.editorial_write` na transação quando preparam dados diretamente.
 
 ## Ainda não implementado
 

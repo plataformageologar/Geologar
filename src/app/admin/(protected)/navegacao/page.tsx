@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 
 import { FormMessage } from "@/components/admin/form-controls";
+import { CustomPagesHelp } from "@/components/admin/editorial/custom-pages-help";
+import { EditorialScope } from "@/components/admin/editorial/editorial-scope";
 import { NavigationEditor } from "@/components/admin/site/cms-editors";
 import { HiddenBadge } from "@/components/admin/site/list-controls";
 import { LoadError, PageTabs, SitePageIntro } from "@/components/admin/site/page-intro";
 import { requireAdminAccess } from "@/lib/auth/access";
+import { toNavDrafts } from "@/lib/editorial/content";
+import { docInfo, getCustomPagesForAdmin, getEditorialDocument } from "@/lib/queries/editorial";
 import { getNavigationForEdit } from "@/lib/queries/site-config";
 import { NAV_LOCATION_LABELS, NAV_LOCATIONS, type NavLocation } from "@/lib/site/navigation";
 import { firstParam } from "@/lib/utils/search-params";
@@ -24,7 +28,12 @@ export default async function NavigationPage({ searchParams }: PageProps<"/admin
     ? (param as NavLocation)
     : "header";
 
-  const navigation = await getNavigationForEdit();
+  // Administradores editam o rascunho; editores só consultam a versão publicada.
+  const [doc, navigation, customPages] = await Promise.all([
+    isAdmin ? getEditorialDocument("navigation", "navigation") : null,
+    isAdmin ? null : getNavigationForEdit(),
+    getCustomPagesForAdmin(),
+  ]);
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
@@ -50,10 +59,22 @@ export default async function NavigationPage({ searchParams }: PageProps<"/admin
         </FormMessage>
       )}
 
-      {navigation.status === "error" ? (
+      {isAdmin ? (
+        doc?.status === "ready" && doc.data ? (
+          <EditorialScope
+            key={location}
+            doc={docInfo(doc.data)}
+            canPublish
+            previewHref="/admin/editor?pagina=%2F"
+            loginNext={`/admin/navegacao?menu=${location}`}
+          >
+            <NavigationEditor location={location} initial={toNavDrafts(doc.data.current[location] ?? [])} />
+          </EditorialScope>
+        ) : (
+          <LoadError subject="os menus" />
+        )
+      ) : navigation?.status !== "ready" ? (
         <LoadError subject="os menus" />
-      ) : isAdmin ? (
-        <NavigationEditor key={location} location={location} initial={navigation.data[location]} />
       ) : (
         <ol className="flex flex-col gap-3">
           {navigation.data[location].items.map((item, index) => (
@@ -70,6 +91,8 @@ export default async function NavigationPage({ searchParams }: PageProps<"/admin
           ))}
         </ol>
       )}
+
+      <CustomPagesHelp pages={customPages.status === "ready" ? customPages.data : null} />
     </div>
   );
 }
