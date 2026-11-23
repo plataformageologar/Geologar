@@ -19,7 +19,7 @@
 // Validação compartilhada
 // -----------------------------------------------------------------------------
 
-export const PASSWORD_MIN_LENGTH = 12;
+export const PASSWORD_MIN_LENGTH = 8;
 /** Limite do bcrypt usado pelo Supabase Auth (bytes em UTF-8). */
 export const PASSWORD_MAX_BYTES = 72;
 export const EMAIL_MAX_LENGTH = 254;
@@ -40,7 +40,7 @@ export function normalizeEmail(value: unknown): string | null {
 export type PasswordProblem = "too-short" | "too-long" | "weak" | "contains-email";
 
 /**
- * Política de senha do CMS: pelo menos 12 caracteres, no máximo 72 bytes,
+ * Política de senha do CMS: pelo menos 8 caracteres, no máximo 72 bytes,
  * três dos quatro tipos (minúscula, maiúscula, número, símbolo) e sem conter
  * a parte local do e-mail. O Supabase Auth aplica, além disso, a própria
  * configuração do projeto.

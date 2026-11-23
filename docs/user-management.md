@@ -160,7 +160,7 @@ fez, a conta alvo, o e-mail alvo e a data. **Nunca** senhas nem tokens.
 - Tratadas exclusivamente pelo Supabase Auth. Nenhuma coluna de senha ou hash
   nas tabelas do CMS; nada em `localStorage`, URL, logs, analytics, mensagens
   de erro ou e-mail.
-- Política: ≥ 12 caracteres, ≤ 72 bytes, três de quatro tipos (minúscula,
+- Política: ≥ 8 caracteres, ≤ 72 bytes, três de quatro tipos (minúscula,
   maiúscula, número, símbolo), sem o nome do e-mail. O Auth aplica também a
   configuração do projeto.
 - A senha inicial não é exibida depois do cadastro. O Administrador a

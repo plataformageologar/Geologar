@@ -49,10 +49,10 @@ export const editorFilters: { param: string; label: string; value: EditorFilter 
 ];
 
 export const PASSWORD_RULES =
-  "Pelo menos 12 caracteres, combinando três destes tipos: letra minúscula, letra maiúscula, número e símbolo.";
+  "Pelo menos 8 caracteres, combinando três destes tipos: letra minúscula, letra maiúscula, número e símbolo.";
 
 const passwordMessages: Record<PasswordProblem, string> = {
-  "too-short": "A senha deve ter pelo menos 12 caracteres.",
+  "too-short": "A senha deve ter pelo menos 8 caracteres.",
   "too-long": "A senha é longa demais. Use até 72 caracteres simples.",
   weak: "Use pelo menos três destes tipos: letra minúscula, letra maiúscula, número e símbolo.",
   "contains-email": "A senha não pode conter o nome do e-mail.",

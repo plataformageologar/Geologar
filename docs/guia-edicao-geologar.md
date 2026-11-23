@@ -195,7 +195,7 @@ esta tela; contas de administradores não são alteradas por ela.
 1. Entre como Administrador.
 2. Abra **Usuários e permissões**.
 3. Clique em **Adicionar Editor**.
-4. Informe o e-mail e uma **senha inicial** forte (pelo menos 12 caracteres,
+4. Informe o e-mail e uma **senha inicial** forte (pelo menos 8 caracteres,
    misturando letras maiúsculas, minúsculas, números ou símbolos) e repita a
    senha em **Confirmar senha**.
 5. Clique em **Criar Editor**. A mensagem “Editor criado com sucesso” confirma

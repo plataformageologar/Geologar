@@ -217,6 +217,8 @@ describe("validação compartilhada", () => {
 
   it("exige senha forte", () => {
     assert.equal(passwordProblem("Curta-1"), "too-short");
+    // Limite: 7 caracteres recusados, 8 aceitos (com três tipos).
+    assert.equal(passwordProblem("Curta-12"), null);
     assert.equal(passwordProblem("somenteletrasminusculas"), "weak");
     assert.equal(passwordProblem("a".repeat(30) + "A1!" + "é".repeat(30)), "too-long");
     assert.equal(passwordProblem("Mariana-Silva-2026", "mariana@example.test"), "contains-email");
