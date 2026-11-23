@@ -72,9 +72,28 @@ papel a cada chamada):
 | Editor | Salva/publica conteúdo editorial; **não** salva, publica, descarta nem restaura navegação, aparência ou informações institucionais; não arquiva página já publicada (pgTAP, arquivo `editorial_security`). |
 | Administrador | Fluxo completo; links `javascript:`, `data:` e `//host` recusados no menu (pgTAP). |
 
-**Interface com a conta editor**: **não testada nesta etapa** — exige login
-da própria pessoa no navegador (ver seção 9). As regras do papel estão
-cobertas pelo banco e pelo servidor.
+**Interface com a conta editor** (produção, 23/11/2026; a pessoa entrou com
+a própria senha, sem salvar nem publicar nada):
+
+- Menu lateral completo, papel exibido como “Editor”.
+- Homepage, Seções, Pilares e Textos das páginas: campos editáveis, botões de
+  salvar/publicar desativados enquanto não há alteração.
+- Navegação, Informações institucionais, Aparência e Redes sociais: somente
+  consulta, com aviso de que a alteração é restrita a administradores
+  (formulário desativado).
+- Biblioteca de mídia: exclusão restrita a administradores.
+- Histórico de versões: lista só os conteúdos editoriais (sem navegação,
+  aparência ou configurações); página arquivada marcada “(arquivada)”.
+- Editor visual: o cabeçalho mostra “Somente administradores alteram esta
+  parte do site”; o banner abre o painel editável; editar o título mostra
+  “Alterações não salvas” e atualiza a tela na hora, com **Publicar**
+  desativado; “Descartar não salvas” volta ao texto publicado (“Publicado, sem
+  alterações”).
+- Conferido no banco (somente leitura): nenhum rascunho nem revisão gravado
+  durante o teste.
+
+Salvar e publicar com a conta editor não foi exercitado pela interface (para
+não alterar conteúdo real); essas permissões estão cobertas por pgTAP.
 
 **Fluxo editorial**: gravação direta nas tabelas publicadas, em
 `editorial_documents`, em `custom_pages` (status) e chamadas diretas às
@@ -231,8 +250,8 @@ serviço de imagens entrega o tamanho certo para telas de alta densidade.
 
 ## 9. Não verificado nesta etapa
 
-- Interface com uma conta **editor** (exige que a pessoa entre com a própria
-  senha no navegador).
+- Salvar e publicar pela interface com a conta **editor** (telas e permissões
+  de consulta foram verificadas; ver seção 3).
 - Cenário “conta inativa” pela interface (coberto por pgTAP).
 - Envio real do formulário de contato (produção continua com o formulário
   oculto; ativação depende da GeoLogar).

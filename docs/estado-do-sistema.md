@@ -168,6 +168,7 @@ Ver [`database-schema.md`](database-schema.md).
 | Build OpenNext e `opennextjs-cloudflare preview` | OK |
 | `npm audit --omit=dev` | 0 vulnerabilidades |
 | Fluxo editorial no navegador (sessão admin) | Rascunho, descarte, restauração, criar/publicar/despublicar/arquivar página, conflito entre abas, editor visual |
+| Interface com conta editor (produção, sem gravar) | Permissões e avisos corretos; editor visual edita e descarta sem salvar |
 | Responsivo (6 tamanhos × 16 páginas públicas e do CMS) | Sem rolagem horizontal |
 | Verificação automática de acessibilidade (14 páginas) | Sem problemas (não é auditoria WCAG) |
 
@@ -175,9 +176,9 @@ Ver [`database-schema.md`](database-schema.md).
 
 ### Técnicas
 
-- Interface com uma conta de papel **editor** real ainda não testada (regras
-  cobertas por pgTAP e pelo servidor); depende de a pessoa entrar com a
-  própria senha.
+- Salvar e publicar pela interface com a conta **editor** ainda não
+  exercitados (telas, avisos de somente consulta e editor visual verificados
+  em 23/11/2026; permissões de gravação cobertas por pgTAP).
 - Melhoria opcional: revogar `EXECUTE` das funções antigas de gravação
   (hoje barradas pela guarda `GL403`).
 - `npm audit` acusa itens só em ferramentas de build e lint (cadeia `glob`
