@@ -56,6 +56,11 @@ uma frase de descrição e imagem provisória): **DETEC BEGE – FASE II**,
 
 ## Publicações
 
+> **Etapa 10.7:** três **referências provisórias** do conceito visual estão
+> publicadas (“Autores a confirmar”, periódico “(a confirmar)”, sem DOI).
+> Substituir pelos dados oficiais ou despublicar. Ver
+> [`visual-refinement.md`](visual-refinement.md#publicações-provisórias).
+
 O cadastro é responsabilidade da equipe GeoLogar (Publicações → Nova
 publicação). As três referências do mockup não foram importadas.
 
@@ -68,10 +73,10 @@ publicação). As três referências do mockup não foram importadas.
 
 ## Instituições
 
-As 22 instituições da referência estão cadastradas como **rascunho** em 5
-categorias (Parceiras (Universidades), Colaboradoras (Pesquisa), Apoio
-institucional, Empresarial, Internacionais), só com nome e sigla. Nada
-aparece no site até a publicação. Lista e logotipos em
+As 22 instituições da referência estão **publicadas** (autorização de
+24/11/2026) em 5 categorias (Parceiras (Universidades), Colaboradoras
+(Pesquisa), Apoio institucional, Empresarial, Internacionais), só com nome e
+sigla. Lista e logotipos em
 [`visual-refinement.md`](visual-refinement.md#instituições-cadastradas).
 
 - [ ] Confirmar os vínculos (a presença de um logotipo no mockup não confirma
@@ -83,8 +88,6 @@ aparece no site até a publicação. Lista e logotipos em
       enviar os 10 que faltam (CIENAM UFBA, CBPM, CETEM, SDE Bahia, Museu
       Geológico da Bahia, Associação dos Astrônomos da Bahia, CAPES, CNPq,
       FAPESB, ASSOBEGE).
-- [ ] Autorizar a publicação, instituição por instituição, em
-      *Instituições*.
 
 ## Identidade visual (Etapa 10.7)
 

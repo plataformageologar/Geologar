@@ -12,7 +12,7 @@ e preparação para homologação). Resultados completos em
 
 | | |
 |---|---|
-| Etapas concluídas | 1 a 10.7 (aparência e homepage da 10.7 publicadas; instituições da referência em rascunho) |
+| Etapas concluídas | 1 a 10.7 (aparência, homepage, 22 instituições, 3 projetos e 3 publicações provisórias publicados) |
 | Último commit | `feat: add reference institutions and demo preview composition` |
 | Site em produção | <https://geologar.plataformageologar.workers.dev> (sem domínio próprio) |
 | Deploy | Automático a cada push em `main` (Cloudflare Workers Builds, Worker `geologar`) |
@@ -221,8 +221,9 @@ Ver [`database-schema.md`](database-schema.md).
 
 ### Da GeoLogar
 
-- **Etapa 10.7:** aparência e homepage publicadas em 24/11/2026; falta
-  confirmar e publicar as 22 instituições;
+- **Etapa 10.7:** tudo publicado em 24/11/2026 com autorização; falta
+  substituir as 3 publicações provisórias pelas oficiais, confirmar os dados
+  dos 3 projetos e os vínculos das 22 instituições;
   logotipos oficiais e autorização de uso das marcas (12 provisórios, 10
   ausentes). Ver [`visual-refinement.md`](visual-refinement.md#pendências).
 

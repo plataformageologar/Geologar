@@ -48,8 +48,11 @@ Use, se possível, um computador e um celular.
 - [ ] A página inicial mostra a aparência “Referência GeoLogar” (publicada
       em 24/11/2026): banner com o nome em destaque, linhas com fotos,
       títulos em caixa alta com marcador e rodapé marrom.
-- [ ] Em *Demonstração*, as 22 instituições em rascunho, suas categorias e
-      os logotipos provisórios foram conferidos.
+- [ ] As 22 instituições publicadas, suas categorias e os logotipos
+      provisórios foram conferidos.
+- [ ] As 3 publicações provisórias (“a confirmar”) foram substituídas pelas
+      referências oficiais, e os 3 projetos tiveram situação e dados
+      confirmados.
 
 ## 3. Entrar na área de edição
 

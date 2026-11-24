@@ -141,7 +141,11 @@ Relação original da referência, para conferência da equipe:
 | ACV e Fluxo de Massas | `acv-e-fluxo-de-massas` | Análise de ciclo de vida e fluxo de massas na cadeia de rochas ornamentais da Bahia. | A confirmar | Recorte do mockup |
 | EXPOGEO Virtual | `expogeo-virtual` | Divulgação das geociências em ambiente virtual. | A confirmar | Recorte do mockup |
 
-Não publicados, não destacados e sem linha de pesquisa vinculada (a
+> **Atualização (Etapa 10.7):** publicados e destacados em 24/11/2026 com
+> autorização da GeoLogar; situação “Em andamento” provisória. Ver
+> [`visual-refinement.md`](visual-refinement.md#projetos).
+
+Situação original: não publicados, não destacados e sem linha de pesquisa vinculada (a
 correspondência não foi inferida). Coordenação, período, financiamento,
 resultados e descrição completa ficaram vazios. Aparecem apenas em
 `/admin/projetos` e na prévia protegida `/admin/demonstracao`.
