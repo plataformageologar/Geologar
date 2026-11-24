@@ -45,9 +45,9 @@ Use, se possível, um computador e um celular.
 - [ ] O cabeçalho mostra o logotipo, o campo **Buscar no site** e o botão
       verde **Login / Área restrita**; no celular, ambos ficam no menu.
 - [ ] Uma busca (por exemplo, “geologia”) mostra só conteúdo publicado.
-- [ ] No editor visual, a aparência “Referência GeoLogar” e a homepage em
-      rascunho (banner com o nome em destaque, linhas com fotos, projetos ao
-      lado das publicações) estão aprovadas para publicação.
+- [ ] A página inicial mostra a aparência “Referência GeoLogar” (publicada
+      em 24/11/2026): banner com o nome em destaque, linhas com fotos,
+      títulos em caixa alta com marcador e rodapé marrom.
 - [ ] Em *Demonstração*, as 22 instituições em rascunho, suas categorias e
       os logotipos provisórios foram conferidos.
 

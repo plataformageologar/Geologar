@@ -12,7 +12,7 @@ e preparação para homologação). Resultados completos em
 
 | | |
 |---|---|
-| Etapas concluídas | 1 a 10.7 (aparência, homepage e instituições da 10.7 em rascunho, aguardando publicação) |
+| Etapas concluídas | 1 a 10.7 (aparência e homepage da 10.7 publicadas; instituições da referência em rascunho) |
 | Último commit | `feat: add reference institutions and demo preview composition` |
 | Site em produção | <https://geologar.plataformageologar.workers.dev> (sem domínio próprio) |
 | Deploy | Automático a cada push em `main` (Cloudflare Workers Builds, Worker `geologar`) |
@@ -182,6 +182,7 @@ Ver [`database-schema.md`](database-schema.md).
 | Testes de banco pgTAP (12 arquivos, no banco remoto, transação desfeita) | 465/465 (refinamento visual: 31; instituições da referência: 9) |
 | Playwright no preview local (Etapa 10.7) | 40 aprovados, 6 ignorados de propósito (inclui cabeçalho, busca e `/busca`) |
 | Responsivo com o preset (Etapa 10.7: 7 tamanhos × 8 páginas) | Sem rolagem horizontal |
+| Etapa 10.7 em produção | Aparência (revisão 3) e homepage (revisão 8) publicadas pela interface; Playwright contra produção: 40 aprovados, 6 ignorados |
 | Testes ponta a ponta do visitante (`npm run test:e2e`, Playwright) | 34/34 no preview local (8 ignorados: 6 de propósito e 2 da seção de experiências, ainda não publicada naquele momento); testes das experiências contra produção depois da publicação: 4/4 |
 | Edge Function publicada, sem sessão / chave publicável / JWT forjado | 401 |
 | Build OpenNext e `opennextjs-cloudflare preview` | OK |
@@ -220,8 +221,8 @@ Ver [`database-schema.md`](database-schema.md).
 
 ### Da GeoLogar
 
-- **Etapa 10.7:** revisar e publicar a aparência “Referência GeoLogar” e a
-  homepage (em rascunho); confirmar e publicar as 22 instituições;
+- **Etapa 10.7:** aparência e homepage publicadas em 24/11/2026; falta
+  confirmar e publicar as 22 instituições;
   logotipos oficiais e autorização de uso das marcas (12 provisórios, 10
   ausentes). Ver [`visual-refinement.md`](visual-refinement.md#pendências).
 

@@ -8,31 +8,30 @@ Situação em **24/11/2026**:
 
 | Item | Situação |
 |---|---|
-| Código (cabeçalho, busca, layouts, preset, opções de seção) | Publicado (commit `1fce9ca` e seguinte) |
-| Aparência “Referência GeoLogar” | **Rascunho** em `/admin/aparencia` — aguarda publicação pela GeoLogar |
-| Homepage (textos do banner, ordem e opções das seções) | **Rascunho** em `/admin/homepage` e `/admin/secoes` — aguarda publicação |
+| Código (cabeçalho, busca, layouts, preset, opções de seção) | Em produção (commits `1fce9ca` e `6728be6`) |
+| Aparência “Referência GeoLogar” | **Publicada** pela interface em 24/11/2026, 12:02 (revisão 3 da aparência), com autorização da GeoLogar |
+| Homepage (textos do banner, ordem e opções das seções) | **Publicada** pela interface em 24/11/2026, 12:02 (revisão 8 da página inicial), com autorização da GeoLogar |
 | 5 categorias e 22 instituições da referência | Cadastradas como **rascunho** (nada aparece no site) |
 | 12 logotipos provisórios | Na biblioteca de mídia e associados aos rascunhos |
 
-Nada foi publicado automaticamente: o site público continua com a aparência
-e a homepage publicadas na revisão anterior até a equipe publicar.
+Aparência e homepage foram salvas como rascunho, revisadas no editor visual
+e publicadas só depois da autorização. As versões anteriores ficam no
+histórico e podem ser restauradas. As instituições continuam em rascunho.
 
 ## Antes e depois
 
 | | 390 px | 1024 px | 1440 px | 1920 px |
 |---|---|---|---|---|
 | Antes (produção, antes da etapa) | [antes-390](visual-refinement/antes-390.jpg) | [antes-1024](visual-refinement/antes-1024.jpg) | [antes-1440](visual-refinement/antes-1440.jpg) | [antes-1920](visual-refinement/antes-1920.jpg) |
-| Depois — preset aplicado sobre o conteúdo publicado | [depois-preset-390](visual-refinement/depois-preset-390.jpg) | [depois-preset-1024](visual-refinement/depois-preset-1024.jpg) | [depois-preset-1440](visual-refinement/depois-preset-1440.jpg) | [depois-preset-1920](visual-refinement/depois-preset-1920.jpg) |
+| Depois (produção, após a publicação) | [depois-390](visual-refinement/depois-390.jpg) | [depois-1024](visual-refinement/depois-1024.jpg) | [depois-1440](visual-refinement/depois-1440.jpg) | [depois-1920](visual-refinement/depois-1920.jpg) |
+| Intermediário — preset sobre a homepage anterior (preview local) | [depois-preset-390](visual-refinement/depois-preset-390.jpg) | [depois-preset-1024](visual-refinement/depois-preset-1024.jpg) | [depois-preset-1440](visual-refinement/depois-preset-1440.jpg) | [depois-preset-1920](visual-refinement/depois-preset-1920.jpg) |
 
-As capturas “depois-preset” foram feitas no preview local (build de produção)
-com o CSS do preset injetado, porque a aparência ainda é rascunho. Elas
-mostram o novo cabeçalho, a paleta, os títulos institucionais, as linhas de
-pesquisa com foto e o rodapé, mas ainda com o banner e a ordem de seções
-publicados. A composição completa (banner com o nome em destaque, nova ordem,
-projetos ao lado das publicações e instituições em rascunho) pode ser vista
-no **editor visual** (`/admin/editor`) e na **prévia de demonstração**
-(`/admin/demonstracao`). Depois da publicação, as capturas finais
-(`depois-*.jpg`) serão feitas no site em produção.
+As capturas “depois” são do site em produção depois da publicação. Projetos,
+publicações e instituições não aparecem porque ainda não há registros
+publicados (as seções sem conteúdo não são renderizadas); a composição com
+as instituições em rascunho e seus logotipos pode ser vista na **prévia de
+demonstração** (`/admin/demonstracao`). As capturas “depois-preset” foram
+feitas antes da publicação, no preview local com o CSS do preset injetado.
 
 ## Identidade visual
 
@@ -199,15 +198,15 @@ fluxo editorial, sem desativar o `editorial_guard`) e suíte pgTAP
 | Build OpenNext | OK |
 | `npm audit --omit=dev` | 0 vulnerabilidades |
 | Rolagem horizontal (8 páginas × 375, 390, 768, 1024, 1280, 1440, 1920 px, com o preset) | Nenhuma |
+| Produção após a publicação | Paleta, banner e ordem das seções conferidos no HTML; Playwright contra produção: 40 aprovados, 6 ignorados de propósito; nenhuma instituição em rascunho exposta |
 
 ## Pendências
 
 | Tipo | Pendência |
 |---|---|
-| Aprovação | Publicar a aparência e a homepage em rascunho depois da revisão no editor visual. |
 | Conteúdo | Confirmar vínculos, nomes, sites e categorias das 22 instituições antes de publicá-las. |
 | Marca | Logotipos oficiais (de preferência vetoriais) e autorização de uso das 22 marcas; substituir os 12 provisórios e enviar os 10 ausentes. |
 | Imagem | Fotografia autorizada para o banner (Bege Bahia ou outra) e fotos das linhas em resolução maior. |
 | Conteúdo | Publicações reais (as do mockup não foram conferidas) e os 3 projetos em rascunho. |
 | Rodapé | Contatos oficiais, redes sociais e textos jurídicos. |
-| Evidência | Capturas finais `depois-*.jpg` no site em produção depois da publicação. |
+| Conteúdo | Com projetos, publicações e instituições publicados, conferir a seção “Projetos + Publicações” lado a lado e a de instituições no site. |

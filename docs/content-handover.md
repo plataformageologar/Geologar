@@ -88,8 +88,8 @@ aparece no site até a publicação. Lista e logotipos em
 
 ## Identidade visual (Etapa 10.7)
 
-- [ ] Revisar no editor visual a aparência “Referência GeoLogar” e a
-      homepage em rascunho e autorizar a publicação.
+- [x] Aparência “Referência GeoLogar” e homepage revisadas e publicadas
+      (24/11/2026).
 - [ ] Fotografia autorizada para o banner (por exemplo, do Bege Bahia); hoje
       o banner usa o fundo padrão.
 
