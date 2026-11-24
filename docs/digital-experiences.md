@@ -16,6 +16,12 @@ A migration `20261124120000_digital_experiences_section.sql` cria a seção no
 **rascunho** da página inicial (não publica). Um administrador ou Editor
 revisa e publica pelo fluxo editorial normal.
 
+**Publicação em produção (24/11/2026):** a página inicial foi publicada por
+um administrador em `/admin/experiencias` (revisão 5, observação “Etapa
+10.6: publica a seção Experiências digitais (Bege Bahia e segunda
+experiência em breve).”), com a aprovação da equipe para o endereço e os
+textos. Ver [Validação em produção](#validação-em-produção-24112026).
+
 | Campo | Texto inicial |
 | --- | --- |
 | Sobretítulo | Divulgação científica |
@@ -45,9 +51,9 @@ momento.
 
 **Endereço:** verificado manualmente (HTTP 200; a tela inicial e a primeira
 cena do tour carregaram). O README do repositório `Geologar-2` o descreve
-como a versão usada para testes no GitHub Pages: **confirme com a equipe
-responsável que este é o endereço definitivo antes de publicar** (ou troque
-pelo endereço oficial no CMS).
+como a versão usada para testes no GitHub Pages; a equipe aprovou a
+publicação com este endereço em 24/11/2026. Se o endereço oficial mudar,
+basta trocá-lo no CMS e publicar.
 
 O segundo card é um espaço reservado: fica “Em breve”, sem link. Ver
 “Como preencher a segunda experiência” no
@@ -182,3 +188,14 @@ publicado.
   com `noopener noreferrer`, aviso de nova aba e nenhum iframe.
 - Responsivo: 375×812, 390×844, 768×1024, 1024×768, 1280×720 e 1440×900 sem
   rolagem horizontal.
+
+## Validação em produção (24/11/2026)
+
+| Verificação | Resultado |
+| --- | --- |
+| Migration aplicada | Rascunho da `home` com a seção logo após o banner; publicado inalterado até a publicação |
+| pgTAP no banco de produção (transação desfeita) | 424/424 (10 arquivos) |
+| Deploy (Workers Builds) do commit `0b26643` | Sucesso |
+| Publicação pela interface (sessão admin) | Revisão 5; resumo passa a “Publicada” para os dois cards |
+| Site público | Seção `#experiencias` entre o banner e “A Rede”; 2 cards; link do Bege Bahia `https://…/Geologar-2/` com `target="_blank"`, `rel="noopener noreferrer"` e nome “Iniciar experiência: Bege Bahia (abre em nova aba)”; segundo card “Em breve” sem link; capa carregada; nenhum iframe; sem rolagem horizontal |
+| E2E das experiências contra produção (`E2E_BASE_URL`) | 4/4 (computador e celular) |

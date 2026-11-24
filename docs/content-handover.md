@@ -106,15 +106,13 @@ definidos (detalhes em [`contact-form.md`](contact-form.md#checklist-de-ativaç�
 
 ## Experiências digitais (Etapa 10.6)
 
-A página inicial tem uma seção pronta, no rascunho, com duas experiências.
+A página inicial tem a seção publicada (24/11/2026) com duas experiências.
 Ver [`digital-experiences.md`](digital-experiences.md).
 
-- [ ] Confirmar que `https://bernardo-aeonvr.github.io/Geologar-2/` é o
-      endereço definitivo da experiência **Bege Bahia** (o repositório o
-      descreve como versão de testes no GitHub Pages) ou informar o endereço
-      oficial.
-- [ ] Aprovar os textos da seção e do card Bege Bahia (título, descrição,
-      “Experiência imersiva 360°”).
+- [x] Endereço da experiência **Bege Bahia**
+      (`https://bernardo-aeonvr.github.io/Geologar-2/`) aprovado para
+      publicação. Informar se o endereço oficial mudar.
+- [x] Textos da seção e do card Bege Bahia aprovados para publicação.
 - [ ] Aprovar a capa do Bege Bahia (enquadramento de um panorama da própria
       experiência) ou enviar uma captura oficial em 16:9 com autorização de
       uso.

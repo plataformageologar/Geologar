@@ -45,7 +45,7 @@ formulário de contato (ver [`contact-form.md`](contact-form.md)).
 
 | Página | Rota | Situação |
 |---|---|---|
-| Início | `/` | No ar; seções e blocos configuráveis; seção “Experiências digitais” pronta no rascunho, aguardando publicação (Etapa 10.6, ver [`digital-experiences.md`](digital-experiences.md)) |
+| Início | `/` | No ar; seções e blocos configuráveis; seção “Experiências digitais” publicada em 24/11/2026 (Etapa 10.6, ver [`digital-experiences.md`](digital-experiences.md)) |
 | A Rede | `/rede` | No ar; pilares e seções configuráveis |
 | Pesquisa | `/pesquisa`, `/pesquisa/[slug]` | No ar |
 | Projetos | `/projetos`, `/projetos/[slug]` | No ar (filtros e paginação) |
@@ -70,7 +70,7 @@ Números vistos por um visitante (registros publicados ou visíveis):
 | Redes sociais | 0 |
 | Pilares da rede | 4 |
 | Links de menu (cabeçalho + rodapé) | 13 |
-| Seções (início + rede) | 10 |
+| Seções (início + rede) | 11 (inclui “Experiências digitais”, com 2 cards) |
 | Textos de páginas internas | 6 |
 | Páginas personalizadas | 0 (uma página de teste “Teste Etapa 9.6” ficou arquivada) |
 
@@ -179,7 +179,7 @@ Ver [`database-schema.md`](database-schema.md).
 | Lint e TypeScript | Sem erros |
 | Testes unitários (`npm test`) | 142/142 (experiências digitais: 14) |
 | Testes de banco pgTAP (10 arquivos, no banco remoto, transação desfeita) | 424/424 (experiências digitais: 48) |
-| Testes ponta a ponta do visitante (`npm run test:e2e`, Playwright) | 34/34 (8 ignorados: 6 de propósito e 2 da seção de experiências até ser publicada) |
+| Testes ponta a ponta do visitante (`npm run test:e2e`, Playwright) | 34/34 no preview local (8 ignorados: 6 de propósito e 2 da seção de experiências, ainda não publicada naquele momento); testes das experiências contra produção depois da publicação: 4/4 |
 | Edge Function publicada, sem sessão / chave publicável / JWT forjado | 401 |
 | Build OpenNext e `opennextjs-cloudflare preview` | OK |
 | `npm audit --omit=dev` | 0 vulnerabilidades |
@@ -188,6 +188,7 @@ Ver [`database-schema.md`](database-schema.md).
 | Gerenciamento de Editores em produção (conta de teste) | Criar, primeiro acesso com troca obrigatória, desativar, reativar e nova senha inicial OK; histórico sem senhas; conta de teste desativada ([detalhes](user-management.md#validação-em-produção-23112026)) |
 | Responsivo (6 tamanhos × 16 páginas públicas e do CMS) | Sem rolagem horizontal |
 | Seção de experiências digitais (6 tamanhos, 2 e 3 colunas) | Sem rolagem horizontal; 1 coluna no celular, 2 no tablet, 3 em telas largas quando configurado |
+| Experiências digitais em produção | Publicada pela interface (revisão 5); links seguros em nova aba, sem iframe ([detalhes](digital-experiences.md#validação-em-produção-24112026)) |
 | Verificação automática de acessibilidade (14 páginas) | Sem problemas (não é auditoria WCAG) |
 
 ## Pendências
@@ -216,10 +217,9 @@ Ver [`database-schema.md`](database-schema.md).
 
 ### Da GeoLogar
 
-- **Experiências digitais:** confirmar que
-  `https://bernardo-aeonvr.github.io/Geologar-2/` é o endereço definitivo do
-  Bege Bahia, revisar os textos e **publicar** a página inicial; preencher a
-  segunda experiência (ou ocultá-la) quando houver uma experiência real. Ver
+- **Experiências digitais:** preencher a segunda experiência (hoje “Em
+  breve”) ou ocultá-la quando houver uma experiência real; trocar o endereço
+  do Bege Bahia no CMS se o endereço oficial mudar. Ver
   [`guia-edicao-geologar.md`](guia-edicao-geologar.md#como-adicionar-ou-modificar-uma-experiência-digital).
 
 - Textos finais, fotografias reais e logotipos oficiais (incluindo os das
