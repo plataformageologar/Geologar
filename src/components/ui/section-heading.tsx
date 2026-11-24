@@ -47,8 +47,12 @@ export function SectionHeading({
             {eyebrow}
           </p>
         )}
-        <h2 id={id} className="text-h2">
-          {title}
+        <h2 id={id} className="section-title flex items-start gap-3 font-semibold">
+          <span
+            aria-hidden="true"
+            className={cn("section-marker mt-[0.15em] h-[0.95em] w-1 shrink-0 rounded-full", onDark ? "bg-current opacity-60" : "bg-earth")}
+          />
+          <span className="min-w-0">{title}</span>
         </h2>
         {description && (
           <p

@@ -45,8 +45,10 @@
   --ring: #1f6fb2;
   --ring-on-dark: #f2c46d;
 
-  /* Layout */
+  /* Layout: altura da barra fixa do cabeçalho (no celular, a barra inteira;
+     em telas largas, a barra de navegação) e do nível superior (lg+). */
   --header-height: 4.5rem;
+  --header-top-height: 5.75rem;
 
   /*
    * Aparência ajustável pelo CMS (Aparência do site). A tabela
@@ -57,6 +59,27 @@
   --button-radius: 9999px;
   --card-border: var(--border);
   --card-shadow: none;
+
+  /*
+   * Densidade das seções públicas (Aparência → Seções). O padrão é
+   * espaçoso; o estilo compacto (Etapa 10.7) reduz o espaço vertical e usa
+   * títulos de seção em caixa alta com um marcador terroso à esquerda.
+   */
+  --section-y: clamp(4rem, 2.8rem + 5vw, 7.5rem);
+  --section-gap: 3rem;
+  --section-title-size: var(--text-h2);
+  --section-title-transform: none;
+  --section-title-tracking: -0.01em;
+  --section-marker: none;
+
+  /* Azul da marca (nome “Geo” no cabeçalho); não é editável pelo CMS. */
+  --brand-blue: #0b3550;
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --header-height: 3.25rem;
+  }
 }
 
 @theme inline {
@@ -88,6 +111,7 @@
   --color-deep-muted: var(--deep-muted);
 
   --color-ring: var(--ring);
+  --color-brand-blue: var(--brand-blue);
 
   --font-sans: var(--font-source-sans), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--heading-font);
@@ -138,7 +162,25 @@
 
 /* Espaçamento vertical padrão entre seções */
 @utility section-y {
-  padding-block: clamp(4rem, 2.8rem + 5vw, 7.5rem);
+  padding-block: var(--section-y);
+}
+
+/* Espaço entre o título de uma seção e o conteúdo. */
+@utility section-gap {
+  margin-top: var(--section-gap);
+}
+
+/* Título de seção (h2) conforme a densidade escolhida em Aparência. */
+@utility section-title {
+  font-size: var(--section-title-size);
+  line-height: 1.15;
+  letter-spacing: var(--section-title-tracking);
+  text-transform: var(--section-title-transform);
+}
+
+/* Marcador terroso à esquerda do título (somente no estilo compacto). */
+@utility section-marker {
+  display: var(--section-marker);
 }
 
 /* Borda e sombra dos cards, conforme o estilo escolhido em Aparência. */

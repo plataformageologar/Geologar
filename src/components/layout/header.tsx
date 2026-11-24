@@ -5,68 +5,83 @@ import { Container } from "@/components/ui/container";
 import type { SiteNavItem } from "@/lib/site/navigation";
 import { cn } from "@/lib/utils/cn";
 
+import { HeaderSearch } from "./header-search";
 import { MobileMenu } from "./mobile-menu";
 import { NavLink } from "./nav-link";
-import { SiteLogo } from "./site-logo";
+import { SiteBrand } from "./site-logo";
 
 type HeaderProps = {
   navigation: SiteNavItem[];
+  /** Nome do site (Configurações), exibido ao lado do símbolo oficial. */
+  siteName?: string | null;
   institutionalName: string | null;
-  /** Logotipo configurado no CMS; `null` usa o arquivo oficial do código. */
+  /** Logotipo configurado no CMS; `null` usa o símbolo oficial do código. */
   logoSrc: string | null;
   /** Variação escolhida em Configurações (fundo branco ou translúcido). */
   headerStyle?: string;
 };
 
-export function Header({ navigation, institutionalName, logoSrc, headerStyle = "solid" }: HeaderProps) {
+/**
+ * Cabeçalho em dois níveis (Etapa 10.7). Em telas largas: marca, busca e
+ * acesso à área restrita em cima; a barra de navigação (menu do CMS) embaixo
+ * permanece fixa ao rolar — o cabeçalho inteiro é `sticky` com deslocamento
+ * negativo igual à altura do nível de cima. No celular, uma barra só com a
+ * marca e o botão Menu (busca e área restrita ficam dentro do menu).
+ */
+export function Header({ navigation, siteName, institutionalName, logoSrc, headerStyle = "solid" }: HeaderProps) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 border-b border-border",
+        "sticky top-0 z-40 border-b border-border lg:top-[calc(var(--header-top-height)*-1)]",
         headerStyle === "translucent"
           ? "bg-surface/90 backdrop-blur-md supports-[backdrop-filter]:bg-surface/75"
           : "bg-surface",
       )}
     >
-      <Container className="relative flex h-[var(--header-height)] items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <SiteLogo src={logoSrc} />
-          {institutionalName && (
-            <p className="hidden max-w-[15rem] border-l border-border pl-4 text-caption leading-snug text-muted-foreground xl:block">
-              {institutionalName}
-            </p>
-          )}
-        </div>
+      <Container className="relative flex h-[var(--header-height)] items-center justify-between gap-6 lg:h-[var(--header-top-height)]">
+        <SiteBrand src={logoSrc} siteName={siteName} tagline={institutionalName} />
 
         <div className="hidden items-center gap-3 lg:flex">
-        <nav aria-label="Principal">
-          <ul className="flex items-center gap-1">
-            {navigation.map((item) => (
-              <li key={`${item.href}-${item.label}`}>
-                <NavLink
-                  href={item.href}
-                  newTab={item.openInNewTab}
-                  className="inline-flex min-h-11 items-center rounded-full px-4 text-label text-foreground transition-colors hover:bg-surface-muted hover:text-primary"
-                  activeClassName="bg-primary-soft text-primary hover:bg-primary-soft"
-                >
-                  {item.label}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </nav>
-          {/* Acesso secundário à área restrita: só o ícone até `xl`. */}
+          <HeaderSearch id="busca-cabecalho" />
           <Link
             href="/admin/login"
-            className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full border border-border px-3 text-label text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary xl:px-4"
+            className="inline-flex min-h-11 items-center gap-2 rounded-[var(--button-radius)] bg-secondary px-4 text-label whitespace-nowrap uppercase tracking-[0.04em] text-secondary-foreground transition-colors hover:bg-secondary-hover"
           >
             <Lock aria-hidden="true" className="size-4" />
-            <span className="sr-only xl:not-sr-only">Área restrita</span>
+            <span>
+              Login <span aria-hidden="true">/</span>
+              <span className="sr-only">e</span> Área restrita
+            </span>
           </Link>
         </div>
 
         <MobileMenu navigation={navigation} />
       </Container>
+
+      <div className="hidden border-t border-border bg-surface-muted lg:block">
+        <Container>
+          <nav aria-label="Principal">
+            <ul className="flex h-[var(--header-height)] items-stretch gap-1 overflow-x-auto">
+              {navigation.map((item) => (
+                <li key={`${item.href}-${item.label}`} className="flex">
+                  <NavLink
+                    href={item.href}
+                    newTab={item.openInNewTab}
+                    className={cn(
+                      "relative inline-flex items-center px-4 text-label uppercase tracking-[0.05em] whitespace-nowrap text-foreground transition-colors hover:text-primary",
+                      "after:absolute after:inset-x-4 after:bottom-0 after:h-[3px] after:rounded-t-sm after:bg-transparent after:transition-colors after:content-['']",
+                      "hover:after:bg-primary/30",
+                    )}
+                    activeClassName="text-primary after:bg-primary hover:after:bg-primary"
+                  >
+                    {item.label}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </Container>
+      </div>
     </header>
   );
 }

@@ -1,6 +1,7 @@
 import { ResearchLineCard } from "@/components/research/research-line-card";
 import { researchLineIcon, researchLineTint } from "@/components/research/research-line-icons";
 import { ResearchLineLinkList } from "@/components/research/research-line-link-list";
+import { ResearchLinePhotoCard } from "@/components/research/research-line-photo-card";
 import { SectionFrame } from "@/components/site/section-frame";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
@@ -15,8 +16,25 @@ const columnClasses: Record<Columns, string> = {
   4: "sm:grid-cols-2 lg:grid-cols-4",
 };
 
+/** Cards fotográficos: até 6 por fileira em telas largas, conforme a quantidade. */
+const photoColumns: Record<number, string> = {
+  1: "sm:grid-cols-1 lg:grid-cols-1",
+  2: "sm:grid-cols-2 lg:grid-cols-2",
+  3: "sm:grid-cols-3 lg:grid-cols-3",
+  4: "sm:grid-cols-2 lg:grid-cols-4",
+  5: "sm:grid-cols-3 lg:grid-cols-5",
+};
+const photoSizes: Record<number, string> = {
+  1: "(min-width: 640px) 80vw, 100vw",
+  2: "(min-width: 640px) 50vw, 100vw",
+  3: "(min-width: 640px) 33vw, 100vw",
+  4: "(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw",
+  5: "(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 100vw",
+};
+
 /**
- * Linhas de pesquisa: cards (homepage) ou lista compacta de links (/rede).
+ * Linhas de pesquisa: cards (homepage), cards fotográficos (`display:
+ * "photos"`, Etapa 10.7) ou lista compacta de links (/rede).
  */
 export function ResearchLines({
   researchLines,
@@ -41,11 +59,28 @@ export function ResearchLines({
           action={settings.cta_label && settings.cta_href ? <TextLink href={settings.cta_href}>{settings.cta_label}</TextLink> : undefined}
         />
         {variant === "links" ? (
-          <div className="mt-10">
+          <div className="section-gap">
             <ResearchLineLinkList lines={lines} />
           </div>
+        ) : settings.display === "photos" ? (
+          <ul
+            className={cn(
+              "section-gap grid grid-cols-2 gap-3 md:gap-4",
+              photoColumns[lines.length] ?? "sm:grid-cols-3 xl:grid-cols-6",
+            )}
+          >
+            {lines.map((line) => (
+              <li key={line.slug}>
+                <ResearchLinePhotoCard
+                  researchLine={line}
+                  href={`/pesquisa/${line.slug}`}
+                  sizes={photoSizes[lines.length] ?? "(min-width: 1280px) 16vw, (min-width: 640px) 33vw, 50vw"}
+                />
+              </li>
+            ))}
+          </ul>
         ) : (
-          <ul className={cn("mt-12 grid gap-6", columnClasses[settings.columns ?? 3])}>
+          <ul className={cn("section-gap grid gap-6", columnClasses[settings.columns ?? 3])}>
             {lines.map((line, index) => (
               <li key={line.slug}>
                 <ResearchLineCard

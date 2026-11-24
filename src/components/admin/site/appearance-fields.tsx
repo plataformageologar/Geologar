@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
+import { Palette, RotateCcw } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -8,6 +8,7 @@ import {
   BUTTON_SHAPES,
   CARD_STYLE_LABELS,
   CARD_STYLES,
+  COLOR_FIELDS,
   COLOR_LABELS,
   CORNER_STYLE_LABELS,
   CORNER_STYLES,
@@ -15,8 +16,11 @@ import {
   DEFAULT_COLORS,
   HEADING_FONT_LABELS,
   HEADING_FONTS,
+  REFERENCE_PRESET,
   SECTION_BACKGROUND_LABELS,
   SECTION_BACKGROUND_OPTIONS,
+  SECTION_STYLE_LABELS,
+  SECTION_STYLES,
   validateAppearance,
   type Appearance,
   type AppearanceFieldErrors,
@@ -24,7 +28,8 @@ import {
 
 import { describedBy, Field, FormMessage, Select, TextInput } from "../form-controls";
 
-const colorFields = ["primary_color", "secondary_color", "accent_color"] as const;
+const sameAppearance = (a: Appearance, b: Appearance) =>
+  (Object.keys(a) as (keyof Appearance)[]).every((key) => a[key] === b[key]);
 
 /**
  * Aparência do site a partir de opções controladas. O contraste é verificado
@@ -41,11 +46,14 @@ export function AppearanceFields({
   errors?: AppearanceFieldErrors;
   disabled?: boolean;
 }) {
-  const [confirmReset, setConfirmReset] = useState(false);
+  const [confirm, setConfirm] = useState<"reset" | "preset" | null>(null);
+  const isPreset = sameAppearance(validateAppearance(values).data, REFERENCE_PRESET);
   const liveErrors = validateAppearance(values).errors;
   const errors = { ...serverErrors, ...liveErrors };
 
-  const select = <K extends "section_background" | "button_shape" | "corner_style" | "heading_font" | "card_style">(
+  const select = <
+    K extends "section_background" | "button_shape" | "corner_style" | "heading_font" | "card_style" | "section_style",
+  >(
     key: K,
     label: string,
     options: readonly Appearance[K][],
@@ -73,7 +81,7 @@ export function AppearanceFields({
     <div className="flex flex-col gap-6">
       <fieldset className="flex flex-col gap-5">
         <legend className="mb-2 text-label">Cores</legend>
-        {colorFields.map((key) => {
+        {COLOR_FIELDS.map((key) => {
           const current = values[key] ?? DEFAULT_COLORS[key];
           const id = `aparencia-${key}`;
           return (
@@ -127,6 +135,13 @@ export function AppearanceFields({
         {select("button_shape", "Formato dos botões", BUTTON_SHAPES, BUTTON_SHAPE_LABELS)}
         {select("corner_style", "Cantos de cards e imagens", CORNER_STYLES, CORNER_STYLE_LABELS)}
         {select("card_style", "Estilo dos cards", CARD_STYLES, CARD_STYLE_LABELS)}
+        {select(
+          "section_style",
+          "Seções das páginas públicas",
+          SECTION_STYLES,
+          SECTION_STYLE_LABELS,
+          "Compactas: menos espaço entre as seções e títulos em caixa alta com marcador.",
+        )}
       </div>
 
       {Object.keys(liveErrors).length > 0 && (
@@ -136,40 +151,58 @@ export function AppearanceFields({
       )}
 
       <div className="flex flex-wrap items-center gap-3 border-t border-border pt-5">
-        {confirmReset ? (
+        {confirm ? (
           <>
-            <span className="text-body-sm font-semibold">Voltar todas as opções ao padrão da GeoLogar?</span>
+            <span className="text-body-sm font-semibold">
+              {confirm === "preset"
+                ? "Substituir as opções atuais pelo preset “Referência GeoLogar”?"
+                : "Voltar todas as opções ao padrão da GeoLogar?"}
+            </span>
             <button
               type="button"
               onClick={() => {
-                setConfirmReset(false);
-                onChange(DEFAULT_APPEARANCE);
+                onChange(confirm === "preset" ? REFERENCE_PRESET : DEFAULT_APPEARANCE);
+                setConfirm(null);
               }}
               className="inline-flex min-h-10 items-center rounded-lg bg-primary px-3 text-label text-primary-foreground"
             >
-              Restaurar padrão
+              {confirm === "preset" ? "Aplicar preset" : "Restaurar padrão"}
             </button>
             <button
               type="button"
               autoFocus
-              onClick={() => setConfirmReset(false)}
+              onClick={() => setConfirm(null)}
               className="inline-flex min-h-10 items-center rounded-lg border border-border px-3 text-label"
             >
               Cancelar
             </button>
           </>
         ) : (
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={() => setConfirmReset(true)}
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border px-4 text-label hover:border-primary/40 disabled:opacity-50"
-          >
-            <RotateCcw aria-hidden="true" className="size-4" />
-            Restaurar aparência padrão
-          </button>
+          <>
+            <button
+              type="button"
+              disabled={disabled || isPreset}
+              onClick={() => setConfirm("preset")}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border px-4 text-label hover:border-primary/40 disabled:opacity-50"
+            >
+              <Palette aria-hidden="true" className="size-4" />
+              {isPreset ? "Preset “Referência GeoLogar” em uso" : "Aplicar preset “Referência GeoLogar”"}
+            </button>
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => setConfirm("reset")}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border px-4 text-label hover:border-primary/40 disabled:opacity-50"
+            >
+              <RotateCcw aria-hidden="true" className="size-4" />
+              Restaurar aparência padrão
+            </button>
+          </>
         )}
-        <p className="text-caption text-muted-foreground">A restauração só vale depois de salvar.</p>
+        <p className="basis-full text-caption text-muted-foreground">
+          O preset e a restauração só preenchem o formulário: nada muda no site antes de salvar o rascunho e publicar.
+          Depois de aplicar, cada cor e opção continua editável.
+        </p>
       </div>
     </div>
   );

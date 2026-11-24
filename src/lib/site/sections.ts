@@ -48,13 +48,15 @@ export type SectionType = BuiltinSectionType | BlockType | FeatureSectionType;
 export type AddableSectionType = BlockType | FeatureSectionType;
 
 export const BACKGROUNDS = ["default", "surface", "muted", "deep", "primary"] as const;
-export const HERO_LAYOUTS = ["default", "centered", "split"] as const;
+export const HERO_LAYOUTS = ["default", "centered", "split", "brand"] as const;
 export const IMAGE_POSITIONS = ["center", "top", "bottom", "left", "right"] as const;
 export const OVERLAYS = ["light", "medium", "strong"] as const;
 export const ALIGNS = ["left", "center"] as const;
 export const IMAGE_SIDES = ["left", "right"] as const;
 export const LIMIT_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
 export const COLUMN_OPTIONS = [2, 3, 4] as const;
+/** Linhas de pesquisa: cards com texto ou cards fotográficos (Etapa 10.7). */
+export const RESEARCH_DISPLAYS = ["cards", "photos"] as const;
 
 export type Background = (typeof BACKGROUNDS)[number];
 export type HeroLayout = (typeof HERO_LAYOUTS)[number];
@@ -63,6 +65,7 @@ export type Overlay = (typeof OVERLAYS)[number];
 export type Align = (typeof ALIGNS)[number];
 export type ImageSide = (typeof IMAGE_SIDES)[number];
 export type Columns = (typeof COLUMN_OPTIONS)[number];
+export type ResearchDisplay = (typeof RESEARCH_DISPLAYS)[number];
 
 export type GalleryImage = { path: string; alt: string };
 
@@ -76,6 +79,10 @@ export type SectionSettings = {
   limit?: number;
   columns?: Columns;
   layout?: HeroLayout;
+  /** Linhas de pesquisa: "cards" (padrão) ou "photos". */
+  display?: ResearchDisplay;
+  /** Projetos: exibidos ao lado das publicações recentes quando a próxima seção é de publicações. */
+  side_by_side?: boolean;
   image_position?: ImagePosition;
   overlay?: Overlay;
   show_primary_cta?: boolean;
@@ -96,8 +103,8 @@ export const SECTION_KEYS: Record<SectionType, readonly SettingKey[]> = {
   hero: ["eyebrow", "layout", "image_position", "overlay", "show_primary_cta", "show_secondary_cta"],
   about: ["eyebrow", "cta_label", "cta_href", "background", "show_pillars"],
   pillars: ["eyebrow", "title", "description", "background"],
-  research: ["eyebrow", "title", "description", "cta_label", "cta_href", "limit", "columns", "background"],
-  projects: ["eyebrow", "title", "description", "cta_label", "cta_href", "limit", "columns", "background"],
+  research: ["eyebrow", "title", "description", "cta_label", "cta_href", "limit", "columns", "background", "display"],
+  projects: ["eyebrow", "title", "description", "cta_label", "cta_href", "limit", "columns", "background", "side_by_side"],
   publications: ["eyebrow", "title", "description", "cta_label", "cta_href", "limit", "background"],
   institutions: ["eyebrow", "title", "description", "cta_label", "cta_href", "background"],
   cooperation: ["background"],
@@ -176,6 +183,12 @@ export const HERO_LAYOUT_LABELS: Record<HeroLayout, string> = {
   default: "Texto à esquerda",
   centered: "Texto centralizado",
   split: "Texto e imagem lado a lado",
+  brand: "Nome da GeoLogar em destaque",
+};
+
+export const RESEARCH_DISPLAY_LABELS: Record<ResearchDisplay, string> = {
+  cards: "Cards com texto",
+  photos: "Cards fotográficos (título sobre a imagem)",
 };
 
 export const IMAGE_POSITION_LABELS: Record<ImagePosition, string> = {
@@ -282,6 +295,9 @@ export function sanitizeSectionSettings(type: SectionType, raw: unknown): Sectio
       case "layout":
         if (oneOf(HERO_LAYOUTS, value)) result.layout = value;
         break;
+      case "display":
+        if (oneOf(RESEARCH_DISPLAYS, value)) result.display = value;
+        break;
       case "image_position":
         if (oneOf(IMAGE_POSITIONS, value)) result.image_position = value;
         break;
@@ -297,6 +313,7 @@ export function sanitizeSectionSettings(type: SectionType, raw: unknown): Sectio
       case "show_primary_cta":
       case "show_secondary_cta":
       case "show_pillars":
+      case "side_by_side":
         if (typeof value === "boolean") result[key] = value;
         break;
       case "image_path":
@@ -404,6 +421,10 @@ export function validateSectionSettings(
         if (oneOf(HERO_LAYOUTS, value)) data.layout = value;
         else errors.layout = "Escolha uma das opções.";
         break;
+      case "display":
+        if (oneOf(RESEARCH_DISPLAYS, value)) data.display = value;
+        else errors.display = "Escolha uma das opções.";
+        break;
       case "image_position":
         if (oneOf(IMAGE_POSITIONS, value)) data.image_position = value;
         else errors.image_position = "Escolha uma das opções.";
@@ -423,6 +444,7 @@ export function validateSectionSettings(
       case "show_primary_cta":
       case "show_secondary_cta":
       case "show_pillars":
+      case "side_by_side":
         if (typeof value === "boolean") data[key] = value;
         else errors[key] = "Valor inválido.";
         break;

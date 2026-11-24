@@ -111,6 +111,26 @@ test("experiências digitais: links externos seguros e nada embutido (Etapa 10.6
   expect(await hasHorizontalOverflow(page)).toBe(false);
 });
 
+test("cabeçalho: busca e acesso à área restrita (Etapa 10.7)", async ({ page, isMobile }) => {
+  await page.goto("/");
+  if (isMobile) await page.getByRole("button", { name: "Menu" }).click();
+  const search = page.getByRole("search", { name: "Buscar no site" }).locator("visible=true").first();
+  await expect(search).toBeVisible();
+  await expect(search).toHaveAttribute("action", "/busca");
+  await expect(page.locator('a[href="/admin/login"]').locator("visible=true").first()).toBeVisible();
+});
+
+test("busca: página sem índice, termo curto e sem resultados (Etapa 10.7)", async ({ page }) => {
+  const response = await page.goto("/busca?q=a");
+  expect(response?.status()).toBe(200);
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+  await expect(page.locator("h1")).toHaveCount(1);
+  await expect(page.getByText(/pelo menos 2 caracteres/)).toBeVisible();
+  await page.goto("/busca?q=termo-inexistente-e2e-zz");
+  await expect(page.getByText(/Nenhum resultado/)).toBeVisible();
+  expect(await hasHorizontalOverflow(page)).toBe(false);
+});
+
 test("menu móvel abre e fecha pelo teclado", async ({ page, isMobile }) => {
   test.skip(!isMobile, "menu móvel");
   await page.goto("/");

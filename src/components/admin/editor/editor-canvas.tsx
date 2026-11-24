@@ -9,13 +9,14 @@ import { ProjectCard } from "@/components/projects/project-card";
 import { PublicationItem } from "@/components/publications/publication-item";
 import { ResearchLineCard } from "@/components/research/research-line-card";
 import { researchLineIcon, researchLineTint } from "@/components/research/research-line-icons";
-import { renderSection, sectionHasContent, type SectionsData } from "@/components/site/page-sections";
+import { renderSection, SectionPair, sectionHasContent, type SectionsData } from "@/components/site/page-sections";
 import { Container } from "@/components/ui/container";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { resolveImageSrc } from "@/lib/queries/shared";
 import { SECTION_ANCHORS, withAvailableHeroLinks } from "@/lib/site/anchors";
 import { appearanceCss, DEFAULT_APPEARANCE } from "@/lib/site/appearance";
+import { groupSections } from "@/lib/site/section-pairs";
 import {
   draftHomepageContent,
   draftNavigation,
@@ -264,9 +265,15 @@ function CanvasContent({ state }: { state: CanvasState }) {
     <>
       <style>{CANVAS_CSS}</style>
       <style>{appearanceCss(draft.appearance ?? DEFAULT_APPEARANCE)}</style>
-      <Target id="header" label="Cabeçalho" selected={isSelected("header")} className="sticky top-0 z-40">
+      <Target
+        id="header"
+        label="Cabeçalho"
+        selected={isSelected("header")}
+        className="sticky top-0 z-40 lg:top-[calc(var(--header-top-height)*-1)]"
+      >
         <Header
           navigation={draftNavigation(draft.navHeader)}
+          siteName={settings.site_name}
           institutionalName={settings.institutional_name}
           logoSrc={resolveImageSrc(settings.logo_path)}
           headerStyle={settings.header_style}
@@ -284,21 +291,25 @@ function CanvasContent({ state }: { state: CanvasState }) {
         )}
 
         {sectionPage &&
-          sections.map((section) => {
-            const target = sectionTarget(section.key);
-            const label = targetLabel(target, sections);
-            const hasContent = sectionHasContent(sectionPage, section, sectionData, true);
-            return (
-              <Fragment key={section.key}>
+          groupSections(
+            sections,
+            (section) => section.is_visible && sectionHasContent(sectionPage, section, sectionData, true),
+          ).map((unit) => {
+            const renderTarget = (section: (typeof sections)[number], paired: boolean) => {
+              const target = sectionTarget(section.key);
+              const label = targetLabel(target, sections);
+              const hasContent = sectionHasContent(sectionPage, section, sectionData, true);
+              return (
                 <Target
                   id={target}
                   label={label}
                   type={section.section_type}
                   selected={isSelected(target)}
                   hidden={!section.is_visible}
+                  className={paired ? "relative min-w-0" : undefined}
                 >
                   {hasContent ? (
-                    renderSection(sectionPage, section, sectionData, true)
+                    renderSection(sectionPage, section, sectionData, true, paired)
                   ) : (
                     <Placeholder
                       title={`${SECTION_LABELS[section.section_type]} sem conteúdo`}
@@ -310,7 +321,17 @@ function CanvasContent({ state }: { state: CanvasState }) {
                     />
                   )}
                 </Target>
-              </Fragment>
+              );
+            };
+            return unit.kind === "pair" ? (
+              <SectionPair
+                key={`${unit.left.key}+${unit.right.key}`}
+                settings={unit.left.settings}
+                left={renderTarget(unit.left, true)}
+                right={renderTarget(unit.right, true)}
+              />
+            ) : (
+              <Fragment key={unit.section.key}>{renderTarget(unit.section, false)}</Fragment>
             );
           })}
 

@@ -83,7 +83,7 @@ export const getAppearance = cache(async (): Promise<Appearance> => {
     const { data, error } = await createPublicClient()
       .from("site_appearance")
       .select(
-        "primary_color, secondary_color, accent_color, section_background, button_shape, corner_style, heading_font, card_style",
+        "primary_color, secondary_color, accent_color, dark_color, section_background, button_shape, corner_style, heading_font, card_style, section_style",
       )
       .maybeSingle();
     if (error) throw error;
@@ -214,7 +214,7 @@ export async function getAppearanceForEdit(): Promise<AdminResult<AppearanceForE
   const { data, error } = await supabase
     .from("site_appearance")
     .select(
-      "primary_color, secondary_color, accent_color, section_background, button_shape, corner_style, heading_font, card_style, updated_at",
+      "primary_color, secondary_color, accent_color, dark_color, section_background, button_shape, corner_style, heading_font, card_style, section_style, updated_at",
     )
     .maybeSingle();
   if (error) {

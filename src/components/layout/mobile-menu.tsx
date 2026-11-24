@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, useState } from "react";
 
 import type { SiteNavItem } from "@/lib/site/navigation";
 
+import { HeaderSearch } from "./header-search";
 import { NavLink } from "./nav-link";
 
 /**
@@ -55,6 +56,9 @@ export function MobileMenu({ navigation }: { navigation: SiteNavItem[] }) {
         hidden={!open}
         className="absolute inset-x-0 top-full max-h-[calc(100dvh-var(--header-height))] overflow-y-auto border-b border-border bg-surface shadow-[0_12px_24px_-16px_rgb(15_37_55/0.35)]"
       >
+        <div className="mx-auto max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)] pt-4">
+          <HeaderSearch id="busca-menu" />
+        </div>
         <ul className="mx-auto flex max-w-[80rem] flex-col px-[clamp(1rem,4vw,2.5rem)] py-3">
           {navigation.map((item) => (
             <li key={`${item.href}-${item.label}`} className="border-b border-border last:border-b-0">
@@ -69,14 +73,14 @@ export function MobileMenu({ navigation }: { navigation: SiteNavItem[] }) {
               </NavLink>
             </li>
           ))}
-          <li className="py-3">
+          <li className="py-4">
             <Link
               href="/admin/login"
               onClick={() => setOpen(false)}
-              className="inline-flex min-h-11 items-center gap-2 text-label text-muted-foreground hover:text-primary"
+              className="inline-flex min-h-11 items-center gap-2 rounded-[var(--button-radius)] bg-secondary px-4 text-label uppercase tracking-[0.04em] text-secondary-foreground hover:bg-secondary-hover"
             >
               <Lock aria-hidden="true" className="size-4" />
-              Área restrita
+              Login / Área restrita
             </Link>
           </li>
         </ul>

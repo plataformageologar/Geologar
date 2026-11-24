@@ -158,12 +158,12 @@ export function ExperiencesSection({ settings, editing = false }: { settings: Se
               <span aria-hidden="true" className="h-px w-8 bg-current" />
             </p>
           )}
-          <h2 id="experiencias-titulo" className="text-h2">
+          <h2 id="experiencias-titulo" className="section-title font-semibold">
             {title}
           </h2>
           {settings.description && <p className="text-body-lg text-muted-foreground">{settings.description}</p>}
         </div>
-        <ul className={cn("mt-12 grid gap-6 lg:gap-8", gridColumns[columns])}>
+        <ul className={cn("section-gap grid gap-6 lg:gap-8", gridColumns[columns])}>
           {experiences.map((experience) => (
             <li key={experience.id}>
               <ExperienceCard experience={experience} editing={editing} sizes={sizes} headingLevel="h3" />

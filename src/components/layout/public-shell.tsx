@@ -37,6 +37,7 @@ export async function PublicShell({ children }: { children: ReactNode }) {
       </a>
       <Header
         navigation={navigation.header}
+        siteName={settings.site_name}
         institutionalName={settings.institutional_name}
         logoSrc={resolveImageSrc(settings.logo_path)}
         headerStyle={settings.header_style}

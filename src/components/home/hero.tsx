@@ -66,6 +66,8 @@ export function Hero({ content, settings = {} }: HeroProps) {
   const position = objectPositions[settings.image_position ?? "right"];
   const split = layout === "split" && Boolean(hero_image_path);
   const centered = layout === "centered";
+  // “brand”: o sobretítulo vira o nome da GeoLogar em destaque (Etapa 10.7).
+  const brand = layout === "brand";
   const showPrimary = settings.show_primary_cta !== false && hero_primary_cta_label && hero_primary_cta_href;
   const showSecondary =
     settings.show_secondary_cta !== false && hero_secondary_cta_label && hero_secondary_cta_href;
@@ -107,22 +109,34 @@ export function Hero({ content, settings = {} }: HeroProps) {
         )}
       >
         <div className={cn("flex max-w-3xl flex-col gap-6", centered && "mx-auto items-center text-center")}>
-          {settings.eyebrow && (
-            <p className="flex items-center gap-3 text-label uppercase tracking-[0.12em] text-deep-muted">
-              <span aria-hidden="true" className="h-px w-8 bg-current" />
-              {settings.eyebrow}
-            </p>
-          )}
-          <h1 id="hero-title" className="text-display">
+          {settings.eyebrow &&
+            (brand ? (
+              <p className="font-sans text-[clamp(3rem,1.9rem+4.8vw,5.75rem)] leading-[0.95] font-bold tracking-[-0.02em] break-words">
+                {settings.eyebrow}
+              </p>
+            ) : (
+              <p className="flex items-center gap-3 text-label uppercase tracking-[0.12em] text-deep-muted">
+                <span aria-hidden="true" className="h-px w-8 bg-current" />
+                {settings.eyebrow}
+              </p>
+            ))}
+          <h1 id="hero-title" className={brand ? "text-h1 max-w-2xl" : "text-display"}>
             {hero_title}
           </h1>
           {hero_description && (
-            <p className="max-w-2xl whitespace-pre-line text-body-lg text-deep-foreground/90">{hero_description}</p>
+            <p
+              className={cn(
+                "max-w-2xl whitespace-pre-line text-deep-foreground/90",
+                brand ? "text-body-lg font-semibold tracking-[0.02em]" : "text-body-lg",
+              )}
+            >
+              {hero_description}
+            </p>
           )}
           {(showPrimary || showSecondary) && (
             <div className={cn("mt-2 flex flex-col gap-3 sm:flex-row sm:flex-wrap", centered && "sm:justify-center")}>
               {showPrimary && (
-                <Button href={hero_primary_cta_href} surface="dark" size="lg" withArrow>
+                <Button href={hero_primary_cta_href} surface={brand ? "light" : "dark"} size="lg" withArrow>
                   {hero_primary_cta_label}
                 </Button>
               )}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FlaskConical } from "lucide-react";
+import { ArrowRight, FlaskConical } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { CardMedia } from "@/components/ui/card-media";
@@ -16,14 +16,50 @@ type ProjectCardProps = {
   href?: string;
   /** Nível do título conforme a hierarquia da página. */
   headingLevel?: "h2" | "h3";
+  /**
+   * "compact" (página inicial, Etapa 10.7): imagem, título, texto curto e
+   * “Saiba mais”, sempre vertical.
+   */
+  variant?: "default" | "compact";
 };
 
 /**
  * Card de projeto. Em tablets fica horizontal; em telas largas, vertical.
  */
-export function ProjectCard({ project, href, headingLevel: Heading = "h3" }: ProjectCardProps) {
+export function ProjectCard({ project, href, headingLevel: Heading = "h3", variant = "default" }: ProjectCardProps) {
   // Rascunhos podem não ter situação definida ("A confirmar"): sem selo.
   const status = project.project_status ? projectStatusLabels[project.project_status] : undefined;
+
+  if (variant === "compact") {
+    return (
+      <article className="card-surface group flex h-full flex-col overflow-hidden rounded-2xl border bg-surface">
+        <CardMedia
+          imagePath={project.image_path}
+          imageAlt={project.image_alt}
+          fallbackIcon={FlaskConical}
+          tint="blue"
+          sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 100vw"
+          className="aspect-[16/10]"
+        />
+        <div className="flex flex-1 flex-col gap-2 p-5">
+          <Heading className="font-sans text-h4 font-bold break-words">{project.title}</Heading>
+          {project.short_description && (
+            <p className="line-clamp-4 text-body-sm text-muted-foreground">{project.short_description}</p>
+          )}
+          {href && (
+            <Link
+              href={href}
+              className="mt-auto inline-flex min-h-11 w-fit items-center gap-1 pt-2 text-label text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary"
+            >
+              Saiba mais
+              <span className="sr-only">: {project.title}</span>
+              <ArrowRight aria-hidden="true" className="size-4" />
+            </Link>
+          )}
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article className="card-surface flex h-full flex-col overflow-hidden rounded-2xl border bg-surface md:flex-row lg:flex-col">

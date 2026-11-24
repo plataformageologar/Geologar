@@ -19,6 +19,8 @@ import {
   LOGOS_MAX_INSTITUTIONS,
   OVERLAY_LABELS,
   OVERLAYS,
+  RESEARCH_DISPLAY_LABELS,
+  RESEARCH_DISPLAYS,
   SECTION_KEYS,
   SECTION_TEXT_RULES,
   sectionBackgroundOptions,
@@ -330,6 +332,14 @@ export function SectionSettingsFields({
 
       <div className="grid gap-4 md:grid-cols-2">
         {select("layout", "Layout", HERO_LAYOUTS, (option) => HERO_LAYOUT_LABELS[option], "default")}
+        {select(
+          "display",
+          "Apresentação",
+          RESEARCH_DISPLAYS,
+          (option) => RESEARCH_DISPLAY_LABELS[option],
+          "cards",
+          "Cards fotográficos usam a imagem de cada linha (até 6 por fileira em telas largas).",
+        )}
         {select("image_position", "Enquadramento da imagem", IMAGE_POSITIONS, (option) => IMAGE_POSITION_LABELS[option], "right")}
         {select(
           "overlay",
@@ -370,6 +380,16 @@ export function SectionSettingsFields({
           checked={settings.show_secondary_cta !== false}
           disabled={disabled}
           onChange={(event) => set("show_secondary_cta", event.target.checked ? undefined : false)}
+        />
+      )}
+      {has("side_by_side") && (
+        <Checkbox
+          id={`${idPrefix}-side_by_side`}
+          label="Exibir ao lado das publicações recentes"
+          description="Vale quando a seção seguinte é a de publicações; se uma delas estiver vazia, a outra ocupa a largura toda."
+          checked={settings.side_by_side === true}
+          disabled={disabled}
+          onChange={(event) => set("side_by_side", event.target.checked ? true : undefined)}
         />
       )}
       {has("show_pillars") && (

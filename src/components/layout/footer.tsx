@@ -68,7 +68,9 @@ export function Footer({ settings, navigation, socialLinks: allSocialLinks }: Fo
   );
 
   return (
-    <footer className="on-dark bg-deep text-deep-foreground">
+    <footer className="on-dark relative isolate overflow-hidden bg-deep text-deep-foreground">
+      {/* Textura de curvas de nível (sem imagem com texto embutido). */}
+      <div aria-hidden="true" className="topo-pattern absolute inset-0 -z-10 text-white/[0.05]" />
       {/* Faixa em camadas (terra, verde, azul): referência às rochas estratificadas. */}
       <div aria-hidden="true" className="h-1.5 bg-gradient-to-r from-earth via-secondary to-primary" />
       <Container className="grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-12 lg:py-20">

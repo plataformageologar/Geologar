@@ -83,9 +83,10 @@ select is(
 );
 
 select is(
-  (select array_agg(section_type order by sort_order) from public.page_sections where page_key = 'home' and section_type <> 'text'),
+  (select array_agg(section_type order by sort_order) from public.page_sections
+   where page_key = 'home' and section_type not in ('text', 'experiences')),
   array['hero', 'about', 'research', 'projects', 'publications', 'institutions', 'cooperation'],
-  'seções da homepage na ordem atual'
+  'seções nativas da homepage na ordem original (experiências: Etapa 10.6)'
 );
 
 select is(
@@ -294,14 +295,17 @@ select lives_ok(
        pg_temp.versions('page_sections', 'page_key = ''home'''),
        (select jsonb_agg(jsonb_build_object('id', id, 'section_type', section_type,
                  'is_visible', section_type <> 'publications', 'settings', settings) order by
-                 case section_type when 'institutions' then 1.5 else sort_order end)
+                 case section_type when 'institutions'
+                   then (select a.sort_order from public.page_sections a where a.page_key = 'home' and a.section_type = 'about') + 0.5
+                   else sort_order end)
         from public.page_sections where page_key = 'home' and section_type <> 'text')
        || '[{"section_type": "cta", "settings": {"title": "Chamada (teste)", "cta_label": "Contato", "cta_href": "/contato"}}]'::jsonb
      ) $$,
   'editor reordena, oculta seções e adiciona um bloco'
 );
 select is(
-  (select array_agg(section_type order by sort_order) from public.page_sections where page_key = 'home'),
+  (select array_agg(section_type order by sort_order) from public.page_sections
+   where page_key = 'home' and section_type <> 'experiences'),
   array['hero', 'about', 'institutions', 'research', 'projects', 'publications', 'cooperation', 'cta'],
   'nova ordem gravada, bloco omitido excluído e bloco novo no fim'
 );

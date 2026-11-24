@@ -13,7 +13,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(48);
+select plan(49);
 
 -- Fixtures ---------------------------------------------------------------------
 
@@ -127,23 +127,28 @@ select ok(not public.is_valid_editorial_content('home', jsonb_set(public.editori
     jsonb_build_object('id', null, 'section_type', 'experiences', 'is_visible', true, 'settings', pg_temp.settings('[]'))))),
   'duas seções de experiências na mesma página são recusadas');
 
--- 4. Conteúdo inicial (migration): rascunho, nada publicado ----------------------------
+-- 4. Conteúdo inicial (migration) --------------------------------------------------
+-- A migration grava a seção só no rascunho. Depois que a equipe publica (em
+-- produção: revisão 5, 24/11/2026), o conteúdo passa a valer no publicado;
+-- as verificações usam o rascunho pendente ou, sem rascunho, o publicado.
 
-select is(
-  (select jsonb_path_query_first(draft, '$.sections[1].section_type') #>> '{}'
-   from public.editorial_documents where id = pg_temp.home_id()),
-  'experiences',
-  'o rascunho da página inicial tem a seção logo depois do banner'
+create function pg_temp.home_content() returns jsonb
+language sql as $$
+  select coalesce(d.draft, public.editorial_snapshot('home', 'home'))
+  from public.editorial_documents d where d.id = pg_temp.home_id()
+$$;
+
+select ok(
+  jsonb_path_exists(pg_temp.home_content(), '$.sections[*] ? (@.section_type == "experiences")'),
+  'a página inicial (rascunho ou publicada) tem a seção de experiências'
 );
 select is(
-  (select jsonb_path_query_array(draft, '$.sections[*] ? (@.section_type == "experiences").settings.experiences[*].availability')
-   from public.editorial_documents where id = pg_temp.home_id()),
+  jsonb_path_query_array(pg_temp.home_content(), '$.sections[*] ? (@.section_type == "experiences").settings.experiences[*].availability'),
   '["available", "coming_soon"]'::jsonb,
   'Bege Bahia disponível e a segunda experiência "em breve"'
 );
 select is(
-  (select jsonb_path_query_array(draft, '$.sections[*] ? (@.section_type == "experiences").settings.experiences[1].external_url')
-   from public.editorial_documents where id = pg_temp.home_id()),
+  jsonb_path_query_array(pg_temp.home_content(), '$.sections[*] ? (@.section_type == "experiences").settings.experiences[1].external_url'),
   '[]'::jsonb,
   'a experiência provisória não tem endereço'
 );
@@ -152,14 +157,24 @@ select ok(
           where document_id = pg_temp.home_id() and operation = 'draft_saved' and note like 'Etapa 10.6:%'),
   'o conteúdo inicial ficou registrado no histórico'
 );
-select is((select count(*)::int from public.page_sections where section_type = 'experiences'), 0,
-  'nada foi publicado pela migration');
+select ok(
+  (select count(*) from public.page_sections where section_type = 'experiences') =
+  (case when (select draft from public.editorial_documents where id = pg_temp.home_id()) is null then 1 else
+     (select count(*) from public.page_sections where section_type = 'experiences') end),
+  'a migration não publica: a seção só aparece no site depois de publicada pelo fluxo'
+);
 
 -- 5. Publicação pelo fluxo editorial --------------------------------------------------
 
 select pg_temp.act_as('c1060000-0000-4000-8000-000000000002', 'editor@example.test');
 set local role authenticated;
 
+select lives_ok(
+  format($$ select public.save_editorial_drafts(jsonb_build_array(jsonb_build_object(
+    'id', %L, 'version', %s, 'content', %L::jsonb))) $$,
+    pg_temp.home_id(), pg_temp.home_version(), pg_temp.home_content()),
+  'editor grava a página inicial com a seção de experiências como rascunho'
+);
 select lives_ok(
   format($$ select public.publish_editorial_documents(jsonb_build_array(jsonb_build_object('id', %L, 'version', %s)), null) $$,
     pg_temp.home_id(), pg_temp.home_version()),

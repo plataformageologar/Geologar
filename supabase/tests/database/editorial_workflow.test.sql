@@ -53,6 +53,11 @@ grant execute on function pg_temp.doc_version(text), pg_temp.doc_id(text) to aut
 create temporary table t_text (name text primary key, value text);
 grant all on t_text to anon, authenticated;
 insert into t_text values ('hero_title', (select hero_title from public.homepage_content limit 1));
+-- Publicações da homepage antes do teste (em produção já há publicações reais).
+insert into t_text values ('home_published', (
+  select count(*)::text from public.editorial_revisions r
+  join public.editorial_documents d on d.id = r.document_id
+  where d.doc_type = 'home' and r.operation = 'published'));
 
 -- Estado inicial ---------------------------------------------------------------
 
@@ -72,10 +77,10 @@ select is(
 
 select is(
   (select r.content from public.editorial_revisions r
-   join public.editorial_documents d on d.id = r.document_id
-   where d.doc_type = 'home' and r.revision_number = 1),
+   join public.editorial_documents d on d.published_revision_id = r.id
+   where d.doc_type = 'home'),
   public.editorial_snapshot('home', 'home'),
-  'a revisão inicial da homepage é igual ao conteúdo publicado'
+  'a revisão publicada da homepage é igual ao conteúdo publicado'
 );
 
 -- Visitante e usuário sem vínculo ------------------------------------------------
@@ -323,7 +328,7 @@ select is(
 );
 select is(
   (select count(*)::int from public.editorial_revisions where document_id = pg_temp.doc_id('home') and operation = 'published'),
-  3,
+  (select value::int + 2 from t_text where name = 'home_published'),
   'o histórico preserva todas as publicações anteriores'
 );
 

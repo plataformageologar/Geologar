@@ -792,11 +792,13 @@ export type Database = {
           card_style: string
           corner_style: string
           created_at: string
+          dark_color: string | null
           heading_font: string
           id: string
           primary_color: string | null
           secondary_color: string | null
           section_background: string
+          section_style: string
           updated_at: string
         }
         Insert: {
@@ -805,11 +807,13 @@ export type Database = {
           card_style?: string
           corner_style?: string
           created_at?: string
+          dark_color?: string | null
           heading_font?: string
           id?: string
           primary_color?: string | null
           secondary_color?: string | null
           section_background?: string
+          section_style?: string
           updated_at?: string
         }
         Update: {
@@ -818,11 +822,13 @@ export type Database = {
           card_style?: string
           corner_style?: string
           created_at?: string
+          dark_color?: string | null
           heading_font?: string
           id?: string
           primary_color?: string | null
           secondary_color?: string | null
           section_background?: string
+          section_style?: string
           updated_at?: string
         }
         Relationships: []

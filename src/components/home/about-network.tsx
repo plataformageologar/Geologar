@@ -19,8 +19,14 @@ export function AboutNetwork({ content, pillars, settings = {} }: AboutNetworkPr
 
   return (
     <SectionFrame id="a-rede" labelledBy="a-rede-title" background={resolveBackground("about", settings)}>
-      <Container className={showPillars ? "grid gap-12 xl:grid-cols-12 xl:gap-16" : undefined}>
-        <div className="max-w-3xl xl:col-span-5">
+      <Container
+        className={
+          showPillars
+            ? "grid gap-10 xl:grid-cols-[minmax(0,45fr)_minmax(0,55fr)] xl:items-center xl:gap-14"
+            : undefined
+        }
+      >
+        <div className="max-w-3xl">
           <SectionHeading id="a-rede-title" eyebrow={settings.eyebrow} title={content.about_title} />
           {content.about_description && (
             <p className="mt-6 whitespace-pre-line text-body-lg text-muted-foreground">{content.about_description}</p>
@@ -33,7 +39,7 @@ export function AboutNetwork({ content, pillars, settings = {} }: AboutNetworkPr
         </div>
 
         {showPillars && (
-          <PillarList pillars={pillars} className="lg:grid-cols-4 xl:col-span-7 xl:grid-cols-2 xl:self-center" />
+          <PillarList pillars={pillars} variant="row" />
         )}
       </Container>
     </SectionFrame>

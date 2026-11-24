@@ -19,7 +19,7 @@ export function CooperationCta({ content, settings = {} }: CooperationCtaProps) 
   const deep = resolveBackground("cooperation", settings) === "deep";
 
   return (
-    <section id="contato" aria-labelledby="contato-title" className="pb-[clamp(4rem,2.8rem+5vw,7.5rem)]">
+    <section id="contato" aria-labelledby="contato-title" className="pb-[var(--section-y)]">
       <Container>
         <div
           className={cn(
