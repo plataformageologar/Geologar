@@ -322,14 +322,45 @@ principal, secundária e de destaque, o fundo das seções, o formato dos botõe
 os cantos, a fonte dos títulos e o estilo dos cards.
 
 - Cores com pouco contraste são recusadas, para manter o texto legível.
+- **Tom escuro** muda o rodapé, a faixa de cooperação e o banner sem foto.
+- **Seções das páginas públicas**: *Espaçosas* (padrão) ou *Compactas, com
+  títulos institucionais* (menos espaço e títulos em caixa alta com
+  marcador).
+- **Aplicar preset “Referência GeoLogar”** preenche o formulário com a
+  identidade da referência visual (marrom, verde, creme, Source Sans,
+  seções compactas). Nada muda antes de salvar e publicar, e cada opção
+  continua editável.
 - **Restaurar padrão** volta à identidade visual original.
 - Mudanças de aparência afetam o site inteiro: salve o rascunho, confira a
   prévia em celular e computador no editor visual e só então publique.
+
+## Opções de seção da página inicial (Etapa 10.7)
+
+Em *Seções e blocos*, abra a seção:
+
+- **Banner › Layout › Nome da GeoLogar em destaque**: o sobretítulo aparece
+  grande (por exemplo, “GeoLogar”) acima do título.
+- **Linhas de pesquisa › Apresentação › Fotos**: cards com fotografia.
+- **Projetos em destaque › Exibir ao lado das publicações recentes**: em
+  telas largas, projetos e publicações ficam lado a lado. Só vale quando a
+  seção de publicações vem logo depois da de projetos.
+
+## Busca do site
+
+O campo **Buscar no site** do cabeçalho procura nas linhas de pesquisa,
+projetos, publicações, páginas e instituições **publicadas**. Rascunhos
+nunca aparecem na busca.
 
 ## Logotipos
 
 Trocar o logotipo do cabeçalho ou do rodapé mostra um aviso: use apenas
 arquivos oficiais aprovados pela GeoLogar, enviados pela biblioteca de mídia.
+
+Logotipos de instituições: os arquivos `Logo_<SIGLA>_provisorio.png` da
+biblioteca são recortes de baixa resolução da referência visual. Para trocar,
+abra a instituição em *Instituições*, use **Substituir imagem**, escolha o
+arquivo oficial e salve. A prévia de demonstração (`/admin/demonstracao`)
+mostra as instituições em rascunho com seus logotipos antes da publicação.
 
 ## Quando alguém editou ao mesmo tempo
 

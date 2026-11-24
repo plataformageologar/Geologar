@@ -18,8 +18,9 @@ export function InstitutionLogo({ institution }: { institution: InstitutionSumma
   const tile = (
     <span
       className={cn(
-        "relative flex aspect-[3/2] items-center justify-center rounded-xl border bg-surface p-4",
-        institution.logo_path ? "card-surface" : "border-dashed border-border",
+        // 4:3 com pouco respiro: brasões verticais e marcas horizontais ficam legíveis.
+        "relative flex aspect-[4/3] items-center justify-center rounded-xl border bg-surface",
+        institution.logo_path ? "card-surface p-2.5" : "border-dashed border-border p-3",
       )}
     >
       {institution.logo_path ? (

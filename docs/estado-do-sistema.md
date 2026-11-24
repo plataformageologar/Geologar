@@ -1,7 +1,8 @@
 # Estado atual do sistema — Portal GeoLogar
 
-Retrato do portal em **24/11/2026**, depois da Etapa 10.6 (experiências
-digitais na página inicial) e da Etapa 10.5 (gerenciamento de Editores pelo
+Retrato do portal em **24/11/2026**, depois da Etapa 10.7 (refinamento
+visual e instituições da referência, ver [`visual-refinement.md`](visual-refinement.md)),
+da Etapa 10.6 (experiências digitais na página inicial) e da Etapa 10.5 (gerenciamento de Editores pelo
 painel), que se seguiram à Etapa 10 (auditoria, QA, segurança, SEO
 e preparação para homologação). Resultados completos em
 [`qa-report.md`](qa-report.md); roteiro para a equipe em
@@ -11,8 +12,8 @@ e preparação para homologação). Resultados completos em
 
 | | |
 |---|---|
-| Etapas concluídas | 1 a 10.6 |
-| Último commit | `feat: add customizable digital experiences section` |
+| Etapas concluídas | 1 a 10.7 (aparência, homepage e instituições da 10.7 em rascunho, aguardando publicação) |
+| Último commit | `feat: add reference institutions and demo preview composition` |
 | Site em produção | <https://geologar.plataformageologar.workers.dev> (sem domínio próprio) |
 | Deploy | Automático a cada push em `main` (Cloudflare Workers Builds, Worker `geologar`) |
 | Banco e autenticação | Supabase (PostgreSQL + RLS, Auth, Storage, Edge Function `admin-editor-management`) |
@@ -177,8 +178,10 @@ Ver [`database-schema.md`](database-schema.md).
 | Verificação | Resultado |
 |---|---|
 | Lint e TypeScript | Sem erros |
-| Testes unitários (`npm test`) | 142/142 (experiências digitais: 14) |
-| Testes de banco pgTAP (10 arquivos, no banco remoto, transação desfeita) | 424/424 (experiências digitais: 48) |
+| Testes unitários (`npm test`) | 152/152 (refinamento visual: 10) |
+| Testes de banco pgTAP (12 arquivos, no banco remoto, transação desfeita) | 465/465 (refinamento visual: 31; instituições da referência: 9) |
+| Playwright no preview local (Etapa 10.7) | 40 aprovados, 6 ignorados de propósito (inclui cabeçalho, busca e `/busca`) |
+| Responsivo com o preset (Etapa 10.7: 7 tamanhos × 8 páginas) | Sem rolagem horizontal |
 | Testes ponta a ponta do visitante (`npm run test:e2e`, Playwright) | 34/34 no preview local (8 ignorados: 6 de propósito e 2 da seção de experiências, ainda não publicada naquele momento); testes das experiências contra produção depois da publicação: 4/4 |
 | Edge Function publicada, sem sessão / chave publicável / JWT forjado | 401 |
 | Build OpenNext e `opennextjs-cloudflare preview` | OK |
@@ -216,6 +219,11 @@ Ver [`database-schema.md`](database-schema.md).
   usa-se a desativação; Administradores seguem pelo procedimento técnico).
 
 ### Da GeoLogar
+
+- **Etapa 10.7:** revisar e publicar a aparência “Referência GeoLogar” e a
+  homepage (em rascunho); confirmar e publicar as 22 instituições;
+  logotipos oficiais e autorização de uso das marcas (12 provisórios, 10
+  ausentes). Ver [`visual-refinement.md`](visual-refinement.md#pendências).
 
 - **Experiências digitais:** preencher a segunda experiência (hoje “Em
   breve”) ou ocultá-la quando houver uma experiência real; trocar o endereço

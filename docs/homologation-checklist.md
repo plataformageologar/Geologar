@@ -31,12 +31,25 @@ Use, se possível, um computador e um celular.
 - [ ] Fotografias das linhas de pesquisa: as atuais são de baixa resolução e
       aparecem borradas em telas grandes. Enviar fotos reais (de preferência
       com 1600 px de largura ou mais) com autorização de uso.
-- [ ] Logotipos oficiais das instituições parceiras.
+- [ ] Logotipos oficiais das instituições parceiras (12 provisórios e 10
+      ausentes; ver `docs/visual-refinement.md`) e autorização de uso das
+      marcas.
 - [ ] Projetos, publicações, instituições e redes sociais reais.
 - [ ] Dados oficiais de contato.
 - [ ] Decisão sobre o formulário de contato (hoje oculto): quem recebe as
       mensagens e qual endereço de envio.
 - [ ] Decisão sobre domínio próprio (endereço definitivo do site).
+
+### Identidade visual (Etapa 10.7)
+
+- [ ] O cabeçalho mostra o logotipo, o campo **Buscar no site** e o botão
+      verde **Login / Área restrita**; no celular, ambos ficam no menu.
+- [ ] Uma busca (por exemplo, “geologia”) mostra só conteúdo publicado.
+- [ ] No editor visual, a aparência “Referência GeoLogar” e a homepage em
+      rascunho (banner com o nome em destaque, linhas com fotos, projetos ao
+      lado das publicações) estão aprovadas para publicação.
+- [ ] Em *Demonstração*, as 22 instituições em rascunho, suas categorias e
+      os logotipos provisórios foram conferidos.
 
 ## 3. Entrar na área de edição
 
@@ -132,4 +145,5 @@ final.
 | Conteúdo e imagens | | | | |
 | Área de edição | | | | |
 | Usuários e permissões | | | | |
+| Identidade visual e instituições (Etapa 10.7) | | | | |
 | Decisões pendentes (contato, domínio) | | | | |

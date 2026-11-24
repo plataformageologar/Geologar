@@ -59,11 +59,27 @@ tela do editor.
 | Botões (`pill`, `rounded`, `square`) | `--button-radius` |
 | Cards (`bordered`, `elevated`, `flat`) | `--card-border`, `--card-shadow` |
 | Fonte dos títulos (`serif`, `sans`) | `--heading-font` |
+| Fundo `cream` (Etapa 10.7) | `--background` `#f7f3ea`, `--surface` `#fffcf6`, `--surface-muted` `#ece3d2`, `--border` `#dccfb9` |
+| Tom escuro (`dark_color`, Etapa 10.7) | `--deep` e `--deep-muted` (mistura de 78% com `#f2efe8`); contraste mínimo de 7:1 com o texto claro |
+| Seções (`spacious`, `compact`, Etapa 10.7) | `--section-y`, `--section-gap`, `--section-title-size`, `--section-title-transform`, `--section-title-tracking`, `--section-marker` |
 
 Cada cor precisa de contraste ≥ 4,5:1 com texto branco e com o fundo
 escolhido; caso contrário a gravação é recusada com a razão calculada. Valores
 `null` (ou “Restaurar padrão”) mantêm a tabela de cores acima. Com tudo no
 padrão, nenhuma regra extra é emitida.
+
+### Preset “Referência GeoLogar” (Etapa 10.7)
+
+`REFERENCE_PRESET`: principal `#805022` (marrom), secundária `#244c3e`
+(verde), tom escuro `#443020`, fundo `cream`, botões `rounded` (6 px), cantos
+`soft`, títulos `sans`, cards `bordered`, seções `compact`. Contraste:
+marrom 6,14:1 sobre creme e 6,80:1 sobre branco; texto claro sobre o tom
+escuro 10,82:1 (secundário 7,27:1). O preset só preenche o formulário de
+Aparência; publicação e histórico seguem o fluxo editorial. Detalhes e
+decisões em [`visual-refinement.md`](visual-refinement.md).
+
+Tokens fixos novos: `--brand-blue` `#0b3550` (parte “Geo” do nome no
+cabeçalho) e `--header-top-height` (faixa superior do cabeçalho).
 
 ## Tipografia
 
@@ -91,17 +107,25 @@ Os tamanhos de título usam `clamp()` e não exigem breakpoints.
 Eyebrow de seção: `text-label uppercase tracking-[0.12em] text-earth` com um
 traço à esquerda (já embutido em `SectionHeading`).
 
+Título de seção: utilitário `section-title` (tamanho, caixa e espaçamento
+vindos das variáveis de densidade) e marcador `section-marker` (barra
+`bg-earth` à esquerda, visível só nas seções compactas).
+
 ## Layout e espaçamento
 
 - **Container** (`<Container>`): largura máxima `80rem` (1280px) e gutters
   `clamp(1rem, 4vw, 2.5rem)`.
-- **Seções**: utilitário `section-y` — `clamp(4rem → 7.5rem)` vertical.
+- **Seções**: utilitário `section-y` — `var(--section-y)`: `clamp(4rem → 7.5rem)`
+  nas seções espaçosas e `clamp(2.75rem → 4.5rem)` nas compactas;
+  `section-gap` entre título e conteúdo (3rem / 2rem).
 - **Grid interno**: espaçamentos `gap-6` entre cards, `mt-12` entre título e
   conteúdo da seção.
-- **Header**: altura `--header-height` (4.5rem), fixo no topo.
+- **Header** (Etapa 10.7): duas faixas a partir de `lg` — marca, busca e
+  botão verde “Login / Área restrita” em cima (`--header-top-height`); menu
+  em faixa `surface-muted` embaixo (`--header-height` 3.25rem), com o item
+  ativo sublinhado em `primary`. Ao rolar, só a faixa do menu fica fixa. No
+  celular, uma faixa com marca e botão Menu; busca e acesso ficam no menu.
   `scroll-padding-top` evita que âncoras e elementos em foco fiquem sob ele.
-  Acesso secundário à área restrita: ícone com cadeado a partir de `lg`
-  (texto "Área restrita" a partir de `xl`) e item discreto no menu móvel.
 - **Rodapé**: faixa superior em camadas (`earth` → `secondary` → `primary`),
   referência às rochas estratificadas. Sem canais de contato cadastrados, a
   coluna "Contato" aponta para `/contato` em vez de exibir dados.
@@ -118,7 +142,8 @@ traço à esquerda (já embutido em `SectionHeading`).
 | `lg`    | ≥ 1024   | Navegação completa e acesso à área restrita (ícone); 3 colunas; pilares em 4 colunas |
 | `xl`    | ≥ 1280   | "A Rede" em duas colunas; nome institucional no header |
 
-Verificado em 375, 390, 768, 1024, 1280 e 1440 px.
+Verificado em 375, 390, 768, 1024, 1280, 1440 e 1920 px (Etapa 10.7, com o
+preset aplicado: sem rolagem horizontal em 8 páginas).
 
 ## Componentes
 

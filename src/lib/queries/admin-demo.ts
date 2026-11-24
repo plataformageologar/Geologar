@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import type { ProjectSummary } from "@/types/content";
+import type { InstitutionGroup, ProjectSummary } from "@/types/content";
 
 import type { AdminResult } from "./admin-content";
+import { groupByCategory, institutionListColumns } from "./institutions";
 import { projectSummaryColumns, toProjectSummary } from "./projects";
 import { logQueryError } from "./shared";
 
@@ -28,4 +29,26 @@ export async function getDraftProjectsForDemo(): Promise<AdminResult<ProjectSumm
     return { status: "error" };
   }
   return { status: "ready", data: data.map(toProjectSummary) };
+}
+
+/**
+ * Instituições em rascunho para a prévia protegida, agrupadas como na
+ * homepage. Mesma regra dos projetos: só admin/editor ativos recebem
+ * rascunhos (policy "CMS staff can read all institutions").
+ */
+export async function getDraftInstitutionGroupsForDemo(): Promise<AdminResult<InstitutionGroup[]>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("institutions")
+    .select(institutionListColumns)
+    .eq("is_published", false)
+    .order("sort_order")
+    .order("name")
+    .limit(60);
+
+  if (error) {
+    logQueryError("institutions (prévia de demonstração)", error);
+    return { status: "error" };
+  }
+  return { status: "ready", data: groupByCategory(data) };
 }

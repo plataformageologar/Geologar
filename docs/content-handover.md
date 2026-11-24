@@ -68,17 +68,30 @@ publicação). As três referências do mockup não foram importadas.
 
 ## Instituições
 
-Nenhuma instituição foi cadastrada. A relação sugerida pelo mockup está no
-[manifesto](initial-content-manifest.md#instituições-sugeridas-pelo-mockup).
+As 22 instituições da referência estão cadastradas como **rascunho** em 5
+categorias (Parceiras (Universidades), Colaboradoras (Pesquisa), Apoio
+institucional, Empresarial, Internacionais), só com nome e sigla. Nada
+aparece no site até a publicação. Lista e logotipos em
+[`visual-refinement.md`](visual-refinement.md#instituições-cadastradas).
 
 - [ ] Confirmar os vínculos (a presença de um logotipo no mockup não confirma
-      parceria).
-- [ ] Definir as categorias (sugestão do briefing: universidades e
-      instituições de pesquisa; apoio institucional e financiamento;
-      parceiros empresariais; cooperação internacional).
+      parceria) e os nomes oficiais.
+- [ ] Confirmar as categorias e a ordem.
 - [ ] Site oficial de cada instituição.
-- [ ] Logotipos oficiais e autorização de uso das marcas (os recortes do
-      mockup estão cortados ou deformados e não foram usados).
+- [ ] Logotipos oficiais (de preferência vetoriais) e autorização de uso das
+      marcas: substituir os 12 provisórios (recortes de baixa resolução) e
+      enviar os 10 que faltam (CIENAM UFBA, CBPM, CETEM, SDE Bahia, Museu
+      Geológico da Bahia, Associação dos Astrônomos da Bahia, CAPES, CNPq,
+      FAPESB, ASSOBEGE).
+- [ ] Autorizar a publicação, instituição por instituição, em
+      *Instituições*.
+
+## Identidade visual (Etapa 10.7)
+
+- [ ] Revisar no editor visual a aparência “Referência GeoLogar” e a
+      homepage em rascunho e autorizar a publicação.
+- [ ] Fotografia autorizada para o banner (por exemplo, do Bege Bahia); hoje
+      o banner usa o fundo padrão.
 
 ## Contato
 

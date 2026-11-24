@@ -3,13 +3,14 @@ import type { InstitutionGroup } from "@/types/content";
 
 import { failQuery, logQueryError, resolveImageSrc } from "./shared";
 
+/** Colunas da listagem, com a categoria embutida (uma consulta, sem N+1). */
+export const institutionListColumns =
+  "id, name, acronym, description, logo_path, logo_alt, website_url, category:institution_categories (slug, name, sort_order)" as const;
+
 async function fetchPublishedInstitutions(limit: number) {
-  // Uma única consulta com a categoria embutida (sem N+1).
   const { data, error } = await createPublicClient()
     .from("institutions")
-    .select(
-      "id, name, acronym, description, logo_path, logo_alt, website_url, category:institution_categories (slug, name, sort_order)",
-    )
+    .select(institutionListColumns)
     .eq("is_published", true)
     .order("is_featured", { ascending: false })
     .order("sort_order")
@@ -21,7 +22,7 @@ async function fetchPublishedInstitutions(limit: number) {
 }
 
 /** Agrupa por categoria, na ordem da categoria e, em empate, pelo nome. */
-function groupByCategory(
+export function groupByCategory(
   institutions: Awaited<ReturnType<typeof fetchPublishedInstitutions>>,
 ): InstitutionGroup[] {
   const groups = new Map<string, InstitutionGroup & { order: number }>();

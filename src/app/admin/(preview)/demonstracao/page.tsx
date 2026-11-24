@@ -15,7 +15,7 @@ import { ProjectCard } from "@/components/projects/project-card";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { requireAdminAccess } from "@/lib/auth/access";
-import { getDraftProjectsForDemo } from "@/lib/queries/admin-demo";
+import { getDraftInstitutionGroupsForDemo, getDraftProjectsForDemo } from "@/lib/queries/admin-demo";
 import { getHomepageData, withAvailableHeroLinks } from "@/lib/queries/homepage";
 import { getActiveSocialLinks, getSiteSettings } from "@/lib/queries/settings";
 import type { SectionType } from "@/lib/site/sections";
@@ -37,9 +37,10 @@ export const metadata: Metadata = {
 export default async function DemoPreviewPage() {
   await requireAdminAccess();
 
-  const [{ data, sections, anchors }, drafts, settings, socialLinks] = await Promise.all([
+  const [{ data, sections, anchors }, drafts, institutionDrafts, settings, socialLinks] = await Promise.all([
     getHomepageData(),
     getDraftProjectsForDemo(),
+    getDraftInstitutionGroupsForDemo(),
     getSiteSettings(),
     getActiveSocialLinks(),
   ]);
@@ -49,6 +50,9 @@ export default async function DemoPreviewPage() {
 
   const linesWithImage = researchLines.filter((line) => line.image_path).length;
   const draftProjects = drafts.status === "ready" ? drafts.data : [];
+  const draftInstitutionGroups = institutionDrafts.status === "ready" ? institutionDrafts.data : [];
+  const draftInstitutions = draftInstitutionGroups.flatMap((group) => group.institutions);
+  const draftLogos = draftInstitutions.filter((institution) => institution.logo_path).length;
   const hasContact = Boolean(settings.contact_email || settings.contact_phone || settings.address || settings.city);
 
   return (
@@ -149,15 +153,29 @@ export default async function DemoPreviewPage() {
           </DemoPlaceholderSection>
         )}
 
-        {institutionGroups.length > 0 ? (
+        {institutionGroups.length > 0 && (
           <Partners groups={institutionGroups} settings={settingsOf("institutions")} />
-        ) : (
+        )}
+        {draftInstitutionGroups.length > 0 && (
+          <>
+            {institutionGroups.length > 0 && (
+              <DemoNote state="published">{institutionGroups.length} categoria(s) de instituições já publicadas.</DemoNote>
+            )}
+            <Partners groups={draftInstitutionGroups} settings={settingsOf("institutions")} />
+            <DemoNote state="draft">
+              {draftInstitutions.length} instituição(ões) da referência visual em rascunho, {draftLogos} com logotipo
+              provisório recortado dos arquivos recebidos. <strong>Vínculos, nomes, sites e autorização de uso das
+              marcas aguardam confirmação</strong>; as demais aparecem só com o nome até receberem o logotipo oficial.
+              Nada aqui está no site público.
+            </DemoNote>
+          </>
+        )}
+        {institutionGroups.length === 0 && draftInstitutionGroups.length === 0 && (
           <DemoPlaceholderSection id="demo-instituicoes" eyebrow="Instituições" title="Instituições que conectam a rede">
             <p>
-              Vínculos, categorias e logotipos oficiais aguardam confirmação. Categorias sugeridas pelo briefing:
-              universidades e instituições de pesquisa; apoio institucional e financiamento; parceiros
-              empresariais; cooperação internacional. Os logotipos recortados do mockup não foram usados (cortados
-              ou com letras deformadas). Enquanto não houver instituição publicada, a seção não aparece no site.
+              {institutionDrafts.status === "error"
+                ? "Não foi possível carregar as instituições em rascunho. Recarregue a página."
+                : "Nenhuma instituição cadastrada. As instituições publicadas aparecem aqui, agrupadas por categoria."}
             </p>
           </DemoPlaceholderSection>
         )}

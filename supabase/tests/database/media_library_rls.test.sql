@@ -364,7 +364,8 @@ select is(
 );
 
 select is(
-  (select original_name from public.list_media(p_search => 'logo')),
+  -- Termo exclusivo do arquivo de teste (a biblioteca real também tem logotipos).
+  (select original_name from public.list_media(p_search => 'logo teste')),
   'logo teste.jpg',
   'busca pelo nome original'
 );

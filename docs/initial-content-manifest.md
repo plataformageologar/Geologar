@@ -105,8 +105,13 @@ ampliação (página de detalhe, banner).
 
 ## Instituições sugeridas pelo mockup
 
-Nenhuma instituição ou categoria foi cadastrada. A relação abaixo só
-registra o que aparece na referência, para conferência da equipe:
+> **Atualização (Etapa 10.7):** as 5 categorias e as 22 instituições abaixo
+> foram cadastradas como **rascunho** (só nome e sigla, sem site ou
+> descrição), e 12 logotipos foram reaproveitados provisoriamente depois de
+> remover a legenda cortada. Os outros 10 continuam sem logotipo. Inventário
+> e classificação em [`visual-refinement.md`](visual-refinement.md#inventário-e-classificação-dos-logotipos).
+
+Relação original da referência, para conferência da equipe:
 
 | Instituição (como no mockup) | Grupo no mockup | Categoria sugerida (briefing) | Validação |
 |---|---|---|---|
