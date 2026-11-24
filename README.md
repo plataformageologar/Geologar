@@ -155,6 +155,7 @@ camada `src/lib/queries/`, em paralelo (`getHomepageData()`):
 | Seção                  | Origem                                                      |
 | ---------------------- | ----------------------------------------------------------- |
 | Hero, A Rede, Contato  | `homepage_content` (registro único)                         |
+| Experiências digitais  | `page_sections` (`experiences`, cards em `settings.experiences`) |
 | Linhas de pesquisa     | `research_lines` publicadas (destaques primeiro, até 6)     |
 | Projetos               | `projects` publicados e em destaque (até 3)                 |
 | Publicações            | `publications` publicadas (destaques, depois mais recentes; até 5) |
@@ -304,6 +305,17 @@ também cria páginas institucionais novas em `/admin/paginas`, publicadas em
 banco recusa qualquer gravação fora desse fluxo. Documentação em
 [`docs/editorial-workflow.md`](docs/editorial-workflow.md) e
 [`docs/custom-pages.md`](docs/custom-pages.md).
+
+### Experiências digitais (Etapa 10.6)
+
+Seção da página inicial, abaixo do banner, com cards das experiências
+interativas da GeoLogar (ex.: tour 360° do mármore Bege Bahia). Cada card
+tem capa, textos, disponibilidade (disponível, em breve, indisponível),
+visibilidade e um link `https://` para a aplicação externa, aberta em nova
+aba só quando o visitante clica (sem iframe nem pré-carregamento). Editada
+em `/admin/experiencias`, em *Seções e blocos* e no editor visual, pelo
+mesmo fluxo de rascunho e publicação. Documentação em
+[`docs/digital-experiences.md`](docs/digital-experiences.md).
 
 ## Supabase
 

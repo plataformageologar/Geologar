@@ -92,6 +92,16 @@ Nas listagens (`/pesquisa`, `/projetos`, `/publicacoes`, `/instituicoes`) a
 tela mostra o cabeçalho editável e uma prévia simplificada da lista com os
 cards reais; filtros e paginação não são interativos na prévia.
 
+### Experiências digitais (Etapa 10.6)
+
+Na página inicial, a seção de experiências usa o mesmo componente do site
+(`ExperiencesSection`, com `editing` para mostrar cards ocultos esmaecidos).
+Cada card tem `data-experience-id`; o clique envia
+`{ type: "select", target: "section:<chave>", record: { kind: "experience", id } }`
+e `parseCanvasMessage` só aceita `id` em formato UUID. O painel abre a seção
+e expande aquele card. Os links dos cards não funcionam na tela (como todos
+os links do editor). Ver [`digital-experiences.md`](digital-experiences.md).
+
 ## Botão “Editar esta página” (site público)
 
 - `src/components/layout/edit-page-button.tsx`: componente cliente leve
@@ -172,7 +182,8 @@ src/components/admin/editor/                     visual-editor, editor-canvas, p
                                                  editor-fields, editor-history, editor-editorial
                                                  (publicar, histórico, descartar rascunho)
 src/components/admin/site/                       Campos reutilizados pelo CMS e pelo editor
-src/components/site/                             Seções e blocos públicos (page-sections, blocks)
+src/components/site/                             Seções e blocos públicos (page-sections, blocks,
+                                                 experiences-section)
 src/lib/site/                                    Validação: sections, navigation, pillars,
                                                  page-content, appearance, editor-pages, anchors,
                                                  editor-document (protocolo e rascunho)

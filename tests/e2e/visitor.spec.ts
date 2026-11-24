@@ -89,6 +89,28 @@ test("usuários e troca de senha inicial exigem login (Etapa 10.5)", async ({ pa
   await expect(page.locator('input[type="email"]')).toBeVisible();
 });
 
+test("experiências digitais: tela do CMS exige login (Etapa 10.6)", async ({ page }) => {
+  await page.goto("/admin/experiencias");
+  await expect(page).toHaveURL(/\/admin\/login\?next=%2Fadmin%2Fexperiencias$/);
+});
+
+test("experiências digitais: links externos seguros e nada embutido (Etapa 10.6)", async ({ page }) => {
+  await page.goto("/");
+  // Nenhuma aplicação externa é carregada na página inicial.
+  await expect(page.locator("iframe:not([src*='challenges.cloudflare.com'])")).toHaveCount(0);
+  const section = page.locator("section#experiencias");
+  test.skip((await section.count()) === 0, "Seção de experiências ainda não publicada.");
+  await expect(section.locator("h2")).toBeVisible();
+  const links = section.locator("a[href]");
+  for (const link of await links.all()) {
+    await expect(link).toHaveAttribute("href", /^https:\/\//);
+    await expect(link).toHaveAttribute("rel", /noopener/);
+    await expect(link).toHaveAttribute("rel", /noreferrer/);
+    if ((await link.getAttribute("target")) === "_blank") await expect(link).toContainText("abre em nova aba");
+  }
+  expect(await hasHorizontalOverflow(page)).toBe(false);
+});
+
 test("menu móvel abre e fecha pelo teclado", async ({ page, isMobile }) => {
   test.skip(!isMobile, "menu móvel");
   await page.goto("/");

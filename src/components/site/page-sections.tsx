@@ -27,6 +27,7 @@ import type {
 } from "@/types/content";
 
 import { CtaBlock, GalleryBlock, hasBlockContent, ImageTextBlock, LogosBlock, TextBlock } from "./blocks";
+import { ExperiencesSection, hasExperiences, shownExperiences } from "./experiences-section";
 import { SectionFrame } from "./section-frame";
 
 /**
@@ -78,8 +79,16 @@ function PillarsSection({
   );
 }
 
-/** Se a seção tem algo a mostrar com os dados atuais (vazias somem do site). */
-export function sectionHasContent(page: SectionScope, section: RenderableSection, data: SectionsData): boolean {
+/**
+ * Se a seção tem algo a mostrar com os dados atuais (vazias somem do site).
+ * `editing`: editor visual, que também mostra itens ocultos (experiências).
+ */
+export function sectionHasContent(
+  page: SectionScope,
+  section: RenderableSection,
+  data: SectionsData,
+  editing = false,
+): boolean {
   const { homepage } = data;
   switch (section.section_type) {
     case "hero":
@@ -98,12 +107,14 @@ export function sectionHasContent(page: SectionScope, section: RenderableSection
       return data.institutionGroups.some((group) => group.institutions.length > 0);
     case "cooperation":
       return Boolean(homepage.cooperation_title);
+    case "experiences":
+      return editing ? shownExperiences(section.settings, true).length > 0 : hasExperiences(section.settings);
     default:
       return hasBlockContent(section.section_type, section.settings, data.institutions);
   }
 }
 
-export function renderSection(page: SectionScope, section: RenderableSection, data: SectionsData) {
+export function renderSection(page: SectionScope, section: RenderableSection, data: SectionsData, editing = false) {
   const { settings, key } = section;
   switch (section.section_type) {
     case "hero":
@@ -151,6 +162,8 @@ export function renderSection(page: SectionScope, section: RenderableSection, da
       return <GalleryBlock id={key} settings={settings} />;
     case "logos":
       return <LogosBlock id={key} settings={settings} institutions={data.institutions} />;
+    case "experiences":
+      return <ExperiencesSection settings={settings} editing={editing} />;
   }
 }
 

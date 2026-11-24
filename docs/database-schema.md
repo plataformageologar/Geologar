@@ -498,6 +498,29 @@ Testes: `supabase/tests/database/editorial_workflow.test.sql` (pgTAP, 61
 verificações, transação desfeita). Os testes anteriores ligam
 `geologar.editorial_write` na transação quando preparam dados diretamente.
 
+## Etapa 10.6 — experiências digitais
+
+Migration `20261124120000_digital_experiences_section.sql`. Sem tabela nova:
+a seção é uma linha de `page_sections` com `section_type = 'experiences'` e
+os cards ficam em `settings.experiences` (JSONB). Detalhes em
+[`digital-experiences.md`](digital-experiences.md).
+
+| Objeto | Regra |
+| --- | --- |
+| `page_sections_type` (check, recriada) | Inclui `experiences` |
+| `page_sections_experiences_home` (check) | `experiences` só com `page_key = 'home'` |
+| `page_sections_experiences_unique` (índice único parcial) | No máximo uma seção `experiences` por página |
+| Políticas “CMS staff can create/delete page blocks” (recriadas) | Incluem `experiences` (inserir e excluir continuam só pelo fluxo editorial) |
+| `is_valid_experience_url(text)` | `https://` com domínio, 12–300 caracteres, sem espaços, `\`, controle ou credenciais |
+| `is_valid_experience_list(jsonb)` | Até 12 objetos; `id` UUID único; chaves permitidas; título obrigatório (≤ 120); limites de texto; `availability` ∈ `available`, `coming_soon`, `unavailable`; booleanos `is_visible` e `open_in_new_tab`; endereço obrigatório quando disponível; imagem por `is_valid_image_reference` |
+| `is_valid_section_settings` (substituída) | Chaves de `experiences`: `eyebrow`, `title`, `description`, `background`, `columns` (2 ou 3), `experiences`; limite de 60 000 bytes para esse tipo |
+| `section_image_paths` (substituída) | Inclui `experiences[].image_path` (`media_usage`, imagem ausente `GL422`) |
+| `is_valid_editorial_content` (substituída) | `experiences` só no documento `home`, no máximo uma |
+
+O conteúdo inicial foi gravado no **rascunho** da unidade `home` com uma
+revisão `draft_saved`; o publicado não mudou. Testes:
+`supabase/tests/database/digital_experiences.test.sql` (pgTAP, 48).
+
 ## Ainda não implementado
 
 - Gestão de usuários pelo painel.

@@ -7,6 +7,7 @@ import {
 } from "@/lib/admin/site-settings";
 import { isUuid } from "@/lib/admin/validation";
 import { sanitizeAppearance, type Appearance } from "@/lib/site/appearance";
+import { AVAILABILITY_LABELS, type Experience } from "@/lib/site/experiences";
 import type { NavDraft } from "@/lib/site/navigation";
 import { pageContentFields, toPageContentValues, type PageContentRecord, type PageContentValues } from "@/lib/site/page-content";
 import { isPillarIcon, type PillarDraft, type PillarIcon } from "@/lib/site/pillars";
@@ -299,6 +300,15 @@ const FIELD_LABELS: Record<string, string> = {
   footer_logo_mode: "Logotipo do rodapé",
   footer_logo_path: "Logotipo próprio do rodapé",
   header_style: "Estilo do cabeçalho",
+  label: "Identificação complementar",
+  external_url: "Endereço de acesso",
+  button_label: "Texto do botão",
+  unavailable_label: "Texto quando indisponível",
+  availability: "Disponibilidade",
+  open_in_new_tab: "Abertura do link",
+  image_alt: "Texto alternativo da imagem",
+  columns: "Colunas",
+  background: "Fundo",
 };
 
 const IMAGE_FIELDS = new Set(["hero_image_path", "seo_image_path", "logo_path", "favicon_path", "footer_logo_path", "image_path"]);
@@ -317,6 +327,7 @@ const SECTION_LABELS: Record<SectionType, string> = {
   cta: "Chamada para ação",
   gallery: "Galeria",
   logos: "Logotipos",
+  experiences: "Experiências digitais",
 };
 
 function display(value: unknown): string | null {
@@ -386,8 +397,33 @@ function sectionName(item: SectionItem) {
 
 function sectionFields(item: SectionItem): Record<string, unknown> {
   const fields: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(item.settings)) fields[key] = value;
+  for (const [key, value] of Object.entries(item.settings)) {
+    // As experiências são comparadas card a card (experienceDiff).
+    if (key !== "experiences") fields[key] = value;
+  }
   return fields;
+}
+
+function experienceFields(item: Experience): Record<string, unknown> {
+  return {
+    title: item.title,
+    label: item.label,
+    description: item.description,
+    image_path: item.image_path,
+    image_alt: item.image_alt,
+    external_url: item.external_url,
+    button_label: item.button_label,
+    unavailable_label: item.unavailable_label,
+    availability: AVAILABILITY_LABELS[item.availability],
+    open_in_new_tab: item.open_in_new_tab ? "Nova aba" : "Mesma aba",
+  };
+}
+
+/** Experiências adicionadas, removidas, reordenadas, ocultadas e campos alterados. */
+function experienceDiff(area: string, before: SectionItem[], after: SectionItem[]): DiffEntry[] {
+  const cards = (items: SectionItem[]) =>
+    items.find((item) => item.section_type === "experiences")?.settings.experiences ?? [];
+  return diffList(area, cards(before), cards(after), (item) => `Experiência “${item.title}”`, experienceFields);
 }
 
 /** Diferenças entre duas versões da mesma unidade (antes → depois). */
@@ -398,6 +434,7 @@ export function diffContent(type: DocType, before: AnyContent, after: AnyContent
     switch (part) {
       case "sections":
         entries.push(...diffList(area, before.sections ?? [], after.sections ?? [], sectionName, sectionFields));
+        entries.push(...experienceDiff(area, before.sections ?? [], after.sections ?? []));
         break;
       case "items":
         entries.push(

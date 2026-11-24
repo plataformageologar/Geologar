@@ -1,7 +1,8 @@
 # Estado atual do sistema — Portal GeoLogar
 
-Retrato do portal em **23/11/2026**, depois da Etapa 10.5 (gerenciamento de
-Editores pelo painel), que se seguiu à Etapa 10 (auditoria, QA, segurança, SEO
+Retrato do portal em **24/11/2026**, depois da Etapa 10.6 (experiências
+digitais na página inicial) e da Etapa 10.5 (gerenciamento de Editores pelo
+painel), que se seguiram à Etapa 10 (auditoria, QA, segurança, SEO
 e preparação para homologação). Resultados completos em
 [`qa-report.md`](qa-report.md); roteiro para a equipe em
 [`homologation-checklist.md`](homologation-checklist.md). Detalhes de cada parte nos documentos citados.
@@ -10,8 +11,8 @@ e preparação para homologação). Resultados completos em
 
 | | |
 |---|---|
-| Etapas concluídas | 1 a 10.5 |
-| Último commit | `docs: record Stage 10.5 production validation` |
+| Etapas concluídas | 1 a 10.6 |
+| Último commit | `feat: add customizable digital experiences section` |
 | Site em produção | <https://geologar.plataformageologar.workers.dev> (sem domínio próprio) |
 | Deploy | Automático a cada push em `main` (Cloudflare Workers Builds, Worker `geologar`) |
 | Banco e autenticação | Supabase (PostgreSQL + RLS, Auth, Storage, Edge Function `admin-editor-management`) |
@@ -44,7 +45,7 @@ formulário de contato (ver [`contact-form.md`](contact-form.md)).
 
 | Página | Rota | Situação |
 |---|---|---|
-| Início | `/` | No ar; seções e blocos configuráveis |
+| Início | `/` | No ar; seções e blocos configuráveis; seção “Experiências digitais” pronta no rascunho, aguardando publicação (Etapa 10.6, ver [`digital-experiences.md`](digital-experiences.md)) |
 | A Rede | `/rede` | No ar; pilares e seções configuráveis |
 | Pesquisa | `/pesquisa`, `/pesquisa/[slug]` | No ar |
 | Projetos | `/projetos`, `/projetos/[slug]` | No ar (filtros e paginação) |
@@ -107,6 +108,7 @@ painel e o banco recusam qualquer edição. Ver
 | Editor visual | `/admin/editor?pagina=/` | admin, editor |
 | Homepage | `/admin/homepage` | admin, editor |
 | Seções e blocos | `/admin/secoes` | admin, editor |
+| Experiências digitais | `/admin/experiencias` | admin, editor |
 | Pilares | `/admin/pilares` | admin, editor |
 | Textos das páginas | `/admin/textos-das-paginas` | admin, editor |
 | Páginas personalizadas | `/admin/paginas` | admin, editor (despublicar/arquivar publicadas: admin) |
@@ -131,8 +133,8 @@ Ver [`cms.md`](cms.md), [`admin-auth.md`](admin-auth.md),
 
 ## Banco de dados
 
-13 migrations aplicadas, de `20261103141529_initial_geologar_content_schema`
-a `20261123150000_editor_account_management`. Tabelas principais:
+14 migrations aplicadas, de `20261103141529_initial_geologar_content_schema`
+a `20261124120000_digital_experiences_section`. Tabelas principais:
 
 - conteúdo: `homepage_content`, `research_lines`, `projects`, `publications`,
   `institutions`, `institution_categories`, `social_links`, `site_settings`;
@@ -175,9 +177,9 @@ Ver [`database-schema.md`](database-schema.md).
 | Verificação | Resultado |
 |---|---|
 | Lint e TypeScript | Sem erros |
-| Testes unitários (`npm test`) | 128/128 (gerenciamento de Editores: 31) |
-| Testes de banco pgTAP (9 arquivos, no banco remoto, transação desfeita) | 376/376 (gerenciamento de Editores: 30) |
-| Testes ponta a ponta do visitante (`npm run test:e2e`, Playwright) | 32/32 (6 ignorados de propósito) |
+| Testes unitários (`npm test`) | 142/142 (experiências digitais: 14) |
+| Testes de banco pgTAP (10 arquivos, no banco remoto, transação desfeita) | 424/424 (experiências digitais: 48) |
+| Testes ponta a ponta do visitante (`npm run test:e2e`, Playwright) | 34/34 (8 ignorados: 6 de propósito e 2 da seção de experiências até ser publicada) |
 | Edge Function publicada, sem sessão / chave publicável / JWT forjado | 401 |
 | Build OpenNext e `opennextjs-cloudflare preview` | OK |
 | `npm audit --omit=dev` | 0 vulnerabilidades |
@@ -185,6 +187,7 @@ Ver [`database-schema.md`](database-schema.md).
 | Interface com conta editor (produção, sem gravar) | Permissões e avisos corretos; editor visual edita e descarta sem salvar |
 | Gerenciamento de Editores em produção (conta de teste) | Criar, primeiro acesso com troca obrigatória, desativar, reativar e nova senha inicial OK; histórico sem senhas; conta de teste desativada ([detalhes](user-management.md#validação-em-produção-23112026)) |
 | Responsivo (6 tamanhos × 16 páginas públicas e do CMS) | Sem rolagem horizontal |
+| Seção de experiências digitais (6 tamanhos, 2 e 3 colunas) | Sem rolagem horizontal; 1 coluna no celular, 2 no tablet, 3 em telas largas quando configurado |
 | Verificação automática de acessibilidade (14 páginas) | Sem problemas (não é auditoria WCAG) |
 
 ## Pendências
@@ -212,6 +215,12 @@ Ver [`database-schema.md`](database-schema.md).
   usa-se a desativação; Administradores seguem pelo procedimento técnico).
 
 ### Da GeoLogar
+
+- **Experiências digitais:** confirmar que
+  `https://bernardo-aeonvr.github.io/Geologar-2/` é o endereço definitivo do
+  Bege Bahia, revisar os textos e **publicar** a página inicial; preencher a
+  segunda experiência (ou ocultá-la) quando houver uma experiência real. Ver
+  [`guia-edicao-geologar.md`](guia-edicao-geologar.md#como-adicionar-ou-modificar-uma-experiência-digital).
 
 - Textos finais, fotografias reais e logotipos oficiais (incluindo os das
   instituições parceiras), com direitos de uso confirmados. As fotos atuais

@@ -70,6 +70,9 @@ Para acrescentar conteúdo use **Adicionar bloco**:
 - **Chamada** — título, texto e botão com link.
 - **Galeria** — até 12 imagens da biblioteca, em grade.
 - **Logotipos** — até 24 instituições cadastradas.
+- **Experiências digitais** — só na página inicial e uma vez (entra logo
+  abaixo do banner). Ver
+  [Como adicionar ou modificar uma experiência digital](#como-adicionar-ou-modificar-uma-experiência-digital).
 
 Toda imagem precisa de **texto alternativo** (descrição para leitores de
 tela).
@@ -86,6 +89,71 @@ vazios usam o texto padrão.
 O conteúdo de cada projeto ou linha é editado no CMS. No editor, ao clicar em
 um card ou abrir uma página de detalhe, o painel mostra o link **“Editar no
 CMS”**.
+
+## Como adicionar ou modificar uma experiência digital
+
+As experiências digitais (tours 360°, aplicações 3D, mapas interativos…)
+aparecem na página inicial, logo abaixo do banner, em cards com imagem,
+textos e um botão que abre a experiência **fora do portal**. O portal não
+copia nem incorpora a experiência: guarda só o endereço.
+
+**Onde editar:** menu *Site → Experiências digitais*
+(`/admin/experiencias`), ou no editor visual da página inicial clicando no
+card (o painel abre aquele card). Também aparece em *Seções e blocos*.
+
+### Modificar uma experiência
+
+1. Abra *Experiências digitais* e clique no nome do card para expandi-lo.
+2. Ajuste os campos:
+   - **Título** (obrigatório) — ex.: “Bege Bahia”.
+   - **Identificação complementar** — ex.: “Experiência imersiva 360°”.
+   - **Descrição** — até 400 caracteres.
+   - **Imagem de capa** — escolha na biblioteca de mídia (ou envie uma
+     nova). Use uma imagem **horizontal (16:9)**, de preferência uma captura
+     real da experiência ou do local retratado. Preencha o **texto
+     alternativo**. Sem imagem, o card usa uma capa neutra da GeoLogar.
+   - **Disponibilidade** — *Disponível* (mostra o botão), *Em breve* ou
+     *Temporariamente indisponível* (mostram um aviso no lugar do botão).
+   - **Endereço de acesso** — endereço completo começando com `https://`.
+     Obrigatório quando *Disponível*. Use **Testar o endereço** para
+     conferir antes de publicar: o portal não verifica sozinho.
+   - **Abrir em nova aba** — recomendado (o visitante não perde o portal).
+   - **Texto do botão** (vazio = “Iniciar experiência”) e **texto quando não
+     disponível** (ex.: “Em breve”).
+3. **Salvar rascunho**, conferir a prévia e **Publicar** a página inicial.
+
+Ocultar um card (ícone de olho) tira o card do site sem perder os dados —
+diferente de *Em breve*, que mostra o card sem link. Para mudar a ordem, use
+as setas. Para apagar, use a lixeira e confirme; a imagem continua na
+biblioteca.
+
+### Adicionar uma nova experiência
+
+1. Em *Experiências digitais*, clique em **Adicionar experiência** (até 12).
+2. O card novo nasce como *Em breve*. Preencha os campos e, quando o
+   endereço estiver pronto, mude para *Disponível*.
+3. Salve o rascunho e publique.
+
+### Como preencher a segunda experiência
+
+O card **“Nova experiência GeoLogar”** é um espaço reservado (*Em breve*,
+sem link e com capa neutra). Quando a próxima experiência estiver pronta:
+
+1. Troque o **título** pelo nome oficial e a **identificação** pelo tipo
+   (ex.: “Aplicação 3D”, “Mapa interativo”).
+2. Escreva a **descrição** com informações confirmadas pela equipe
+   responsável.
+3. Envie a **capa** (captura real da experiência) pela biblioteca e preencha
+   o texto alternativo.
+4. Informe o **endereço** `https://…`, teste-o e mude a disponibilidade para
+   **Disponível**.
+5. Salve, confira a prévia no celular e no computador e publique.
+
+Enquanto não houver uma segunda experiência real, o card pode continuar
+*Em breve* ou ser **ocultado**.
+
+> Publicar a página inicial publica **todas** as alterações pendentes dela
+> (banner, seções e experiências) de uma vez. Confira o histórico antes.
 
 ## Salvar rascunho e publicar
 
@@ -177,6 +245,7 @@ ou reativadas por administradores.
 | | Administrador | Editor |
 | --- | --- | --- |
 | Textos da página inicial, pilares, seções, blocos, textos das páginas: salvar rascunho e publicar | ✔ | ✔ |
+| Experiências digitais (cards, endereços, capas, disponibilidade) | ✔ | ✔ |
 | Páginas personalizadas: criar, editar, publicar, restaurar | ✔ | ✔ |
 | Despublicar ou arquivar página já publicada | ✔ | — |
 | Projetos, linhas, publicações, instituições, imagens | ✔ | ✔ |

@@ -234,7 +234,9 @@ export const EDITOR_MESSAGE = "geologar-editor";
 
 export type RecordRef =
   | { kind: "project" | "research-line"; slug: string }
-  | { kind: "publication" | "institution"; title: string };
+  | { kind: "publication" | "institution"; title: string }
+  /** Card de experiência digital, pelo id estável (UUID) dentro da seção. */
+  | { kind: "experience"; id: string };
 
 export type CanvasState = {
   page: EditorPage;
@@ -269,6 +271,7 @@ export type FromCanvasMessage =
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const KEY = /^[A-Za-z0-9_-]{1,80}$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function isTarget(value: unknown): value is EditorTarget {
   if (typeof value !== "string") return false;
@@ -285,6 +288,7 @@ function isRecordRef(value: unknown): value is RecordRef {
   if (record.kind === "publication" || record.kind === "institution") {
     return typeof record.title === "string" && record.title.length > 0 && record.title.length <= 300;
   }
+  if (record.kind === "experience") return typeof record.id === "string" && UUID.test(record.id);
   return false;
 }
 

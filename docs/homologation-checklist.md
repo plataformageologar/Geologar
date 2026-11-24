@@ -73,6 +73,21 @@ Faça estes testes em um texto que possa ser desfeito.
 - [ ] **Descartar** o que não foi salvo volta ao texto original.
 - [ ] As visualizações de computador, tablet e celular funcionam.
 
+### Experiências digitais (Etapa 10.6)
+
+- [ ] Em **Experiências digitais** (menu *Site*), conferir os dois cards do
+      rascunho e testar o endereço do Bege Bahia pelo link **Testar o
+      endereço**.
+- [ ] No editor visual da página inicial, clicar no card do Bege Bahia: o
+      painel abre aquele card.
+- [ ] Ocultar um card e mudar outro para *Em breve*: na tela, o oculto fica
+      esmaecido e o *Em breve* perde o botão. **Descartar** as alterações.
+- [ ] Tentar salvar um endereço `http://`, `javascript:` ou sem `https://`:
+      o sistema recusa e explica.
+- [ ] Publicar a página inicial: a seção aparece logo abaixo do banner; o
+      botão **Iniciar experiência** abre a experiência em nova aba; no
+      celular os cards ficam um abaixo do outro.
+
 ## 6. Páginas e menu
 
 - [ ] Criar uma página nova (fica como rascunho, fora do site).

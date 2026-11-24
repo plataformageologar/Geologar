@@ -16,7 +16,13 @@ import { sanitizeAppearance, type Appearance, type AppearanceFieldErrors } from 
 import type { NavDraft, NavFieldErrors, NavLocation } from "@/lib/site/navigation";
 import type { PageContentFieldErrors, PageContentKey, PageContentValues } from "@/lib/site/page-content";
 import type { PillarDraft, PillarFieldErrors } from "@/lib/site/pillars";
-import type { SectionDraft, SectionFieldErrors, SectionScope } from "@/lib/site/sections";
+import { newKey } from "@/lib/site/lists";
+import {
+  newBlockSettings,
+  type SectionDraft,
+  type SectionFieldErrors,
+  type SectionScope,
+} from "@/lib/site/sections";
 
 import { useEditorial, useReportDirty } from "../editorial/editorial-scope";
 import { FormMessage } from "../form-controls";
@@ -25,7 +31,7 @@ import { AppearanceFields } from "./appearance-fields";
 import { NavigationFields } from "./navigation-fields";
 import { PageContentFields } from "./page-content-fields";
 import { PillarsFields } from "./pillars-fields";
-import type { InstitutionOption } from "./section-settings-fields";
+import { SectionSettingsFields, type InstitutionOption } from "./section-settings-fields";
 import { SectionsFields } from "./sections-fields";
 
 /**
@@ -291,6 +297,98 @@ export function SectionsEditor({
         canUpload={canUpload}
         institutions={institutions}
       />
+    </EditorForm>
+  );
+}
+
+// Experiências digitais -----------------------------------------------------------------
+
+/**
+ * Só a seção de experiências da página inicial. Grava a lista completa de
+ * seções da homepage (as demais seguem como estão no rascunho), pelo mesmo
+ * fluxo de rascunho e publicação das outras telas.
+ */
+export function ExperiencesEditor({ initial, canUpload }: { initial: SectionDraft[]; canUpload: boolean }) {
+  const state = useDraft(initial);
+  const [errors, setErrors] = useState<Record<string, SectionFieldErrors>>({});
+  const save = usePartSave("sections");
+  const section = state.draft.find((item) => item.section_type === "experiences") ?? null;
+
+  const submit = () =>
+    state.startTransition(async () => {
+      const result = await save(state.draft);
+      if (result.status === "success") {
+        const items = toSectionDrafts(result.content.sections ?? []);
+        state.setSaved(items);
+        state.setDraft(items);
+        setErrors({});
+        state.setMessage({ tone: "success", text: result.message });
+      } else {
+        setErrors((result.errors.itemErrors ?? {}) as Record<string, SectionFieldErrors>);
+        state.setMessage(result.message);
+      }
+    });
+
+  const addSection = () => {
+    const created: SectionDraft = {
+      id: null,
+      key: newKey("experiencias"),
+      section_type: "experiences",
+      is_visible: true,
+      settings: newBlockSettings("experiences"),
+    };
+    const heroIndex = state.draft.findIndex((item) => item.section_type === "hero");
+    state.setDraft([...state.draft.slice(0, heroIndex + 1), created, ...state.draft.slice(heroIndex + 1)]);
+  };
+
+  return (
+    <EditorForm
+      part="sections"
+      dirty={state.dirty}
+      pending={state.pending}
+      message={state.message}
+      loginNext="/admin/experiencias"
+      onSubmit={submit}
+      onCancel={() => {
+        state.cancel();
+        setErrors({});
+      }}
+    >
+      {section ? (
+        <div className="flex flex-col gap-5">
+          {!section.is_visible && (
+            <FormMessage tone="info">
+              A seção inteira está oculta. Ela pode ser exibida novamente em Seções e blocos ou no editor visual.
+            </FormMessage>
+          )}
+          <SectionSettingsFields
+            idPrefix="experiencias"
+            type="experiences"
+            settings={section.settings}
+            onChange={(settings) =>
+              state.setDraft(state.draft.map((item) => (item.key === section.key ? { ...item, settings } : item)))
+            }
+            errors={errors[section.key]}
+            disabled={state.pending}
+            canUpload={canUpload}
+          />
+        </div>
+      ) : (
+        <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border p-5">
+          <p className="text-body-sm text-muted-foreground">
+            A página inicial ainda não tem a seção de experiências digitais (ou ela foi excluída). Ao adicionar, ela
+            entra logo abaixo do banner, no rascunho.
+          </p>
+          <button
+            type="button"
+            onClick={addSection}
+            disabled={state.pending}
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-label text-primary-foreground hover:bg-primary-hover disabled:opacity-50"
+          >
+            Adicionar a seção de experiências
+          </button>
+        </div>
+      )}
     </EditorForm>
   );
 }

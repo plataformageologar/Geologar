@@ -1,6 +1,7 @@
 "use client";
 
 import { countCharacters } from "@/lib/admin/validation";
+import { EXPERIENCE_COLUMN_OPTIONS } from "@/lib/site/experiences";
 import { moveItem } from "@/lib/site/lists";
 import {
   ALIGN_LABELS,
@@ -29,6 +30,7 @@ import {
 
 import { Checkbox, describedBy, Field, Select, TextArea, TextInput } from "../form-controls";
 import { MediaField } from "../media/media-field";
+import { ExperiencesFields } from "./experiences-fields";
 import { ItemToolbar } from "./list-controls";
 
 export type InstitutionOption = { id: string; name: string; published: boolean };
@@ -54,6 +56,7 @@ export function SectionSettingsFields({
   disabled,
   canUpload,
   institutions = [],
+  focusExperienceId,
 }: {
   idPrefix: string;
   type: SectionType;
@@ -63,6 +66,8 @@ export function SectionSettingsFields({
   disabled?: boolean;
   canUpload: boolean;
   institutions?: InstitutionOption[];
+  /** Experiência clicada na tela do editor visual (abre o card). */
+  focusExperienceId?: string | null;
 }) {
   const keys = SECTION_KEYS[type];
   const has = (key: SettingKey) => keys.includes(key);
@@ -268,6 +273,19 @@ export function SectionSettingsFields({
         </fieldset>
       )}
 
+      {has("experiences") && (
+        <ExperiencesFields
+          idPrefix={idPrefix}
+          items={settings.experiences ?? []}
+          onChange={(items) => onChange({ ...settings, experiences: items })}
+          errors={errors.experience_items}
+          listError={errors.experience_items ? undefined : errors.experiences}
+          disabled={disabled}
+          canUpload={canUpload}
+          focusId={focusExperienceId}
+        />
+      )}
+
       {has("institution_ids") && (
         <fieldset className="flex flex-col gap-3">
           <legend className="text-label">Instituições exibidas</legend>
@@ -324,7 +342,9 @@ export function SectionSettingsFields({
         {select("align", "Alinhamento", ALIGNS, (option) => ALIGN_LABELS[option], "left")}
         {select("image_side", "Posição da imagem", IMAGE_SIDES, (option) => IMAGE_SIDE_LABELS[option], "left")}
         {select("limit", "Quantidade de itens", LIMIT_OPTIONS, (option) => String(option), type === "projects" ? 3 : type === "publications" ? 5 : 6)}
-        {select("columns", "Colunas (telas largas)", COLUMN_OPTIONS, (option) => `${option} colunas`, 3)}
+        {type === "experiences"
+          ? select("columns", "Colunas (telas largas)", EXPERIENCE_COLUMN_OPTIONS, (option) => `${option} colunas`, 2)
+          : select("columns", "Colunas (telas largas)", COLUMN_OPTIONS, (option) => `${option} colunas`, 3)}
         {select(
           "background",
           "Fundo",

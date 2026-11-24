@@ -200,7 +200,9 @@ export async function restoreEditorialRevision(input: {
       if (result.errors) {
         problems.push(
           ...Object.values(result.errors.fieldErrors ?? {}),
-          ...Object.values(result.errors.itemErrors ?? {}).flatMap((errors) => Object.values(errors)),
+          ...Object.values(result.errors.itemErrors ?? {}).flatMap((errors) =>
+            Object.values(errors).filter((value): value is string => typeof value === "string"),
+          ),
           ...(result.errors.listError ? [result.errors.listError] : []),
         );
       } else {

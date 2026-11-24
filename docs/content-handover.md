@@ -104,6 +104,26 @@ definidos (detalhes em [`contact-form.md`](contact-form.md#checklist-de-ativaç�
       dados informados serão utilizados para responder à sua mensagem enviada
       à GeoLogar."
 
+## Experiências digitais (Etapa 10.6)
+
+A página inicial tem uma seção pronta, no rascunho, com duas experiências.
+Ver [`digital-experiences.md`](digital-experiences.md).
+
+- [ ] Confirmar que `https://bernardo-aeonvr.github.io/Geologar-2/` é o
+      endereço definitivo da experiência **Bege Bahia** (o repositório o
+      descreve como versão de testes no GitHub Pages) ou informar o endereço
+      oficial.
+- [ ] Aprovar os textos da seção e do card Bege Bahia (título, descrição,
+      “Experiência imersiva 360°”).
+- [ ] Aprovar a capa do Bege Bahia (enquadramento de um panorama da própria
+      experiência) ou enviar uma captura oficial em 16:9 com autorização de
+      uso.
+- [ ] Segunda experiência: nome oficial, tipo, descrição, endereço `https://`
+      e capa (captura real). Enquanto não houver, o card fica “Em breve” ou
+      é ocultado.
+- [ ] Instituição ou equipe responsável por cada experiência, se deve ser
+      citada no card.
+
 ## Jurídico
 
 - [ ] Política de privacidade.

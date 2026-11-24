@@ -14,12 +14,13 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(30);
 
--- Vínculos existentes não passam a exigir troca de senha ------------------------
+-- Administradores nunca ficam com troca de senha pendente (o módulo só a
+-- exige de Editores; Editores redefinidos pelo painel podem estar pendentes).
 
 select is(
-  (select count(*)::int from public.admin_memberships where must_change_password),
+  (select count(*)::int from public.admin_memberships where must_change_password and role = 'admin'),
   0,
-  'vínculos existentes continuam sem troca de senha pendente'
+  'nenhum administrador fica com troca de senha pendente'
 );
 
 -- Fixtures ---------------------------------------------------------------------

@@ -1,6 +1,14 @@
 import { isLocalImagePath, isMediaObjectName } from "@/lib/media/config";
 import { isUuid, normalizeText, validateHref, validateText, type TextRule } from "@/lib/admin/validation";
 
+import {
+  EXPERIENCE_COLUMN_OPTIONS,
+  sanitizeExperiences,
+  validateExperiences,
+  type Experience,
+  type ExperienceFieldErrors,
+} from "./experiences";
+
 /**
  * Seções das páginas personalizáveis (homepage e /rede). Mesmas regras da
  * função public.is_valid_section_settings (migration
@@ -25,10 +33,19 @@ export const BUILTIN_SECTION_TYPES = [
   "cooperation",
 ] as const;
 export const BLOCK_TYPES = ["text", "image_text", "cta", "gallery", "logos"] as const;
+/**
+ * Seções que a equipe adiciona e remove como blocos, mas só em páginas
+ * específicas e no máximo uma por página (Etapa 10.6: experiências digitais,
+ * somente na página inicial).
+ */
+export const FEATURE_SECTION_TYPES = ["experiences"] as const;
 
 export type BuiltinSectionType = (typeof BUILTIN_SECTION_TYPES)[number];
 export type BlockType = (typeof BLOCK_TYPES)[number];
-export type SectionType = BuiltinSectionType | BlockType;
+export type FeatureSectionType = (typeof FEATURE_SECTION_TYPES)[number];
+export type SectionType = BuiltinSectionType | BlockType | FeatureSectionType;
+/** Tipos que podem ser adicionados a uma lista de seções. */
+export type AddableSectionType = BlockType | FeatureSectionType;
 
 export const BACKGROUNDS = ["default", "surface", "muted", "deep", "primary"] as const;
 export const HERO_LAYOUTS = ["default", "centered", "split"] as const;
@@ -70,6 +87,7 @@ export type SectionSettings = {
   image_alt?: string;
   images?: GalleryImage[];
   institution_ids?: string[];
+  experiences?: Experience[];
 };
 
 export type SettingKey = keyof SectionSettings;
@@ -88,6 +106,7 @@ export const SECTION_KEYS: Record<SectionType, readonly SettingKey[]> = {
   cta: ["title", "description", "cta_label", "cta_href", "background"],
   gallery: ["title", "description", "images", "columns", "background"],
   logos: ["title", "description", "institution_ids", "background"],
+  experiences: ["eyebrow", "title", "description", "background", "columns", "experiences"],
 };
 
 export const SECTION_TEXT_RULES = {
@@ -126,15 +145,24 @@ export const SECTION_LABELS: Record<SectionType, string> = {
   cta: "Chamada para ação",
   gallery: "Galeria de imagens",
   logos: "Lista de logotipos",
+  experiences: "Experiências digitais",
 };
 
-export const BLOCK_DESCRIPTIONS: Record<BlockType, string> = {
+export const BLOCK_DESCRIPTIONS: Record<AddableSectionType, string> = {
   text: "Título, texto e um botão opcional.",
   image_text: "Imagem da biblioteca ao lado de um texto.",
   cta: "Faixa de destaque com título, texto e botão.",
   gallery: "Até 12 imagens da biblioteca, em grade.",
   logos: "Logotipos de instituições já cadastradas e publicadas.",
+  experiences:
+    "Cards das aplicações interativas da GeoLogar (tours 360°, aplicações 3D…) com link externo. Uma por página inicial.",
 };
+
+/**
+ * Imagens do próprio site (public/) usadas no conteúdo inicial: aceitas
+ * mesmo antes da primeira publicação. As demais imagens vêm da biblioteca.
+ */
+export const SEED_LOCAL_IMAGES: ReadonlySet<string> = new Set(["/images/experiencias/bege-bahia-pedreira.webp"]);
 
 export const BACKGROUND_LABELS: Record<Background, string> = {
   default: "Padrão da página",
@@ -171,11 +199,38 @@ export function isBlockType(value: unknown): value is BlockType {
   return typeof value === "string" && (BLOCK_TYPES as readonly string[]).includes(value);
 }
 
+export function isFeatureSectionType(value: unknown): value is FeatureSectionType {
+  return typeof value === "string" && (FEATURE_SECTION_TYPES as readonly string[]).includes(value);
+}
+
 export function isSectionType(value: unknown): value is SectionType {
   return (
     typeof value === "string" &&
-    ((BUILTIN_SECTION_TYPES as readonly string[]).includes(value) || isBlockType(value))
+    ((BUILTIN_SECTION_TYPES as readonly string[]).includes(value) || isBlockType(value) || isFeatureSectionType(value))
   );
+}
+
+/** Pode ser excluída da lista (blocos e seções adicionáveis); nativas só são ocultadas. */
+export function isRemovableSection(type: SectionType): type is AddableSectionType {
+  return isBlockType(type) || isFeatureSectionType(type);
+}
+
+/** A seção pode existir nesta página. */
+export function isAllowedOnPage(scope: SectionScope, type: SectionType): boolean {
+  if (scope === "custom") return isBlockType(type);
+  if (type === "experiences") return scope === "home";
+  return true;
+}
+
+/** Tipos oferecidos em "Adicionar" para a lista atual da página. */
+export function addableSectionTypes(
+  scope: SectionScope,
+  sections: readonly { section_type: SectionType }[],
+): AddableSectionType[] {
+  const features = FEATURE_SECTION_TYPES.filter(
+    (type) => isAllowedOnPage(scope, type) && !sections.some((section) => section.section_type === type),
+  );
+  return [...BLOCK_TYPES, ...features];
 }
 
 export function isSectionPage(value: unknown): value is SectionPage {
@@ -222,7 +277,7 @@ export function sanitizeSectionSettings(type: SectionType, raw: unknown): Sectio
         if (oneOf(LIMIT_OPTIONS, value)) result.limit = value;
         break;
       case "columns":
-        if (oneOf(COLUMN_OPTIONS, value)) result.columns = value;
+        if (oneOf(type === "experiences" ? EXPERIENCE_COLUMN_OPTIONS : COLUMN_OPTIONS, value)) result.columns = value;
         break;
       case "layout":
         if (oneOf(HERO_LAYOUTS, value)) result.layout = value;
@@ -263,12 +318,18 @@ export function sanitizeSectionSettings(type: SectionType, raw: unknown): Sectio
           result.institution_ids = value.filter(isUuid).slice(0, LOGOS_MAX_INSTITUTIONS);
         }
         break;
+      case "experiences":
+        result.experiences = sanitizeExperiences(value, isImageReference);
+        break;
     }
   }
   return result;
 }
 
-export type SectionFieldErrors = Partial<Record<SettingKey, string>>;
+export type SectionFieldErrors = Partial<Record<SettingKey, string>> & {
+  /** Erros de cada experiência, pelo id do card. */
+  experience_items?: Record<string, ExperienceFieldErrors>;
+};
 
 /**
  * Validação definitiva (Server Action) e retorno imediato (formulários).
@@ -296,7 +357,7 @@ export function validateSectionSettings(
   }
 
   const imageAccepted = (value: string) =>
-    isMediaObjectName(value) || (currentImages.has(value) && isLocalImagePath(value));
+    isMediaObjectName(value) || ((currentImages.has(value) || SEED_LOCAL_IMAGES.has(value)) && isLocalImagePath(value));
 
   for (const key of allowed) {
     const value = source[key];
@@ -333,7 +394,10 @@ export function validateSectionSettings(
         else errors.limit = "Escolha entre 1 e 12 itens.";
         break;
       case "columns":
-        if (oneOf(COLUMN_OPTIONS, value)) data.columns = value;
+        if (type === "experiences") {
+          if (oneOf(EXPERIENCE_COLUMN_OPTIONS, value)) data.columns = value;
+          else errors.columns = "Escolha 2 ou 3 colunas.";
+        } else if (oneOf(COLUMN_OPTIONS, value)) data.columns = value;
         else errors.columns = "Escolha 2, 3 ou 4 colunas.";
         break;
       case "layout":
@@ -400,6 +464,15 @@ export function validateSectionSettings(
         data.institution_ids = [...new Set(value)];
         break;
       }
+      case "experiences": {
+        const result = validateExperiences(value, imageAccepted);
+        if (result.listError) errors.experiences = result.listError;
+        else if (Object.keys(result.errors).length > 0) {
+          errors.experiences = "Revise as experiências destacadas.";
+          errors.experience_items = result.errors;
+        } else data.experiences = result.data;
+        break;
+      }
     }
   }
 
@@ -411,6 +484,9 @@ export function sectionImagePaths(settings: SectionSettings): string[] {
   const paths = new Set<string>();
   if (settings.image_path) paths.add(settings.image_path);
   for (const image of settings.images ?? []) paths.add(image.path);
+  for (const experience of settings.experiences ?? []) {
+    if (experience.image_path) paths.add(experience.image_path);
+  }
   return [...paths];
 }
 
@@ -460,7 +536,12 @@ export function validateSectionList(
       listError = "Tipo de seção desconhecido.";
       return;
     }
-    if ((id === null || page === "custom") && !isBlockType(type)) {
+    if (!isAllowedOnPage(page, type)) {
+      listError =
+        type === "experiences" ? "A seção de experiências só existe na página inicial." : "Esta seção não existe nesta página.";
+      return;
+    }
+    if (id === null && !isRemovableSection(type)) {
       listError = "Seções nativas não podem ser adicionadas novamente.";
       return;
     }
@@ -482,6 +563,10 @@ export function validateSectionList(
     if (Object.keys(fieldErrors).length > 0) errors[errorKey] = fieldErrors;
     items.push({ id: id as string | null, section_type: type, is_visible: item.is_visible, settings: data });
   });
+
+  if (!listError && items.filter((item) => item.section_type === "experiences").length > 1) {
+    listError = "A página inicial só pode ter uma seção de experiências.";
+  }
 
   if (!listError) {
     for (const builtin of PAGE_BUILTINS[page]) {
@@ -567,9 +652,17 @@ export const DEFAULT_SECTIONS: Record<SectionPage, { section_type: SectionType; 
   ],
 };
 
-/** Configurações iniciais de um bloco novo. */
-export function newBlockSettings(type: BlockType): SectionSettings {
+/** Configurações iniciais de um bloco ou seção adicionável nova. */
+export function newBlockSettings(type: AddableSectionType): SectionSettings {
   switch (type) {
+    case "experiences":
+      return {
+        eyebrow: "Divulgação científica",
+        title: "Explore as geociências de perto",
+        background: "muted",
+        columns: 2,
+        experiences: [],
+      };
     case "text":
       return { title: "Novo bloco de texto", align: "left" };
     case "image_text":

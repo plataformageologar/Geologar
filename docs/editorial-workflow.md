@@ -25,6 +25,11 @@ O conteúdo é dividido em unidades de publicação. Cada unidade tem um rascunh
 | `appearance` | `appearance` | `appearance` | `site_appearance` | somente admin |
 | `settings` | `settings` | `settings` | `site_settings` | somente admin |
 
+As **experiências digitais** (Etapa 10.6) fazem parte da parte `sections`
+da unidade `home` (seção `experiences`): não há unidade nova. Publicar a
+página inicial publica banner, seções e experiências juntos. Ver
+[`digital-experiences.md`](digital-experiences.md).
+
 Projetos, linhas de pesquisa, publicações, instituições e redes sociais
 continuam com o fluxo próprio (status *rascunho/publicado* por registro), que
 já existia antes desta etapa.
@@ -138,7 +143,8 @@ site público — lê somente as tabelas publicadas (cliente anônimo)
 `media_usage` (usada pela biblioteca de mídia) também procura referências em
 rascunhos e em todas as revisões. Uma imagem citada por qualquer versão
 guardada não pode ser excluída da biblioteca, para que restaurar continue
-possível.
+possível. As capas das experiências digitais (`settings.experiences[].image_path`)
+entram na mesma regra (`section_image_paths`).
 
 ## Permissões
 
@@ -164,6 +170,9 @@ O papel vem sempre do banco (`has_cms_role`), nunca do navegador.
 - `tests/site/editorial.test.ts` (unitários): token de versão, leitura
   tolerante do JSONB, comparação estruturada, rotas do editor, fatias do
   editor visual.
+- `supabase/tests/database/digital_experiences.test.sql` (pgTAP, 48) e
+  `tests/site/experiences.test.ts` (Etapa 10.6): publicação das experiências
+  pelo fluxo, histórico por card, restauração de versão anterior à seção.
 
 ## Migração dos dados existentes
 
@@ -171,3 +180,10 @@ A migration `20261123120000_editorial_drafts_revisions_custom_pages.sql` cria
 um documento por unidade e a revisão 1 (“Versão publicada inicial”) com o
 conteúdo que já estava no ar. Nenhum registro foi excluído e nenhum seed foi
 reexecutado.
+
+A migration `20261124120000_digital_experiences_section.sql` (Etapa 10.6)
+não altera o publicado: acrescenta a seção de experiências ao **rascunho**
+da unidade `home` (sobre o rascunho existente, se houver) e registra uma
+revisão `draft_saved` com a observação “Etapa 10.6: seção Experiências
+digitais (conteúdo inicial, aguardando publicação)”. Revisões anteriores não
+são modificadas e continuam restauráveis.

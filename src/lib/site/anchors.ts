@@ -13,6 +13,7 @@ export const SECTION_ANCHORS: Partial<Record<SectionType, string>> = {
   publications: "publicacoes",
   institutions: "instituicoes",
   cooperation: "contato",
+  experiences: "experiencias",
 };
 
 /**

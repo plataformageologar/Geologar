@@ -17,13 +17,14 @@ import {
 } from "@/lib/site/editor-document";
 import { PAGE_CONTENT_LABELS } from "@/lib/site/page-content";
 import {
+  addableSectionTypes,
   BLOCK_DESCRIPTIONS,
-  BLOCK_TYPES,
   isBlockType,
+  isRemovableSection,
   newBlockSettings,
   SECTION_LABELS,
   SECTIONS_MAX,
-  type BlockType,
+  type AddableSectionType,
   type SectionDraft,
 } from "@/lib/site/sections";
 import { cn } from "@/lib/utils/cn";
@@ -98,6 +99,7 @@ export function cmsHrefFor(doc: EditorDocument, target: EditorTarget | null, sec
   if (section) {
     if (["hero", "about", "cooperation"].includes(section.section_type)) return "/admin/homepage";
     if (section.section_type === "pillars") return "/admin/pilares";
+    if (section.section_type === "experiences") return "/admin/experiencias";
     return customHref ?? `/admin/secoes?pagina=${doc.sectionPage ?? "home"}`;
   }
   if (doc.detail) return doc.detail.editHref;
@@ -128,6 +130,9 @@ function recordLink(doc: EditorDocument, record: RecordRef): { label: string; hr
         label: "Encontrar esta instituição no CMS",
         href: `/admin/instituicoes?busca=${encodeURIComponent(record.title.slice(0, 100))}`,
       };
+    case "experience":
+      // Editada no próprio painel (o card clicado abre na lista abaixo).
+      return null;
   }
 }
 
@@ -138,7 +143,9 @@ function AddBlock({
   props: PanelProps;
   sections: SectionDraft[];
 }) {
-  const [type, setType] = useState<BlockType>("text");
+  const [chosen, setType] = useState<AddableSectionType>("text");
+  const addable = addableSectionTypes(props.doc.sectionPage ?? "home", sections);
+  const type = addable.includes(chosen) ? chosen : addable[0];
   const full = sections.length >= SECTIONS_MAX;
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-dashed border-border p-4">
@@ -148,9 +155,12 @@ function AddBlock({
           value={type}
           disabled={props.disabled}
           aria-describedby="editor-novo-bloco-hint"
-          onChange={(event) => setType(event.target.value as BlockType)}
+          onChange={(event) => {
+            const option = addable.find((item) => item === event.target.value);
+            if (option) setType(option);
+          }}
         >
-          {BLOCK_TYPES.map((option) => (
+          {addable.map((option) => (
             <option key={option} value={option}>
               {SECTION_LABELS[option]}
             </option>
@@ -161,10 +171,15 @@ function AddBlock({
         type="button"
         disabled={props.disabled || full}
         onClick={() => {
-          const key = newKey("bloco");
+          const key = newKey(type === "experiences" ? "experiencias" : "bloco");
+          const section: SectionDraft = { id: null, key, section_type: type, is_visible: true, settings: newBlockSettings(type) };
+          // Experiências entram logo abaixo do banner (quando há banner).
+          const heroIndex = type === "experiences" ? sections.findIndex((item) => item.section_type === "hero") : -1;
           props.onChange(
             "sections",
-            [...sections, { id: null, key, section_type: type, is_visible: true, settings: newBlockSettings(type) }],
+            heroIndex >= 0
+              ? [...sections.slice(0, heroIndex + 1), section, ...sections.slice(heroIndex + 1)]
+              : [...sections, section],
             `add:${key}`,
           );
           props.onSelect(sectionTarget(key));
@@ -172,7 +187,7 @@ function AddBlock({
         className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-label text-primary-foreground hover:bg-primary-hover disabled:opacity-50"
       >
         <Plus aria-hidden="true" className="size-4" />
-        Adicionar no fim da página
+        {type === "experiences" ? "Adicionar abaixo do banner" : "Adicionar no fim da página"}
       </button>
       {full && <p className="text-caption text-muted-foreground">A página atingiu o limite de {SECTIONS_MAX} seções.</p>}
     </div>
@@ -239,7 +254,7 @@ function StructureView(props: PanelProps) {
           item(
             sectionTarget(section.key),
             targetLabel(sectionTarget(section.key), sections) +
-              (isBlockType(section.section_type) && section.settings.title ? `: ${section.settings.title}` : ""),
+              (isRemovableSection(section.section_type) && section.settings.title ? `: ${section.settings.title}` : ""),
             !section.is_visible ? <HiddenBadge /> : undefined,
             Boolean(errors.sections?.[section.key]),
           ),
@@ -306,7 +321,7 @@ function SectionView({ props, section, index }: { props: PanelProps; section: Se
               : undefined
           }
           onRemove={
-            isBlockType(section.section_type)
+            isRemovableSection(section.section_type)
               ? () => {
                   onChange(
                     "sections",
@@ -317,7 +332,11 @@ function SectionView({ props, section, index }: { props: PanelProps; section: Se
                 }
               : undefined
           }
-          removeWarning="Excluir o bloco? Imagens continuam na biblioteca."
+          removeWarning={
+            section.section_type === "experiences"
+              ? "Excluir a seção e todas as experiências? Imagens continuam na biblioteca."
+              : "Excluir o bloco? Imagens continuam na biblioteca."
+          }
         />
       )}
 
@@ -360,7 +379,15 @@ function SectionView({ props, section, index }: { props: PanelProps; section: Se
       )}
 
       {editable && (
-        <Group title={isBlockType(section.section_type) ? "Bloco" : "Apresentação da seção"}>
+        <Group
+          title={
+            isBlockType(section.section_type)
+              ? "Bloco"
+              : section.section_type === "experiences"
+                ? "Seção e experiências"
+                : "Apresentação da seção"
+          }
+        >
           <SectionSettingsFields
             idPrefix={`editor-${section.key}`}
             type={section.section_type}
@@ -370,6 +397,7 @@ function SectionView({ props, section, index }: { props: PanelProps; section: Se
             disabled={disabled}
             canUpload
             institutions={doc.institutionOptions}
+            focusExperienceId={record?.kind === "experience" ? record.id : null}
           />
         </Group>
       )}
@@ -384,7 +412,7 @@ export function PropertiesPanel(props: PanelProps) {
   const sectionIndex = key ? sections.findIndex((item) => item.key === key) : -1;
   const section = sectionIndex >= 0 ? sections[sectionIndex] : null;
   const title = selected
-    ? section && isBlockType(section.section_type) && section.settings.title
+    ? section && isRemovableSection(section.section_type) && section.settings.title
       ? `${SECTION_LABELS[section.section_type]}: ${section.settings.title}`
       : targetLabel(selected, sections)
     : doc.page.kind === "project" || doc.page.kind === "research-line"

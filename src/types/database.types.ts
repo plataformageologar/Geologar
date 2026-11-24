@@ -1139,6 +1139,8 @@ export type Database = {
         Args: { p_content: Json; p_doc_type: string }
         Returns: boolean
       }
+      is_valid_experience_list: { Args: { p_value: Json }; Returns: boolean }
+      is_valid_experience_url: { Args: { value: string }; Returns: boolean }
       is_valid_image_reference: { Args: { value: string }; Returns: boolean }
       is_valid_section_settings: {
         Args: { p_settings: Json; p_type: string }

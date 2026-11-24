@@ -50,7 +50,8 @@ export type EditorialDocumentRow = {
 
 export type PartErrors = {
   fieldErrors?: Record<string, string>;
-  itemErrors?: Record<string, Record<string, string>>;
+  /** Erros por item (texto por campo; seções podem trazer erros aninhados, ex.: experiências). */
+  itemErrors?: Record<string, Record<string, unknown>>;
   listError?: string;
 };
 

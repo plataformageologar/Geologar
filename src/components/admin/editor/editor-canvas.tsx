@@ -31,7 +31,7 @@ import {
   type RecordRef,
 } from "@/lib/site/editor-document";
 import { resolvePageHeader, type PageContentKey, type PageContentValues } from "@/lib/site/page-content";
-import { isBlockType, SECTION_LABELS, type SectionDraft } from "@/lib/site/sections";
+import { isRemovableSection, SECTION_LABELS, type SectionDraft } from "@/lib/site/sections";
 import type { HomepageContent } from "@/types/content";
 
 /**
@@ -53,6 +53,9 @@ function post(message: FromCanvasMessage) {
 }
 
 function recordFrom(element: Element, sectionType: string | null): RecordRef | null {
+  const experience = element.closest("[data-experience-id]")?.getAttribute("data-experience-id");
+  if (experience) return { kind: "experience", id: experience };
+
   const anchor = element.closest("a");
   const href = anchor?.getAttribute("href") ?? "";
   const detail = /^\/(projetos|pesquisa)\/([a-z0-9]+(?:-[a-z0-9]+)*)$/.exec(href);
@@ -284,7 +287,7 @@ function CanvasContent({ state }: { state: CanvasState }) {
           sections.map((section) => {
             const target = sectionTarget(section.key);
             const label = targetLabel(target, sections);
-            const hasContent = sectionHasContent(sectionPage, section, sectionData);
+            const hasContent = sectionHasContent(sectionPage, section, sectionData, true);
             return (
               <Fragment key={section.key}>
                 <Target
@@ -295,12 +298,12 @@ function CanvasContent({ state }: { state: CanvasState }) {
                   hidden={!section.is_visible}
                 >
                   {hasContent ? (
-                    renderSection(sectionPage, section, sectionData)
+                    renderSection(sectionPage, section, sectionData, true)
                   ) : (
                     <Placeholder
                       title={`${SECTION_LABELS[section.section_type]} sem conteúdo`}
                       text={
-                        isBlockType(section.section_type)
+                        isRemovableSection(section.section_type)
                           ? "Preencha o bloco no painel. Enquanto estiver vazio, ele não aparece no site."
                           : "Não há conteúdo publicado para esta seção. Ela não aparece no site até que haja."
                       }

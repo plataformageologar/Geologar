@@ -469,6 +469,7 @@ para o editor visual. Desde a Etapa 9.6 todas estas telas gravam
 | `/admin/editor?pagina=/` | admin, editor | Editor visual (ver [`visual-editor.md`](visual-editor.md)) | todas abaixo |
 | `/admin/homepage` | admin, editor | Textos da página inicial | `home` |
 | `/admin/secoes?pagina=home\|rede` | admin, editor | Ordem, visibilidade e opções das seções; blocos texto, imagem + texto, chamada, galeria e logotipos | `home` / `rede` |
+| `/admin/experiencias` | admin, editor | Experiências digitais da página inicial: cards, endereço externo, capa, disponibilidade e visibilidade (Etapa 10.6, ver [`digital-experiences.md`](digital-experiences.md)) | `home` |
 | `/admin/pilares` | admin, editor | Pilares da rede (título, descrição, ícone da lista fixa) | `pillars` |
 | `/admin/textos-das-paginas?pagina=` | admin, editor | Rótulo, título, introdução e SEO de rede, pesquisa, projetos, publicações, instituições e contato | `rede` / `page` |
 | `/admin/paginas` | admin, editor | Páginas personalizadas (ver [`custom-pages.md`](custom-pages.md)) | `custom` |
@@ -478,7 +479,7 @@ para o editor visual. Desde a Etapa 9.6 todas estas telas gravam
 | `/admin/aparencia` | admin | Cores, fundo, botões, cantos, fonte dos títulos, cards | `appearance` |
 | `/admin/configuracoes` | admin (editor vê a versão publicada) | Informações institucionais + “Cabeçalho e rodapé” | `settings` |
 
-Arquivos: `src/app/admin/(protected)/{homepage,secoes,pilares,textos-das-paginas,paginas,historico,navegacao,aparencia,configuracoes}/`,
+Arquivos: `src/app/admin/(protected)/{homepage,secoes,experiencias,pilares,textos-das-paginas,paginas,historico,navegacao,aparencia,configuracoes}/`,
 `src/components/admin/site/` (campos e editores compartilhados com o editor
 visual), `src/components/admin/editorial/` (barra editorial, histórico,
 páginas), `src/lib/site/` (validação), `src/lib/admin/editorial.ts` e
@@ -498,6 +499,11 @@ Regras:
   publicações, instituições, cooperação) podem ser ocultadas e reordenadas,
   não removidas nem duplicadas. Blocos podem ser adicionados, duplicados e
   removidos (até 40 seções por página).
+- A seção **Experiências digitais** (Etapa 10.6) é adicionável e removível
+  como um bloco, mas só na página inicial e no máximo uma vez; não é
+  duplicada. Os cards (até 12) têm id UUID estável, endereço somente
+  `https://` (validado sem acessar o endereço) e capa da biblioteca. Ver
+  [`digital-experiences.md`](digital-experiences.md).
 - As configurações de cada seção são JSONB com chaves permitidas por tipo,
   validadas no servidor (`validateSectionSettings`) e no banco
   (`is_valid_section_settings`). Sem HTML, CSS ou componentes livres.

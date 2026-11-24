@@ -5,13 +5,14 @@ import { useState } from "react";
 
 import { moveItem, newKey } from "@/lib/site/lists";
 import {
+  addableSectionTypes,
   BLOCK_DESCRIPTIONS,
-  BLOCK_TYPES,
   isBlockType,
+  isRemovableSection,
   newBlockSettings,
   SECTION_LABELS,
   SECTIONS_MAX,
-  type BlockType,
+  type AddableSectionType,
   type SectionDraft,
   type SectionFieldErrors,
   type SectionScope,
@@ -32,11 +33,15 @@ export const CONTENT_NOTES: Partial<Record<SectionDraft["section_type"], { text:
   publications: { text: "Aparecem as publicações publicadas (destaques e mais recentes primeiro).", href: "/admin/publicacoes" },
   institutions: { text: "Aparecem as instituições publicadas, por categoria.", href: "/admin/instituicoes" },
   cooperation: { text: "Título, texto e botão da chamada ficam em Homepage.", href: "/admin/homepage" },
+  experiences: {
+    text: "Cards das experiências digitais (tours 360°, aplicações 3D…). Também podem ser editados em Experiências digitais.",
+    href: "/admin/experiencias",
+  },
 };
 
 export function sectionTitle(section: SectionDraft) {
   const custom = section.settings.title?.trim();
-  return isBlockType(section.section_type) && custom
+  return isRemovableSection(section.section_type) && custom
     ? `${SECTION_LABELS[section.section_type]}: ${custom}`
     : SECTION_LABELS[section.section_type];
 }
@@ -64,14 +69,20 @@ export function SectionsFields({
   institutions: InstitutionOption[];
 }) {
   const [open, setOpen] = useState<string | null>(null);
-  const [blockType, setBlockType] = useState<BlockType>("text");
+  const [chosenType, setBlockType] = useState<AddableSectionType>("text");
+  const addable = addableSectionTypes(page, items);
+  // Seção única já adicionada (ex.: experiências): volta para o primeiro tipo.
+  const blockType = addable.includes(chosenType) ? chosenType : addable[0];
 
   const update = (key: string, patch: Partial<SectionDraft>) =>
     onChange(items.map((item) => (item.key === key ? { ...item, ...patch } : item)));
 
   const addBlock = () => {
-    const key = newKey("bloco");
-    onChange([...items, { id: null, key, section_type: blockType, is_visible: true, settings: newBlockSettings(blockType) }]);
+    const key = newKey(blockType === "experiences" ? "experiencias" : "bloco");
+    const section: SectionDraft = { id: null, key, section_type: blockType, is_visible: true, settings: newBlockSettings(blockType) };
+    // Experiências entram logo abaixo do banner (quando há banner).
+    const heroIndex = blockType === "experiences" ? items.findIndex((item) => item.section_type === "hero") : -1;
+    onChange(heroIndex >= 0 ? [...items.slice(0, heroIndex + 1), section, ...items.slice(heroIndex + 1)] : [...items, section]);
     setOpen(key);
   };
 
@@ -110,7 +121,7 @@ export function SectionsFields({
                       {index + 1}. {name}
                     </span>
                     <span className="text-caption text-muted-foreground">
-                      {isBlockType(section.section_type) ? "Bloco" : "Seção da página"}
+                      {isBlockType(section.section_type) ? "Bloco" : isRemovableSection(section.section_type) ? "Seção adicionada" : "Seção da página"}
                       {sectionErrors ? " · revise os campos" : ""}
                     </span>
                   </span>
@@ -133,11 +144,15 @@ export function SectionsFields({
                       : undefined
                   }
                   onRemove={
-                    isBlockType(section.section_type)
+                    isRemovableSection(section.section_type)
                       ? () => onChange(items.filter((item) => item.key !== section.key))
                       : undefined
                   }
-                  removeWarning="Excluir o bloco? Imagens continuam na biblioteca."
+                  removeWarning={
+                    section.section_type === "experiences"
+                      ? "Excluir a seção e todas as experiências? Imagens continuam na biblioteca."
+                      : "Excluir o bloco? Imagens continuam na biblioteca."
+                  }
                 />
               </div>
               <div id={panelId} hidden={!expanded} className="border-t border-border p-4 sm:p-5">
@@ -176,10 +191,13 @@ export function SectionsFields({
               id={`novo-bloco-${page}`}
               value={blockType}
               disabled={disabled}
-              onChange={(event) => setBlockType(event.target.value as BlockType)}
+              onChange={(event) => {
+                const option = addable.find((type) => type === event.target.value);
+                if (option) setBlockType(option);
+              }}
               aria-describedby={`novo-bloco-${page}-hint`}
             >
-              {BLOCK_TYPES.map((type) => (
+              {addable.map((type) => (
                 <option key={type} value={type}>
                   {SECTION_LABELS[type]}
                 </option>
@@ -194,7 +212,7 @@ export function SectionsFields({
           className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-label text-primary-foreground hover:bg-primary-hover disabled:opacity-50 sm:mb-6"
         >
           <Plus aria-hidden="true" className="size-4" />
-          Adicionar no fim da página
+          {blockType === "experiences" ? "Adicionar abaixo do banner" : "Adicionar no fim da página"}
         </button>
       </div>
       {items.length >= SECTIONS_MAX && (
