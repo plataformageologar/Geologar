@@ -100,16 +100,19 @@ sigla. Lista e logotipos em
 
 O contato institucional fica na coluna **Contato do rodapé**, em todas as
 páginas; o item “Contato” do menu e o botão “Fale com a GeoLogar” levam até
-ela (`/#contato`). Hoje a coluna mostra apenas “Os canais oficiais de contato
-serão informados em breve.”: **nenhum dado foi inventado** e os do mockup
-(telefone com “XXXX”, e-mail ilustrativo) não foram usados. Cada campo só
-aparece quando preenchido:
+ela (`/#contato`). Cada campo só aparece quando preenchido.
 
-- [ ] E-mail oficial (link `mailto:`).
-- [ ] Telefone, se houver atendimento oficial (link `tel:`).
+> **Provisório (25/11/2026):** a pedido da GeoLogar, o rodapé mostra os
+> valores do conceito visual — e-mail `geologar@ufba.br` e “Salvador — BA —
+> Brasil”. Confirmar se o e-mail existe e é monitorado pela equipe, ou
+> substituir em *Configurações*. O telefone do conceito (“3283-XXXX”) está
+> incompleto e não foi publicado; as redes do conceito não têm endereço.
+
+- [ ] Confirmar ou substituir o e-mail provisório (link `mailto:`).
+- [ ] Telefone completo, se houver atendimento oficial (link `tel:`).
 - [ ] WhatsApp oficial, se houver, com código do país (ex.: `+55` e o DDD).
       Não é copiado do telefone.
-- [ ] Endereço, cidade, estado e país validados.
+- [ ] Endereço (logradouro) e confirmação de Salvador — BA — Brasil.
 - [ ] Redes sociais ativas (endereços completos `https://`).
 - [ ] Links úteis do rodapé (privacidade, termos, mapa do site,
       acessibilidade) — só quando as páginas existirem.

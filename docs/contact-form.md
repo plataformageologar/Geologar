@@ -20,7 +20,7 @@
 | Código preservado | `src/lib/contact/*` (validação, Turnstile, Resend, limite de envios), `src/components/contact/*` e os testes de `tests/contact/` continuam no repositório e rodam em `npm test`. |
 | Contato no site | Coluna “Contato” do rodapé, editável em *Configurações* e no editor visual (ver [`cms.md`](cms.md#informações-institucionais-adminconfiguracoes)). |
 | Links no CMS | “Contato” do cabeçalho e do rodapé e o botão “Fale com a GeoLogar” gravados como `/#contato` e publicados em 25/11/2026 (navegação, revisão 6, 12:19; página inicial, revisão 13, 12:20). Links úteis: vazios (só “Área restrita”, fixo). |
-| Canais de contato | Nenhum cadastrado: a coluna mostra “Os canais oficiais de contato serão informados em breve.” até a GeoLogar fornecer os dados. Conferido no editor visual com valores fictícios **não salvos**. |
+| Canais de contato | **Provisórios do conceito visual**, publicados a pedido da GeoLogar em 25/11/2026 (configurações, revisão 3, 12:25): e-mail `geologar@ufba.br` e “Salvador — BA — Brasil”. **A confirmar.** O telefone do conceito (`+55 (71) 3283-XXXX`) não foi publicado: está incompleto e geraria um link `tel:` quebrado. Redes sociais do conceito (YouTube, Instagram, LinkedIn) sem endereço: não cadastradas. |
 
 ### Como reativar (somente com nova decisão da GeoLogar)
 

@@ -42,8 +42,10 @@ Use, se possível, um computador e um celular.
       ausentes; ver `docs/visual-refinement.md`) e autorização de uso das
       marcas.
 - [ ] Projetos, publicações, instituições e redes sociais reais.
-- [ ] Dados oficiais de contato para o rodapé: e-mail, telefone, WhatsApp
-      (se houver), endereço e redes sociais.
+- [ ] Dados oficiais de contato para o rodapé: o e-mail e a localização
+      atuais são provisórios do conceito (`geologar@ufba.br`, Salvador — BA —
+      Brasil); faltam telefone completo, WhatsApp (se houver), endereço e
+      redes sociais.
 - [ ] Links úteis do rodapé (privacidade, termos, acessibilidade), quando as
       páginas existirem.
 - [ ] Decisão sobre domínio próprio (endereço definitivo do site).
