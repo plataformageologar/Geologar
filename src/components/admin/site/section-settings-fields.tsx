@@ -165,7 +165,7 @@ export function SectionSettingsFields({
           <Field
             id={`${idPrefix}-cta_href`}
             label="Destino do botão ou link"
-            hint="Página do site (ex.: /contato) ou endereço https://…"
+            hint="Página do site (ex.: /pesquisa), /#contato (contato do rodapé) ou endereço https://…"
             error={errors.cta_href}
           >
             <TextInput

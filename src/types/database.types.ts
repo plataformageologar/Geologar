@@ -908,11 +908,13 @@ export type Database = {
           city: string | null
           contact_email: string | null
           contact_phone: string | null
+          contact_whatsapp: string | null
           country: string | null
           created_at: string
           favicon_path: string | null
           footer_contact_title: string | null
           footer_description: string | null
+          footer_links_title: string | null
           footer_logo_mode: string
           footer_logo_path: string | null
           footer_nav_title: string | null
@@ -933,11 +935,13 @@ export type Database = {
           city?: string | null
           contact_email?: string | null
           contact_phone?: string | null
+          contact_whatsapp?: string | null
           country?: string | null
           created_at?: string
           favicon_path?: string | null
           footer_contact_title?: string | null
           footer_description?: string | null
+          footer_links_title?: string | null
           footer_logo_mode?: string
           footer_logo_path?: string | null
           footer_nav_title?: string | null
@@ -958,11 +962,13 @@ export type Database = {
           city?: string | null
           contact_email?: string | null
           contact_phone?: string | null
+          contact_whatsapp?: string | null
           country?: string | null
           created_at?: string
           favicon_path?: string | null
           footer_contact_title?: string | null
           footer_description?: string | null
+          footer_links_title?: string | null
           footer_logo_mode?: string
           footer_logo_path?: string | null
           footer_nav_title?: string | null

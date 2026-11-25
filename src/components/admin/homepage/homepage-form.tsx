@@ -41,7 +41,7 @@ const fieldOrder: HomepageField[] = [
   "cooperation_cta_href",
 ];
 
-const linkHint = "Caminho do site (ex.: /contato) ou endereço completo começando com https://.";
+const linkHint = "Caminho do site (ex.: /pesquisa), /#contato (contato do rodapé) ou endereço completo começando com https://.";
 
 /**
  * Chama a Server Action tratando falhas de rede no navegador (requisição que
@@ -202,7 +202,7 @@ export function HomepageForm({ initialValues }: HomepageFormProps) {
               autoComplete="off"
               spellCheck={false}
               maxLength={LINK_MAX_LENGTH}
-              placeholder="/contato"
+              placeholder="/#contato"
               value={values[hrefField]}
               onChange={(event) => update(hrefField, event.target.value)}
               aria-invalid={errors[hrefField] ? true : undefined}

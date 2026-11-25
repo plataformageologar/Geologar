@@ -43,10 +43,18 @@ export default async function NavigationPage({ searchParams }: PageProps<"/admin
   // Aviso (sem remover nada): links do menu para páginas que não estão no ar.
   const menus = isAdmin
     ? doc?.status === "ready" && doc.data
-      ? { header: doc.data.current.header ?? [], footer: doc.data.current.footer ?? [] }
+      ? {
+          header: doc.data.current.header ?? [],
+          footer: doc.data.current.footer ?? [],
+          useful: doc.data.current.useful ?? [],
+        }
       : null
     : navigation?.status === "ready"
-      ? { header: navigation.data.header.items, footer: navigation.data.footer.items }
+      ? {
+          header: navigation.data.header.items,
+          footer: navigation.data.footer.items,
+          useful: navigation.data.useful.items,
+        }
       : null;
   const brokenLinks =
     menus && customPages.status === "ready" ? unavailableCustomPageLinks(menus, customPages.data) : [];
@@ -55,7 +63,7 @@ export default async function NavigationPage({ searchParams }: PageProps<"/admin
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <SitePageIntro
         title="Navegação"
-        description="Links do menu principal e do rodapé. Use caminhos do portal (ex.: /contato) ou endereços completos começando com https://."
+        description="Links do menu principal e do rodapé. Use caminhos do portal (ex.: /pesquisa), /#contato para a coluna de contato do rodapé ou endereços completos começando com https://."
         visualHref={isAdmin ? "/admin/editor?pagina=%2F" : undefined}
       >
         <PageTabs

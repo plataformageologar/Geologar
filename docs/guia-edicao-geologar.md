@@ -79,10 +79,34 @@ tela).
 
 ### Textos das páginas internas
 
-Clique no topo de Pesquisa, Projetos, Publicações, Instituições, Contato ou
+Clique no topo de Pesquisa, Projetos, Publicações, Instituições ou
 A Rede para editar o rótulo, o título, a introdução e os dados para buscadores
 e redes sociais (título, descrição e imagem de compartilhamento). Campos
 vazios usam o texto padrão.
+
+### Rodapé e contato (somente administradores)
+
+O contato da GeoLogar fica no **rodapé**, em todas as páginas. O item
+“Contato” do menu e o botão “Fale com a GeoLogar” levam até ele: use o
+destino `/#contato` em menus e botões. Não há formulário de contato.
+
+No editor, clique no rodapé. O painel mostra:
+
+- logotipo, **texto de apresentação** (vazio: “Ciência para compreender o
+  território, valorizar os recursos naturais e construir um futuro
+  sustentável.”) e os títulos das colunas (Navegação, Links úteis, Contato,
+  Redes sociais);
+- **Contato**: e-mail, telefone, WhatsApp (com `+55` e o DDD; não é copiado
+  do telefone), endereço, cidade, estado e país. Só os campos preenchidos
+  aparecem no site; enquanto nenhum estiver preenchido, o editor mostra um
+  aviso “Adicione…” (invisível para os visitantes);
+- **Links do rodapé** (coluna Navegação) e **Links úteis** (privacidade,
+  termos, mapa do site, acessibilidade — só quando as páginas existirem).
+  “Área restrita” é fixo e não precisa ser cadastrado.
+
+As redes sociais são cadastradas em *Redes sociais* (CMS): só perfis com
+endereço completo aparecem, com o ícone da rede. Como no resto do editor,
+tudo fica em rascunho até **Publicar**, com histórico e restauração.
 
 ### Projetos e linhas de pesquisa
 
@@ -377,5 +401,6 @@ de novo.
   contato da secretaria”). Ela aparece no histórico.
 - Não cole textos com formatação de outros programas; o editor aceita texto
   simples.
-- Links internos começam com `/` (ex.: `/contato`); externos com `https://`.
+- Links internos começam com `/` (ex.: `/pesquisa`; o contato do rodapé é
+  `/#contato`); externos com `https://`.
 - Dados de contato e redes sociais devem ser os oficiais da GeoLogar.

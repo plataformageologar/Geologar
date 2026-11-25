@@ -161,7 +161,7 @@ export type SiteSettingsForEdit = {
 };
 
 export const siteSettingsEditColumns =
-  "id, site_name, institutional_name, tagline, short_description, contact_email, contact_phone, address, city, state, country, logo_path, favicon_path, footer_description, footer_note, footer_nav_title, footer_contact_title, footer_social_title, footer_logo_mode, footer_logo_path, header_style, updated_at";
+  "id, site_name, institutional_name, tagline, short_description, contact_email, contact_phone, contact_whatsapp, address, city, state, country, logo_path, favicon_path, footer_description, footer_note, footer_nav_title, footer_contact_title, footer_social_title, footer_links_title, footer_logo_mode, footer_logo_path, header_style, updated_at";
 
 /** `null`: o registro único não existe (configuração pendente). */
 export async function getSiteSettingsForEdit(): Promise<AdminResult<SiteSettingsForEdit | null>> {
@@ -183,6 +183,7 @@ export async function getSiteSettingsForEdit(): Promise<AdminResult<SiteSettings
     short_description: rest.short_description,
     contact_email: rest.contact_email,
     contact_phone: rest.contact_phone,
+    contact_whatsapp: rest.contact_whatsapp,
     address: rest.address,
     city: rest.city,
     state: rest.state,
@@ -194,6 +195,7 @@ export async function getSiteSettingsForEdit(): Promise<AdminResult<SiteSettings
     footer_nav_title: rest.footer_nav_title,
     footer_contact_title: rest.footer_contact_title,
     footer_social_title: rest.footer_social_title,
+    footer_links_title: rest.footer_links_title,
     footer_logo_mode: rest.footer_logo_mode,
     footer_logo_path: rest.footer_logo_path,
     header_style: rest.header_style,

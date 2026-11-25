@@ -1,14 +1,54 @@
-# Formulário de contato (Etapa 9)
+# Formulário de contato (Etapa 9) — DESATIVADO
 
-Formulário em `/contato` que envia a mensagem do visitante por e-mail para a
-equipe GeoLogar. **Nenhuma mensagem é gravada no banco**: não há tabela,
-painel de mensagens, CRM nem anexos.
+> **Situação em 25/11/2026: desativado por decisão de escopo.** O briefing
+> trata o formulário como **opcional**. A GeoLogar optou por divulgar
+> **canais diretos** (e-mail, telefone, WhatsApp, endereço e redes sociais)
+> na coluna **Contato do rodapé**, presente em todas as páginas
+> (âncora `#contato`). Resend e Cloudflare Turnstile **não são requisitos**
+> do portal. Os dados de contato serão fornecidos pela equipe GeoLogar e
+> cadastrados pelo CMS. O formulário pode ser reavaliado no futuro.
 
-> **Situação em 19/11/2026:** implementado e testado com chaves de teste e
-> provedor simulado. **Desativado em produção** até a GeoLogar fornecer o
-> destinatário, o remetente (domínio verificado) e as chaves — ver
-> [checklist de ativação](#checklist-de-ativação). Nenhum envio real foi
-> feito.
+## Situação atual
+
+| Item | Situação |
+|---|---|
+| Página `/contato` | Removida. A rota redireciona (`307`) para `/#contato`; não responde 404 e saiu do `sitemap.xml`. |
+| Formulário, Turnstile e JavaScript do formulário | Não são renderizados nem carregados em nenhuma página (não é só CSS). |
+| `POST /api/contact` | Responde `404` com `Cache-Control: no-store`, **sem ler variáveis de ambiente**, sem chamar o Turnstile ou o Resend e sem ler o corpo da requisição. |
+| `CONTACT_FORM_ENABLED` e demais variáveis | **Sem efeito**: nenhum código em execução as lê. Cadastrar `CONTACT_FORM_ENABLED=true` por engano não exibe nem envia nada. |
+| Binding `CONTACT_RATE_LIMITER` | Removido do `wrangler.jsonc`. |
+| Código preservado | `src/lib/contact/*` (validação, Turnstile, Resend, limite de envios), `src/components/contact/*` e os testes de `tests/contact/` continuam no repositório e rodam em `npm test`. |
+| Contato no site | Coluna “Contato” do rodapé, editável em *Configurações* e no editor visual (ver [`cms.md`](cms.md#informações-institucionais-adminconfiguracoes)). |
+
+### Como reativar (somente com nova decisão da GeoLogar)
+
+A reativação é uma mudança de código, revisada e publicada como qualquer
+outra — não basta cadastrar variáveis:
+
+1. Recuperar do histórico do Git (commit anterior a "refactor: simplify
+   institutional contact and consolidate footer channels") a página
+   `src/app/(public)/contato/page.tsx`, a rota `src/app/api/contact/route.ts`
+   original e o bloco `ratelimits` do `wrangler.jsonc` (reproduzido abaixo).
+2. Decidir o destino de `/contato` (remover o redirecionamento de
+   `next.config.ts`) e devolver a página ao `sitemap.xml`.
+3. Seguir o [checklist de ativação](#checklist-de-ativação).
+
+```jsonc
+"ratelimits": [
+  { "name": "CONTACT_RATE_LIMITER", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } }
+]
+```
+
+O restante deste documento descreve o formulário como foi implementado
+(referência para uma reativação).
+
+## Implementação original
+
+Formulário em `/contato` que enviava a mensagem do visitante por e-mail para a
+equipe GeoLogar. **Nenhuma mensagem era gravada no banco**: não há tabela,
+painel de mensagens, CRM nem anexos. Implementado e testado em 19/11/2026
+com chaves de teste e provedor simulado; nunca foi ativado em produção e
+nenhum envio real foi feito.
 
 ## Visão geral
 
@@ -274,6 +314,9 @@ provedor simulado.
    como destinatário uma caixa da própria equipe.
 
 ## Checklist de ativação
+
+Só se aplica a uma eventual reativação (ver [Como reativar](#como-reativar-somente-com-nova-decisão-da-geologar)).
+**Não é pendência de homologação.**
 
 Fornecido pela GeoLogar (ver [`content-handover.md`](content-handover.md#contato)):
 

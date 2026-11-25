@@ -71,7 +71,7 @@ function unitSlices(type: DocType, page: EditorPage): DraftSlice[] {
     case "pillars":
       return ["pillars"];
     case "navigation":
-      return ["navHeader", "navFooter"];
+      return ["navHeader", "navFooter", "navUseful"];
     case "appearance":
       return ["appearance"];
     case "settings":
@@ -123,6 +123,7 @@ export async function getEditorDocument(
     pageContent: null,
     navHeader: null,
     navFooter: null,
+    navUseful: null,
     appearance: null,
   };
   const published: EditorDraft = { ...draft };
@@ -166,7 +167,8 @@ export async function getEditorDocument(
     if (navigation.status === "ready") {
       draft.navHeader = published.navHeader = navigation.data.header.items;
       draft.navFooter = published.navFooter = navigation.data.footer.items;
-    } else loadErrors.push("navHeader", "navFooter");
+      draft.navUseful = published.navUseful = navigation.data.useful.items;
+    } else loadErrors.push("navHeader", "navFooter", "navUseful");
   }
   if (appearance) {
     if (appearance.status === "ready" && appearance.data) draft.appearance = published.appearance = appearance.data.values;
@@ -194,6 +196,7 @@ export async function getEditorDocument(
       settings: editableFor("settings", isAdmin),
       navHeader: editableFor("navHeader", isAdmin),
       navFooter: editableFor("navFooter", isAdmin),
+      navUseful: editableFor("navUseful", isAdmin),
       appearance: editableFor("appearance", isAdmin),
     },
     render: {

@@ -78,7 +78,7 @@ editorial: [`guia-edicao-geologar.md`](guia-edicao-geologar.md).
 
 `resolveEditorPage` (`src/lib/site/editor-pages.ts`) aceita apenas:
 `/`, `/rede`, `/pesquisa`, `/projetos`, `/publicacoes`, `/instituicoes`,
-`/contato`, detalhes `/projetos/<slug>` e `/pesquisa/<slug>` e páginas
+detalhes `/projetos/<slug>` e `/pesquisa/<slug>` e páginas
 personalizadas `/paginas/<endereço>` (Etapa 9.6), com slug no formato
 válido. Páginas personalizadas arquivadas ou inexistentes mostram um aviso
 em vez do editor. Qualquer outro valor (URL externa, `//`, `/admin`, `..`,

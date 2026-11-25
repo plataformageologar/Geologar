@@ -5,9 +5,9 @@ import { expect, test, type Page } from "@playwright/test";
  * os textos conferidos são estruturais (não dependem do conteúdo da GeoLogar).
  */
 
-const PUBLIC_PAGES = ["/", "/rede", "/pesquisa", "/projetos", "/publicacoes", "/instituicoes", "/contato"];
+const PUBLIC_PAGES = ["/", "/rede", "/pesquisa", "/projetos", "/publicacoes", "/instituicoes"];
 
-/** Erros de console da própria página (ignora recursos de terceiros, ex.: Turnstile). */
+/** Erros de console da própria página (ignora recursos de terceiros). */
 function collectConsoleErrors(page: Page, origin: string) {
   const errors: string[] = [];
   page.on("console", (message) => {
@@ -34,6 +34,10 @@ for (const path of PUBLIC_PAGES) {
     expect(await hasHorizontalOverflow(page)).toBe(false);
     // Imagens sempre com texto alternativo (pode ser vazio quando decorativas).
     expect(await page.locator("img:not([alt])").count()).toBe(0);
+    // Contato no rodapé de todas as páginas; nenhum formulário nem Turnstile.
+    await expect(page.locator("footer #contato")).toHaveCount(1);
+    await expect(page.locator('textarea, input[type="email"], iframe[src*="challenges.cloudflare.com"]')).toHaveCount(0);
+    await expect(page.locator('script[src*="challenges.cloudflare.com"]')).toHaveCount(0);
     expect(errors).toEqual([]);
   });
 }
@@ -142,10 +146,42 @@ test("menu móvel abre e fecha pelo teclado", async ({ page, isMobile }) => {
   await expect(button).toHaveAttribute("aria-expanded", "false");
 });
 
-test("formulário de contato não é enviado nos testes", async ({ page }) => {
-  // Apenas confere a página; nunca preenche nem envia (Etapa 10).
+test("antiga página /contato leva ao contato do rodapé", async ({ page, request }) => {
+  const response = await request.get("/contato", { maxRedirects: 0 });
+  expect(response.status()).toBe(307);
+  expect(response.headers().location).toMatch(/\/#contato$/);
+
   await page.goto("/contato");
-  await expect(page.locator("h1")).toHaveCount(1);
+  await expect(page).toHaveURL(/\/#contato$/);
+  await expect(page.locator("footer #contato")).toBeInViewport();
+});
+
+test("item Contato do menu rola até o rodapé na página atual", async ({ page, isMobile }) => {
+  await page.goto("/pesquisa");
+  if (isMobile) await page.getByRole("button", { name: "Menu" }).click();
+  const menu = page.getByRole("navigation", { name: "Principal" }).filter({ visible: true });
+  const link = menu.getByRole("link", { name: "Contato", exact: true });
+  await expect(link).toHaveAttribute("href", "#contato");
+  await link.click();
+  await expect(page).toHaveURL(/\/pesquisa#contato$/);
+  await expect(page.locator("footer #contato")).toBeInViewport();
+  if (isMobile) await expect(page.getByRole("button", { name: "Menu" })).toHaveAttribute("aria-expanded", "false");
+});
+
+test("rodapé: colunas de identidade, navegação, links úteis e contato", async ({ page }) => {
+  await page.goto("/");
+  const footer = page.locator("footer");
+  await expect(footer.getByRole("navigation", { name: /navegação/i })).toBeVisible();
+  await expect(footer.getByRole("link", { name: "Área restrita" })).toHaveAttribute("href", "/admin/login");
+  await expect(footer.locator("#contato h2")).toBeVisible();
+  // Nada de destino vazio, placeholder "XXXX" ou link de rede sem endereço.
+  await expect(footer.locator('a[href="#"], a[href=""], a:not([href])')).toHaveCount(0);
+  await expect(footer).not.toContainText("XXXX");
+  for (const href of await footer.locator('a[href^="tel:"], a[href^="https://wa.me/"]').evaluateAll((links) =>
+    links.map((link) => link.getAttribute("href") ?? ""),
+  )) {
+    expect(href).toMatch(/^(tel:\+?\d{8,}|https:\/\/wa\.me\/\d{10,15})$/);
+  }
 });
 
 test.describe("rotas técnicas", () => {
@@ -165,9 +201,10 @@ test.describe("rotas técnicas", () => {
     const response = await request.get("/sitemap.xml");
     expect(response.status()).toBe(200);
     const body = await response.text();
-    for (const path of ["/rede", "/pesquisa", "/projetos", "/publicacoes", "/instituicoes", "/contato"]) {
+    for (const path of ["/rede", "/pesquisa", "/projetos", "/publicacoes", "/instituicoes"]) {
       expect(body).toContain(`${path}</loc>`);
     }
+    expect(body).not.toContain("/contato</loc>");
     expect(body).not.toContain("/admin");
   });
 
@@ -179,11 +216,12 @@ test.describe("rotas técnicas", () => {
     expect(headers["x-frame-options"]).toBe("SAMEORIGIN");
   });
 
-  test("API de contato recusa origem externa", async ({ request }) => {
+  test("API de contato está desativada e não processa envios", async ({ request, baseURL }) => {
     const response = await request.post("/api/contact", {
-      headers: { origin: "https://externo.example", "content-type": "application/json" },
+      headers: { origin: new URL(baseURL ?? "http://localhost").origin, "content-type": "application/json" },
       data: {},
     });
-    expect([403, 503]).toContain(response.status());
+    expect(response.status()).toBe(404);
+    expect(response.headers()["cache-control"]).toContain("no-store");
   });
 });

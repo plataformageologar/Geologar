@@ -259,7 +259,7 @@ function StructureView(props: PanelProps) {
             Boolean(errors.sections?.[section.key]),
           ),
         )}
-        {item("footer", "Rodapé", undefined, Boolean(errors.navFooter))}
+        {item("footer", "Rodapé", undefined, Boolean(errors.navFooter || errors.navUseful))}
       </ol>
       {doc.editable.sections && <AddBlock props={props} sections={sections} />}
       {doc.role === "admin" && (
@@ -466,6 +466,17 @@ export function PropertiesPanel(props: PanelProps) {
                 items={draft.navFooter}
                 onChange={(items) => onChange("navFooter", items, "navFooter")}
                 errors={errors.navFooter}
+                disabled={disabled}
+              />
+            </Group>
+          )}
+          {draft.navUseful && doc.editable.navUseful && (
+            <Group title="Links úteis">
+              <NavigationFields
+                location="useful"
+                items={draft.navUseful}
+                onChange={(items) => onChange("navUseful", items, "navUseful")}
+                errors={errors.navUseful}
                 disabled={disabled}
               />
             </Group>

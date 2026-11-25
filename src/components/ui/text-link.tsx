@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { isHashHref, resolveSiteHref } from "@/lib/site/contact";
 import { cn } from "@/lib/utils/cn";
 
 type TextLinkProps = {
@@ -14,7 +15,8 @@ type TextLinkProps = {
  * Link textual com seta. Links `http(s)` abrem no mesmo contexto, com seta
  * diagonal indicando destino externo.
  */
-export function TextLink({ href, children, className }: TextLinkProps) {
+export function TextLink({ href: stored, children, className }: TextLinkProps) {
+  const href = resolveSiteHref(stored);
   const external = /^https?:\/\//.test(href);
   const classes = cn(
     "inline-flex min-h-11 w-fit items-center gap-1 text-label text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary",
@@ -28,7 +30,7 @@ export function TextLink({ href, children, className }: TextLinkProps) {
     </>
   );
 
-  return external ? (
+  return external || isHashHref(href) ? (
     <a href={href} className={classes}>
       {content}
     </a>

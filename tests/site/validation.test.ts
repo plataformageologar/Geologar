@@ -178,5 +178,6 @@ describe("páginas do editor e redirecionamento", () => {
     assert.equal(isLinkAvailable("/#pesquisa", new Set(["pesquisa"])), true);
     assert.equal(isLinkAvailable("/#pesquisa", new Set()), false);
     assert.equal(isLinkAvailable("/contato", new Set()), true);
+    assert.equal(isLinkAvailable("/#contato", new Set()), true);
   });
 });

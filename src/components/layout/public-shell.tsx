@@ -45,7 +45,12 @@ export async function PublicShell({ children }: { children: ReactNode }) {
       <main id="conteudo" tabIndex={-1} className="flex-1 focus:outline-none">
         {children}
       </main>
-      <Footer settings={settings} navigation={navigation.footer} socialLinks={socialLinks} />
+      <Footer
+        settings={settings}
+        navigation={navigation.footer}
+        usefulLinks={navigation.useful}
+        socialLinks={socialLinks}
+      />
       <EditPageButton />
     </>
   );

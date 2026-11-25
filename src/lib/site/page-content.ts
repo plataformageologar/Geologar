@@ -10,6 +10,15 @@ import { normalizeText, validateText, type TextRule } from "@/lib/admin/validati
 export const PAGE_CONTENT_KEYS = ["rede", "pesquisa", "projetos", "publicacoes", "instituicoes", "contato"] as const;
 export type PageContentKey = (typeof PAGE_CONTENT_KEYS)[number];
 
+/**
+ * Páginas com textos editáveis no CMS. A antiga página /contato redireciona
+ * para o contato do rodapé (formulário desativado por decisão de escopo): os
+ * textos dela ficam guardados no banco, sem edição, para uma reativação.
+ */
+export const EDITABLE_PAGE_CONTENT_KEYS = PAGE_CONTENT_KEYS.filter(
+  (key): key is Exclude<PageContentKey, "contato"> => key !== "contato",
+);
+
 export const PAGE_CONTENT_LABELS: Record<PageContentKey, { label: string; path: string }> = {
   rede: { label: "A Rede", path: "/rede" },
   pesquisa: { label: "Pesquisa", path: "/pesquisa" },

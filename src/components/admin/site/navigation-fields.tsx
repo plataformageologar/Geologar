@@ -4,12 +4,12 @@ import { Plus } from "lucide-react";
 
 import { countCharacters } from "@/lib/admin/validation";
 import { moveItem, newKey } from "@/lib/site/lists";
-import { NAV_LABEL_RULE, NAV_MAX, type NavDraft, type NavFieldErrors } from "@/lib/site/navigation";
+import { NAV_LABEL_RULE, NAV_MAX, type NavDraft, type NavFieldErrors, type NavLocation } from "@/lib/site/navigation";
 
 import { Checkbox, describedBy, Field, TextInput } from "../form-controls";
 import { HiddenBadge, ItemToolbar } from "./list-controls";
 
-/** Links de um menu (cabeçalho ou rodapé). Lista controlada, somente administradores. */
+/** Links de um menu (cabeçalho, rodapé ou links úteis). Lista controlada, somente administradores. */
 export function NavigationFields({
   location,
   items,
@@ -17,7 +17,7 @@ export function NavigationFields({
   errors = {},
   disabled,
 }: {
-  location: "header" | "footer";
+  location: NavLocation;
   items: NavDraft[];
   onChange: (items: NavDraft[]) => void;
   errors?: Record<string, NavFieldErrors>;
@@ -28,6 +28,12 @@ export function NavigationFields({
 
   return (
     <div className="flex flex-col gap-4">
+      {location === "useful" && (
+        <p className="text-body-sm text-muted-foreground">
+          Coluna “Links úteis” do rodapé. Inclua só páginas que já existem (privacidade, termos, mapa do site,
+          acessibilidade…). O link “Área restrita” é fixo e não precisa ser cadastrado.
+        </p>
+      )}
       <ol className="flex flex-col gap-3">
         {items.map((item, index) => {
           const id = `menu-${location}-${item.key}`;
@@ -75,7 +81,7 @@ export function NavigationFields({
                   label="Destino"
                   required
                   error={itemErrors.href}
-                  hint="Página do site (ex.: /projetos) ou endereço completo https://…"
+                  hint="Página do site (ex.: /projetos), /#contato (contato do rodapé) ou endereço completo https://…"
                 >
                   <TextInput
                     id={`${id}-href`}

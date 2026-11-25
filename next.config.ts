@@ -30,6 +30,13 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  // O contato institucional fica no rodapé de todas as páginas (âncora
+  // #contato); a antiga página /contato leva até ele. Temporário (307) para
+  // não ficar gravado nos navegadores caso a página volte a existir. Ver
+  // docs/contact-form.md.
+  async redirects() {
+    return [{ source: "/contato", destination: "/#contato", permanent: false }];
+  },
   images: {
     remotePatterns: mediaRemotePatterns(),
   },

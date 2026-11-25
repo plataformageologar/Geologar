@@ -109,8 +109,9 @@ Feita no navegador para retorno imediato e repetida na Server Action:
 - textos: espaços nas extremidades removidos, quebras de linha preservadas
   (`\r\n` → `\n`), limites de caracteres (contador visível), sem caracteres de
   controle; campos de uma linha não aceitam quebras; vazio é gravado como `null`;
-- destinos: caminho interno (`/contato`, `/projetos?situacao=em-andamento`,
-  `/#pesquisa`) ou URL completa `http(s)://` com domínio, sem usuário/senha.
+- destinos: caminho interno (`/pesquisa`, `/projetos?situacao=em-andamento`,
+  `/#pesquisa`), `/#contato` (coluna Contato do rodapé, em qualquer página) ou
+  URL completa `http(s)://` com domínio, sem usuário/senha.
   Bloqueados: `javascript:`, `data:`, `//site`, `/\site`, endereços malformados;
 - botões: texto e destino juntos. Os dois vazios removem o botão; só um deles
   preenchido é erro.
@@ -321,16 +322,32 @@ permissão do usuário logado e passa pelas mesmas políticas de RLS.
 - Registro único de `site_settings`, editável somente por admin (editores veem
   o formulário desabilitado).
 - Seções: Identificação (nome do site obrigatório, nome institucional, slogan,
-  descrição curta), Contato (e-mail validado; telefone gravado como digitado),
-  Localização e Identidade visual (logotipo do cabeçalho e favicon, pela
-  biblioteca de mídia; vazios, o site usa os arquivos oficiais do código).
+  descrição curta), Contato (e-mail validado; telefone gravado como digitado;
+  WhatsApp em formato internacional `+55 …`, 10 a 15 dígitos, **nunca**
+  copiado do telefone), Localização, Identidade visual (logotipo do cabeçalho
+  e favicon, pela biblioteca de mídia; vazios, o site usa os arquivos oficiais
+  do código) e Rodapé (logotipo, texto de apresentação, títulos das colunas
+  Navegação, Links úteis, Contato e Redes sociais, nota final).
 - Atualiza o registro existente (nunca cria nem usa upsert), com verificação
   de versão. Se o registro não existir, a página mostra um aviso e não oferece
   formulário: a recuperação é feita pela equipe técnica, como na homepage.
 - Uso público: `site_name` e `short_description` nos metadados;
-  `institutional_name`, e-mail, telefone e endereço no rodapé e em `/contato`.
-  O slogan (`tagline`) ainda não é exibido pelo layout.
-- Campos vazios ficam vazios: nenhum dado de contato é inventado.
+  `institutional_name` na faixa inferior do rodapé; e-mail (`mailto:`),
+  telefone (`tel:`), WhatsApp (`https://wa.me/<dígitos>`) e endereço na coluna
+  **Contato** do rodapé (`id="contato"`). O slogan (`tagline`) ainda não é
+  exibido pelo layout.
+- Campos vazios ficam vazios e não aparecem: nenhum dado de contato é
+  inventado. Sem nenhum canal, a coluna mostra “Os canais oficiais de contato
+  serão informados em breve.”
+- Rodapé (ajuste de 25/11/2026): 4 colunas no computador (identidade,
+  Navegação, Links úteis, Contato + redes sociais), 2 no tablet e 1 no
+  celular; faixa inferior com © e o nome institucional. Texto de apresentação
+  padrão (campo vazio): “Ciência para compreender o território, valorizar os
+  recursos naturais e construir um futuro sustentável.”
+- Colunas novas (migration `20261125100000_footer_contact_channels.sql`, não
+  destrutiva): `contact_whatsapp` e `footer_links_title`, no mesmo registro
+  protegido (somente admin) e no mesmo fluxo de rascunho, publicação e
+  histórico.
 
 ## Redes sociais (`/admin/redes-sociais`)
 
@@ -471,11 +488,11 @@ para o editor visual. Desde a Etapa 9.6 todas estas telas gravam
 | `/admin/secoes?pagina=home\|rede` | admin, editor | Ordem, visibilidade e opções das seções; blocos texto, imagem + texto, chamada, galeria e logotipos | `home` / `rede` |
 | `/admin/experiencias` | admin, editor | Experiências digitais da página inicial: cards, endereço externo, capa, disponibilidade e visibilidade (Etapa 10.6, ver [`digital-experiences.md`](digital-experiences.md)) | `home` |
 | `/admin/pilares` | admin, editor | Pilares da rede (título, descrição, ícone da lista fixa) | `pillars` |
-| `/admin/textos-das-paginas?pagina=` | admin, editor | Rótulo, título, introdução e SEO de rede, pesquisa, projetos, publicações, instituições e contato | `rede` / `page` |
+| `/admin/textos-das-paginas?pagina=` | admin, editor | Rótulo, título, introdução e SEO de rede, pesquisa, projetos, publicações e instituições (os textos da antiga página de contato ficam guardados, sem edição) | `rede` / `page` |
 | `/admin/paginas` | admin, editor | Páginas personalizadas (ver [`custom-pages.md`](custom-pages.md)) | `custom` |
 | `/admin/historico` | admin, editor | Lista dos conteúdos com a situação de cada um (Etapa 10) | — |
 | `/admin/historico?documento=` | admin, editor | Histórico de versões, comparação e restauração | — |
-| `/admin/navegacao?menu=header\|footer` | admin (editor vê a versão publicada) | Links do cabeçalho e do rodapé; lista de páginas personalizadas; aviso de links para páginas fora do ar | `navigation` |
+| `/admin/navegacao?menu=header\|footer\|useful` | admin (editor vê a versão publicada) | Links do cabeçalho, da coluna Navegação do rodapé e da coluna Links úteis (`site_navigation.location = 'useful'`; “Área restrita” é fixo no código); lista de páginas personalizadas; aviso de links para páginas fora do ar | `navigation` |
 | `/admin/aparencia` | admin | Cores, fundo, botões, cantos, fonte dos títulos, cards | `appearance` |
 | `/admin/configuracoes` | admin (editor vê a versão publicada) | Informações institucionais + “Cabeçalho e rodapé” | `settings` |
 
@@ -540,8 +557,9 @@ Regras:
   ([`media-library.md`](media-library.md)).
 - Etapa 8.5 concluída: população inicial de demonstração e prévia protegida
   ([`initial-content-manifest.md`](initial-content-manifest.md)).
-- Etapa 9 concluída: formulário de contato (desativado até a configuração
-  pela GeoLogar), sem gravação no banco ([`contact-form.md`](contact-form.md)).
+- Etapa 9 concluída: formulário de contato, sem gravação no banco
+  ([`contact-form.md`](contact-form.md)). **Desativado por decisão de
+  escopo em 25/11/2026**: contato direto no rodapé (`/#contato`).
 - Etapa 9.5 concluída: editor visual e personalização do site
   ([`visual-editor.md`](visual-editor.md),
   [`guia-edicao-geologar.md`](guia-edicao-geologar.md)).

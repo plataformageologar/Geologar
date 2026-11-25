@@ -1,16 +1,17 @@
-import { getContactConfig } from "@/lib/contact/config";
-import { handleContactRequest } from "@/lib/contact/handler";
-import { getContactRateLimiter } from "@/lib/contact/rate-limit";
-
 /**
- * Formulário de contato: valida, confere o Turnstile e envia pelo Resend.
- * Nenhuma mensagem é gravada no banco. Ver docs/contact-form.md.
+ * Formulário de contato DESATIVADO por decisão de escopo (o briefing o trata
+ * como opcional; o contato institucional fica no rodapé, em /#contato).
+ *
+ * Este endpoint não lê variáveis de ambiente, não chama o Turnstile nem o
+ * Resend e não processa o corpo da requisição: qualquer envio recebe 404.
+ * O código do formulário e seus testes continuam em src/lib/contact e
+ * src/components/contact para uma eventual reativação (docs/contact-form.md).
  */
 export const dynamic = "force-dynamic";
 
-export async function POST(request: Request) {
-  return handleContactRequest(request, {
-    config: getContactConfig().config,
-    rateLimiter: await getContactRateLimiter(),
-  });
+export function POST(): Response {
+  return Response.json(
+    { error: "not_found", message: "O formulário de contato não está disponível." },
+    { status: 404, headers: { "Cache-Control": "no-store" } },
+  );
 }

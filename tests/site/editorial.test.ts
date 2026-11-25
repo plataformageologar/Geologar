@@ -40,7 +40,9 @@ describe("conteúdo das unidades editoriais", () => {
     });
     assert.ok(content);
     assert.equal(content.header?.length, 1);
-    assert.deepEqual(Object.keys(content).sort(), ["footer", "header"]);
+    assert.deepEqual(Object.keys(content).sort(), ["footer", "header", "useful"]);
+    // Revisões anteriores aos Links úteis continuam legíveis (lista vazia).
+    assert.deepEqual(content.useful, []);
     assert.equal(parseContent("navigation", "texto"), null);
   });
 

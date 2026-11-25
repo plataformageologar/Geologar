@@ -19,6 +19,7 @@ const draft: EditorDraft = {
   pageContent: null,
   navHeader: [],
   navFooter: [],
+  navUseful: [],
   appearance: null,
 };
 

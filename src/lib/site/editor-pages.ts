@@ -4,7 +4,7 @@
  * ou um caminho arbitrário.
  */
 
-export type EditorListKey = "pesquisa" | "projetos" | "publicacoes" | "instituicoes" | "contato";
+export type EditorListKey = "pesquisa" | "projetos" | "publicacoes" | "instituicoes";
 
 export type EditorPage =
   | { kind: "home"; path: "/"; label: string }
@@ -21,7 +21,6 @@ export const EDITOR_PAGES: readonly EditorPage[] = [
   { kind: "list", key: "projetos", path: "/projetos", label: "Projetos" },
   { kind: "list", key: "publicacoes", path: "/publicacoes", label: "Publicações" },
   { kind: "list", key: "instituicoes", path: "/instituicoes", label: "Instituições" },
-  { kind: "list", key: "contato", path: "/contato", label: "Contato" },
 ];
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;

@@ -149,7 +149,8 @@ export async function validatePart(
       return { value: result.items };
     }
     case "header":
-    case "footer": {
+    case "footer":
+    case "useful": {
       const result = validateNavList(raw);
       if (result.listError) return { errors: { listError: result.listError } };
       if (Object.keys(result.errors).length > 0) return { errors: { itemErrors: result.errors } };
@@ -184,6 +185,7 @@ export function partInput(part: PartName, content: AnyContent): unknown {
       return toPillarDrafts(content.items ?? []);
     case "header":
     case "footer":
+    case "useful":
       return toNavDrafts(content[part] ?? []);
     case "appearance":
       return content.appearance ?? null;
@@ -223,7 +225,7 @@ export async function normalizeRestoredContent(
     const ids = new Set(data.map((row) => row.id));
     result.items = content.items.map((item) => (item.id && ids.has(item.id) ? item : { ...item, id: null }));
   }
-  for (const location of ["header", "footer"] as const) {
+  for (const location of ["header", "footer", "useful"] as const) {
     const items = content[location];
     if (!items) continue;
     const { data, error } = await supabase.from("site_navigation").select("id").eq("location", location);

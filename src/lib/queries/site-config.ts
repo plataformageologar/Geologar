@@ -6,7 +6,13 @@ import {
   type Appearance,
 } from "@/lib/site/appearance";
 import type { ListVersion } from "@/lib/site/lists";
-import { DEFAULT_NAVIGATION, type NavDraft, type NavLocation, type SiteNavItem } from "@/lib/site/navigation";
+import {
+  DEFAULT_NAVIGATION,
+  isNavLocation,
+  type NavDraft,
+  type NavLocation,
+  type SiteNavItem,
+} from "@/lib/site/navigation";
 import {
   DEFAULT_PAGE_CONTENT,
   PAGE_CONTENT_LABELS,
@@ -65,9 +71,9 @@ export const getNavigation = cache(async (): Promise<Record<NavLocation, SiteNav
       .order("sort_order")
       .order("created_at");
     if (error) throw error;
-    const result: Record<NavLocation, SiteNavItem[]> = { header: [], footer: [] };
+    const result: Record<NavLocation, SiteNavItem[]> = { header: [], footer: [], useful: [] };
     for (const row of data) {
-      if (row.location === "header" || row.location === "footer") {
+      if (isNavLocation(row.location)) {
         result[row.location].push({ label: row.label, href: row.href, openInNewTab: row.open_in_new_tab });
       }
     }
@@ -191,9 +197,10 @@ export async function getNavigationForEdit(): Promise<AdminResult<Record<NavLoca
   const result: Record<NavLocation, ListForEdit<NavDraft>> = {
     header: { items: [], versions: [] },
     footer: { items: [], versions: [] },
+    useful: { items: [], versions: [] },
   };
   for (const row of data) {
-    if (row.location !== "header" && row.location !== "footer") continue;
+    if (!isNavLocation(row.location)) continue;
     result[row.location].items.push({
       id: row.id,
       key: row.id,

@@ -22,16 +22,9 @@
 		// Otimização de imagens do next/image (logotipo).
 		"binding": "IMAGES"
 	},
-	"ratelimits": [
-		{
-			// Formulário de contato: até 5 envios por minuto por visitante (chave =
-			// HMAC do IP; o IP não é guardado). Contador do próprio Workers, sem
-			// KV/DO. Ver docs/contact-form.md.
-			"name": "CONTACT_RATE_LIMITER",
-			"namespace_id": "1001",
-			"simple": { "limit": 5, "period": 60 }
-		}
-	],
+	// O binding "ratelimits" (CONTACT_RATE_LIMITER) do formulário de contato foi
+	// removido junto com o formulário (desativado por decisão de escopo). Para
+	// reativar, ver a configuração em docs/contact-form.md.
 	"observability": {
 		"enabled": true
 	}

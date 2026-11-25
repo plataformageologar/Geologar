@@ -13,6 +13,7 @@ export const fallbackSiteSettings: SiteSettings = {
   short_description: null,
   contact_email: null,
   contact_phone: null,
+  contact_whatsapp: null,
   address: null,
   city: null,
   state: null,
@@ -25,6 +26,7 @@ export const fallbackSiteSettings: SiteSettings = {
   footer_nav_title: null,
   footer_contact_title: null,
   footer_social_title: null,
+  footer_links_title: null,
   footer_logo_mode: "official",
   footer_logo_path: null,
   header_style: "solid",
@@ -52,5 +54,5 @@ export const fallbackHomepageContent: HomepageContent = {
   cooperation_description:
     "Entre em contato para conhecer a rede, propor projetos e explorar oportunidades de cooperação em Geociências e sustentabilidade.",
   cooperation_cta_label: "Fale com a GeoLogar",
-  cooperation_cta_href: "/contato",
+  cooperation_cta_href: "/#contato",
 };

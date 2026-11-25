@@ -37,6 +37,8 @@ export function sliceFromContent(slice: DraftSlice, content: AnyContent): Partia
       return content.header ? { navHeader: toNavDrafts(content.header) } : {};
     case "navFooter":
       return content.footer ? { navFooter: toNavDrafts(content.footer) } : {};
+    case "navUseful":
+      return content.useful ? { navUseful: toNavDrafts(content.useful) } : {};
     case "appearance":
       return content.appearance ? { appearance: sanitizeAppearance(content.appearance) } : {};
   }

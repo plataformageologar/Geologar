@@ -5,7 +5,13 @@
 #
 # NÃO use `.env*` para estas chaves: o build do OpenNext embute `.env*` no Worker.
 
-# Formulário de contato: `true` para exibir o formulário.
+# FORMULÁRIO DE CONTATO DESATIVADO (decisão de escopo; ver docs/contact-form.md).
+# O site não lê nenhuma das variáveis abaixo: o contato fica no rodapé e o
+# endpoint /api/contact responde 404 sem processar nada. Mesmo com
+# CONTACT_FORM_ENABLED=true, nada é exibido ou enviado. Elas ficam aqui só
+# como referência para uma eventual reativação.
+
+# Formulário de contato: `true` para exibir o formulário (sem efeito hoje).
 CONTACT_FORM_ENABLED=
 
 # Destinatário(s) definido(s) pela GeoLogar (separados por vírgula).

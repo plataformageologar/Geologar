@@ -9,6 +9,7 @@ import {
   type HomepageFormValues,
 } from "@/lib/admin/homepage";
 import {
+  FOOTER_DEFAULT_DESCRIPTION,
   FOOTER_DEFAULT_TITLES,
   FOOTER_LOGO_MODE_LABELS,
   FOOTER_LOGO_MODES,
@@ -20,6 +21,7 @@ import {
   type SiteSettingsFormValues,
 } from "@/lib/admin/site-settings";
 import { countCharacters, EMAIL_MAX_LENGTH } from "@/lib/admin/validation";
+import { WHATSAPP_MAX_LENGTH } from "@/lib/site/contact";
 
 import { describedBy, Field, FormMessage, Select, TextArea, TextInput } from "../form-controls";
 import { MediaField } from "../media/media-field";
@@ -84,7 +86,8 @@ export function TextField({
   );
 }
 
-const LINK_HINT = "Caminho do site (ex.: /contato ou /#pesquisa) ou endereço completo começando com https://.";
+const LINK_HINT =
+  "Caminho do site (ex.: /pesquisa), /#contato (contato do rodapé) ou endereço completo começando com https://.";
 
 // Homepage ---------------------------------------------------------------------------------
 
@@ -312,13 +315,19 @@ export function FooterSettingsFields(props: SettingsProps) {
           Trocar o logotipo altera a identidade da rede. Confirme com a coordenação antes de salvar.
         </FormMessage>
       )}
-      {settingsText(props, "footer_description", "Texto de apresentação", "Vazio: usa o nome institucional.")}
+      {settingsText(props, "footer_description", "Texto de apresentação", `Vazio: “${FOOTER_DEFAULT_DESCRIPTION}”`)}
       {settingsText(props, "footer_nav_title", "Título da coluna de links", `Vazio: “${FOOTER_DEFAULT_TITLES.footer_nav_title}”.`)}
       {settingsText(
         props,
         "footer_contact_title",
         "Título da coluna de contato",
         `Vazio: “${FOOTER_DEFAULT_TITLES.footer_contact_title}”.`,
+      )}
+      {settingsText(
+        props,
+        "footer_links_title",
+        "Título dos links úteis",
+        `Vazio: “${FOOTER_DEFAULT_TITLES.footer_links_title}”.`,
       )}
       {settingsText(
         props,
@@ -330,7 +339,8 @@ export function FooterSettingsFields(props: SettingsProps) {
       <fieldset className="flex flex-col gap-4 rounded-xl border border-border p-4">
         <legend className="px-1 text-label">Contato</legend>
         <p className="text-caption text-muted-foreground">
-          Canais oficiais. Deixe em branco o que ainda não foi definido; nada é preenchido automaticamente.
+          Coluna “Contato” do rodapé (destino de /#contato). Só canais oficiais: campos vazios não aparecem no site
+          e nada é preenchido automaticamente.
         </p>
         <TextField
           id="editor-contact_email"
@@ -350,6 +360,17 @@ export function FooterSettingsFields(props: SettingsProps) {
           onChange={(value) => onChange({ ...values, contact_phone: value })}
           max={40}
           error={errors.contact_phone}
+          disabled={disabled}
+        />
+        <TextField
+          id="editor-contact_whatsapp"
+          label="WhatsApp"
+          type="tel"
+          value={values.contact_whatsapp}
+          onChange={(value) => onChange({ ...values, contact_whatsapp: value })}
+          max={WHATSAPP_MAX_LENGTH}
+          hint="Opcional. Com + e código do país (ex.: +55 e o DDD). Não é copiado do telefone."
+          error={errors.contact_whatsapp}
           disabled={disabled}
         />
         {settingsText(props, "address", "Endereço")}

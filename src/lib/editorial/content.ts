@@ -40,12 +40,21 @@ export type ContentByType = {
   page: { page: PageContentRecord };
   custom: { page: PageContentRecord; sections: SectionItem[] };
   pillars: { items: PillarItem[] };
-  navigation: { header: NavItem[]; footer: NavItem[] };
+  navigation: { header: NavItem[]; footer: NavItem[]; useful: NavItem[] };
   appearance: { appearance: Appearance };
   settings: { settings: SiteSettingsRecord };
 };
 
-export type PartName = "homepage" | "sections" | "page" | "items" | "header" | "footer" | "appearance" | "settings";
+export type PartName =
+  | "homepage"
+  | "sections"
+  | "page"
+  | "items"
+  | "header"
+  | "footer"
+  | "useful"
+  | "appearance"
+  | "settings";
 
 export type AnyContent = Partial<{
   homepage: HomepageRecord;
@@ -54,6 +63,7 @@ export type AnyContent = Partial<{
   items: PillarItem[];
   header: NavItem[];
   footer: NavItem[];
+  useful: NavItem[];
   appearance: Appearance;
   settings: SiteSettingsRecord;
 }>;
@@ -64,7 +74,7 @@ export const DOC_PARTS: Record<DocType, readonly PartName[]> = {
   page: ["page"],
   custom: ["page", "sections"],
   pillars: ["items"],
-  navigation: ["header", "footer"],
+  navigation: ["header", "footer", "useful"],
   appearance: ["appearance"],
   settings: ["settings"],
 };
@@ -183,6 +193,7 @@ export function parsePart(part: PartName, raw: unknown): AnyContent[PartName] {
       return parsePillars(raw);
     case "header":
     case "footer":
+    case "useful":
       return parseNav(raw);
     case "appearance":
       return sanitizeAppearance(record(raw));
@@ -247,6 +258,7 @@ const PART_LABELS: Record<PartName, string> = {
   items: "Pilares",
   header: "Menu do cabeçalho",
   footer: "Links do rodapé",
+  useful: "Links úteis do rodapé",
   appearance: "Aparência",
   settings: "Informações institucionais",
 };
@@ -288,6 +300,7 @@ const FIELD_LABELS: Record<string, string> = {
   short_description: "Descrição curta",
   contact_email: "E-mail de contato",
   contact_phone: "Telefone",
+  contact_whatsapp: "WhatsApp",
   address: "Endereço",
   city: "Cidade",
   state: "Estado",
@@ -299,6 +312,7 @@ const FIELD_LABELS: Record<string, string> = {
   footer_nav_title: "Título da coluna de links",
   footer_contact_title: "Título da coluna de contato",
   footer_social_title: "Título das redes sociais",
+  footer_links_title: "Título dos links úteis",
   footer_logo_mode: "Logotipo do rodapé",
   footer_logo_path: "Logotipo próprio do rodapé",
   header_style: "Estilo do cabeçalho",
@@ -449,6 +463,7 @@ export function diffContent(type: DocType, before: AnyContent, after: AnyContent
         break;
       case "header":
       case "footer":
+      case "useful":
         entries.push(
           ...diffList(area, before[part] ?? [], after[part] ?? [], (item) => item.label || "Link", (item) => ({
             label: item.label,

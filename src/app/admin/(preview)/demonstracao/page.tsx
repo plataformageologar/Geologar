@@ -183,8 +183,8 @@ export default async function DemoPreviewPage() {
         <CooperationCta content={content} settings={settingsOf("cooperation")} />
         <DemoNote state={hasContact || socialLinks.length > 0 ? "published" : "pending"}>
           {hasContact || socialLinks.length > 0
-            ? "Rodapé com os contatos e redes sociais cadastrados em Configurações."
-            : "Rodapé sem contatos nem redes sociais: e-mail, localização e perfis oficiais ainda não foram informados (Configurações e Redes sociais)."}
+            ? "Coluna Contato do rodapé (destino de /#contato) com os canais e redes cadastrados em Configurações."
+            : "Coluna Contato do rodapé (destino de /#contato) sem canais nem redes: e-mail, telefone, WhatsApp, localização e perfis oficiais ainda não foram informados (Configurações e Redes sociais)."}
         </DemoNote>
       </PublicShell>
     </>

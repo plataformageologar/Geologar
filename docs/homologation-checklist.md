@@ -13,9 +13,16 @@ Use, se possível, um computador e um celular.
 ## 1. Site público (sem entrar na área de edição)
 
 - [ ] A página inicial abre e mostra banner, apresentação, linhas de
-      pesquisa e contato.
-- [ ] O menu leva a: A Rede, Pesquisa, Projetos, Publicações e Contato. O
-      rodapé leva a Instituições.
+      pesquisa e a chamada para cooperação.
+- [ ] O menu leva a: A Rede, Pesquisa, Projetos e Publicações. O rodapé leva
+      também a Instituições.
+- [ ] Em qualquer página, **Contato** (menu, menu do celular e botão “Fale
+      com a GeoLogar”) rola até a coluna Contato do rodapé, sem trocar de
+      página. O endereço antigo `/contato` também leva até ela.
+- [ ] O rodapé tem 4 colunas no computador (identidade, Navegação, Links
+      úteis, Contato), 2 no tablet e 1 no celular, com fundo marrom escuro.
+      Só aparecem contatos e redes sociais cadastrados; nenhum link sem
+      destino.
 - [ ] Em Pesquisa, cada linha abre a própria página com projetos e
       publicações relacionados.
 - [ ] Em Projetos, os filtros e a mudança de página funcionam.
@@ -35,9 +42,10 @@ Use, se possível, um computador e um celular.
       ausentes; ver `docs/visual-refinement.md`) e autorização de uso das
       marcas.
 - [ ] Projetos, publicações, instituições e redes sociais reais.
-- [ ] Dados oficiais de contato.
-- [ ] Decisão sobre o formulário de contato (hoje oculto): quem recebe as
-      mensagens e qual endereço de envio.
+- [ ] Dados oficiais de contato para o rodapé: e-mail, telefone, WhatsApp
+      (se houver), endereço e redes sociais.
+- [ ] Links úteis do rodapé (privacidade, termos, acessibilidade), quando as
+      páginas existirem.
 - [ ] Decisão sobre domínio próprio (endereço definitivo do site).
 
 ### Identidade visual (Etapa 10.7)
@@ -149,4 +157,4 @@ final.
 | Área de edição | | | | |
 | Usuários e permissões | | | | |
 | Identidade visual e instituições (Etapa 10.7) | | | | |
-| Decisões pendentes (contato, domínio) | | | | |
+| Decisões pendentes (dados de contato, domínio) | | | | |

@@ -4,14 +4,14 @@ import { fallbackSiteSettings } from "@/data/site";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { SiteSettings, SocialLink } from "@/types/content";
 
-import { failQuery, logQueryError } from "./shared";
+import { logQueryError } from "./shared";
 
 async function fetchSiteSettings() {
   // Registro único, garantido pelo índice site_settings_singleton.
   const { data, error } = await createPublicClient()
     .from("site_settings")
     .select(
-      "site_name, institutional_name, short_description, contact_email, contact_phone, address, city, state, country, logo_path, favicon_path, footer_description, footer_note, footer_nav_title, footer_contact_title, footer_social_title, footer_logo_mode, footer_logo_path, header_style",
+      "site_name, institutional_name, short_description, contact_email, contact_phone, contact_whatsapp, address, city, state, country, logo_path, favicon_path, footer_description, footer_note, footer_nav_title, footer_contact_title, footer_social_title, footer_links_title, footer_logo_mode, footer_logo_path, header_style",
     )
     .maybeSingle();
 
@@ -53,22 +53,3 @@ export const getActiveSocialLinks = cache(async (): Promise<SocialLink[]> => {
     return [];
   }
 });
-
-/**
- * Canais de contato para /contato. Diferente do rodapé, uma falha de leitura
- * é propagada até `error.tsx`, para não ser exibida como "sem canais".
- */
-export async function getContactChannels(): Promise<{
-  settings: SiteSettings | null;
-  socialLinks: SocialLink[];
-}> {
-  try {
-    const [settings, socialLinks] = await Promise.all([
-      fetchSiteSettings(),
-      fetchActiveSocialLinks(),
-    ]);
-    return { settings, socialLinks };
-  } catch (error) {
-    failQuery("contact channels", error);
-  }
-}

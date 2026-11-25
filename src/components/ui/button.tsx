@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 
+import { isHashHref, resolveSiteHref } from "@/lib/site/contact";
 import { cn } from "@/lib/utils/cn";
 
 type Variant = "primary" | "secondary" | "ghost";
@@ -76,10 +77,10 @@ export function Button(props: ButtonAsLink | ButtonAsButton) {
   );
 
   if (rest.href !== undefined) {
-    const { href } = rest;
+    const href = resolveSiteHref(rest.href);
     const isExternal = /^https?:\/\//.test(href);
 
-    return isExternal ? (
+    return isExternal || isHashHref(href) ? (
       <a href={href} className={classes}>
         {content}
       </a>

@@ -127,8 +127,10 @@ vindos das variáveis de densidade) e marcador `section-marker` (barra
   celular, uma faixa com marca e botão Menu; busca e acesso ficam no menu.
   `scroll-padding-top` evita que âncoras e elementos em foco fiquem sob ele.
 - **Rodapé**: faixa superior em camadas (`earth` → `secondary` → `primary`),
-  referência às rochas estratificadas. Sem canais de contato cadastrados, a
-  coluna "Contato" aponta para `/contato` em vez de exibir dados.
+  referência às rochas estratificadas. Quatro colunas no computador
+  (identidade, Navegação, Links úteis, Contato + redes), duas no tablet e uma
+  no celular. A coluna "Contato" (`id="contato"`) é o destino de `/#contato`;
+  sem canais cadastrados, mostra só um aviso (nenhum dado inventado).
 - **Hero sem fotografia**: fundo `deep` com curvas de nível e gradientes
   `primary`, `secondary` e um toque de `earth` no canto inferior.
 

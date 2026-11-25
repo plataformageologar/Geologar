@@ -3,6 +3,7 @@
 import { startTransition, useActionState, useEffect, useRef, useState, type ReactNode } from "react";
 
 import {
+  FOOTER_DEFAULT_DESCRIPTION,
   FOOTER_DEFAULT_TITLES,
   FOOTER_LOGO_MODE_LABELS,
   FOOTER_LOGO_MODES,
@@ -17,6 +18,7 @@ import {
 } from "@/lib/admin/site-settings";
 import { saveSiteSettings, type SiteSettingsSaveState } from "@/lib/admin/site-settings-actions";
 import { countCharacters, EMAIL_MAX_LENGTH } from "@/lib/admin/validation";
+import { WHATSAPP_MAX_LENGTH } from "@/lib/site/contact";
 
 import { describedBy, Field, FormMessage, FormSection, Select, TextArea, TextInput } from "../form-controls";
 import { MediaField } from "../media/media-field";
@@ -51,8 +53,10 @@ function isDirty(a: SiteSettingsFormValues, b: SiteSettingsFormValues) {
   return siteSettingsFields.some((field) => a[field] !== b[field]);
 }
 
-const emailHint = "Opcional. Exibido no rodapé e na página de contato.";
+const emailHint = "Opcional. Exibido na coluna Contato do rodapé.";
 const phoneHint = "Opcional. Gravado exatamente como digitado (ex.: +55 41 3360-0000).";
+const whatsappHint =
+  "Opcional. Número oficial com + e código do país (ex.: +55 e o DDD). Não é copiado do telefone; vazio, não aparece.";
 
 /** Informações institucionais (registro único de site_settings). */
 export function SiteSettingsForm({ initialValues, readOnly }: SiteSettingsFormProps) {
@@ -229,6 +233,21 @@ export function SiteSettingsForm({ initialValues, readOnly }: SiteSettingsFormPr
               className="sm:max-w-72"
             />
           </Field>
+          <Field id="contact_whatsapp" label="WhatsApp" hint={whatsappHint} error={errors.contact_whatsapp}>
+            <TextInput
+              id="contact_whatsapp"
+              name="contact_whatsapp"
+              type="tel"
+              inputMode="tel"
+              autoComplete="off"
+              maxLength={WHATSAPP_MAX_LENGTH}
+              value={values.contact_whatsapp}
+              onChange={(event) => update("contact_whatsapp", event.target.value)}
+              aria-invalid={errors.contact_whatsapp ? true : undefined}
+              aria-describedby={describedBy("contact_whatsapp", { hint: whatsappHint, error: errors.contact_whatsapp })}
+              className="sm:max-w-72"
+            />
+          </Field>
         </FormSection>
 
         <FormSection id="localizacao" title="Localização" description="Endereço institucional. Todos os campos são opcionais.">
@@ -344,14 +363,17 @@ export function SiteSettingsForm({ initialValues, readOnly }: SiteSettingsFormPr
           )}
           {textField("footer_description", "Texto de apresentação do rodapé", {
             rows: 3,
-            hint: "Opcional. Vazio, o rodapé usa a descrição curta do site.",
+            hint: `Opcional. Vazio, o rodapé usa: “${FOOTER_DEFAULT_DESCRIPTION}”`,
           })}
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2">
             {textField("footer_nav_title", "Título da coluna de links", {
               hint: `Vazio: “${FOOTER_DEFAULT_TITLES.footer_nav_title}”.`,
             })}
             {textField("footer_contact_title", "Título da coluna de contato", {
               hint: `Vazio: “${FOOTER_DEFAULT_TITLES.footer_contact_title}”.`,
+            })}
+            {textField("footer_links_title", "Título dos links úteis", {
+              hint: `Vazio: “${FOOTER_DEFAULT_TITLES.footer_links_title}”.`,
             })}
             {textField("footer_social_title", "Título das redes sociais", {
               hint: `Vazio: “${FOOTER_DEFAULT_TITLES.footer_social_title}”.`,

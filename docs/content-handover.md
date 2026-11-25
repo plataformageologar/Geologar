@@ -98,27 +98,25 @@ sigla. Lista e logotipos em
 
 ## Contato
 
-- [ ] E-mail oficial.
-- [ ] Telefone, se houver atendimento oficial (o do mockup é incompleto).
-- [ ] Localização institucional validada.
-- [ ] Redes sociais ativas (endereços completos).
+O contato institucional fica na coluna **Contato do rodapé**, em todas as
+páginas; o item “Contato” do menu e o botão “Fale com a GeoLogar” levam até
+ela (`/#contato`). Hoje a coluna mostra apenas “Os canais oficiais de contato
+serão informados em breve.”: **nenhum dado foi inventado** e os do mockup
+(telefone com “XXXX”, e-mail ilustrativo) não foram usados. Cada campo só
+aparece quando preenchido:
 
-### Formulário de contato
+- [ ] E-mail oficial (link `mailto:`).
+- [ ] Telefone, se houver atendimento oficial (link `tel:`).
+- [ ] WhatsApp oficial, se houver, com código do país (ex.: `+55` e o DDD).
+      Não é copiado do telefone.
+- [ ] Endereço, cidade, estado e país validados.
+- [ ] Redes sociais ativas (endereços completos `https://`).
+- [ ] Links úteis do rodapé (privacidade, termos, mapa do site,
+      acessibilidade) — só quando as páginas existirem.
 
-O formulário está pronto, mas **desativado** até que os itens abaixo sejam
-definidos (detalhes em [`contact-form.md`](contact-form.md#checklist-de-ativação)):
-
-- [ ] Endereço que receberá as mensagens do formulário (não precisa ser o
-      e-mail público exibido no site).
-- [ ] Pessoa ou equipe responsável por ler e responder as mensagens.
-- [ ] Domínio de envio (o remetente precisa estar em um domínio verificado no
-      provedor de e-mail, o que exige registros no DNS desse domínio).
-- [ ] Endereço remetente (ex.: `nao-responda@` no domínio de envio).
-- [ ] Conta no provedor de envio (Resend) e no Cloudflare Turnstile, ou
-      autorização para criá-las em nome da GeoLogar.
-- [ ] Aprovação do texto de privacidade exibido abaixo do formulário: "Os
-      dados informados serão utilizados para responder à sua mensagem enviada
-      à GeoLogar."
+O formulário de contato **não será usado** (decisão de escopo em
+25/11/2026; o briefing o trata como opcional). Resend e Turnstile não são
+necessários. Ver [`contact-form.md`](contact-form.md).
 
 ## Experiências digitais (Etapa 10.6)
 
@@ -142,9 +140,6 @@ Ver [`digital-experiences.md`](digital-experiences.md).
 
 - [ ] Política de privacidade.
 - [ ] Termos de uso, quando aplicáveis.
-- [ ] Orientações sobre tratamento de dados do formulário de contato (as
-      mensagens não são gravadas no site; ficam na caixa de e-mail que as
-      recebe e no provedor de envio).
 
 Nenhum texto jurídico foi redigido: os links do mockup (termos, privacidade,
 mapa do site, acessibilidade) só serão criados com textos fornecidos ou

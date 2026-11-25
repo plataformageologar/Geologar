@@ -19,7 +19,7 @@ export function CooperationCta({ content, settings = {} }: CooperationCtaProps) 
   const deep = resolveBackground("cooperation", settings) === "deep";
 
   return (
-    <section id="contato" aria-labelledby="contato-title" className="pb-[var(--section-y)]">
+    <section id="cooperacao" aria-labelledby="cooperacao-title" className="pb-[var(--section-y)]">
       <Container>
         <div
           className={cn(
@@ -29,13 +29,13 @@ export function CooperationCta({ content, settings = {} }: CooperationCtaProps) 
         >
           <div aria-hidden="true" className="topo-pattern absolute inset-0 -z-10 text-white/[0.1]" />
           <div className="flex max-w-3xl flex-col gap-5">
-            <h2 id="contato-title" className="text-h2">
+            <h2 id="cooperacao-title" className="text-h2">
               {cooperation_title}
             </h2>
             {cooperation_description && (
               <p className="whitespace-pre-line text-body-lg opacity-90">{cooperation_description}</p>
             )}
-            {/* O botão só aparece quando houver um destino real cadastrado. */}
+            {/* O botão só aparece com destino cadastrado (padrão: /#contato, o contato do rodapé). */}
             {cooperation_cta_label && cooperation_cta_href && (
               <Button href={cooperation_cta_href} surface="dark" size="lg" withArrow className="mt-3 self-start">
                 {cooperation_cta_label}

@@ -33,14 +33,15 @@ e preparação para homologação). Resultados completos em
 | Supabase JS / SSR | 2.118 / 0.12.7 |
 | Ícones | lucide-react |
 
-Configuração do Worker (`wrangler.jsonc`): bindings `ASSETS`, `IMAGES`,
-`WORKER_SELF_REFERENCE` e o limitador `CONTACT_RATE_LIMITER` (formulário de
-contato). Sem ISR, R2, KV ou Durable Objects. Ver [`deployment.md`](deployment.md).
+Configuração do Worker (`wrangler.jsonc`): bindings `ASSETS`, `IMAGES` e
+`WORKER_SELF_REFERENCE`. Sem ISR, R2, KV, Durable Objects ou limitador de
+envios (removido com o formulário de contato). Ver [`deployment.md`](deployment.md).
 
 Variáveis de ambiente (nomes, sem valores): `NEXT_PUBLIC_SUPABASE_URL`,
 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`,
-`NEXT_PUBLIC_SITE_URL` (opcional, para domínio próprio) e as do
-formulário de contato (ver [`contact-form.md`](contact-form.md)).
+`NEXT_PUBLIC_SITE_URL` (opcional, para domínio próprio). As do formulário de
+contato não são mais lidas (formulário desativado; ver
+[`contact-form.md`](contact-form.md)).
 
 ## Site público
 
@@ -52,7 +53,7 @@ formulário de contato (ver [`contact-form.md`](contact-form.md)).
 | Projetos | `/projetos`, `/projetos/[slug]` | No ar (filtros e paginação) |
 | Publicações | `/publicacoes` | No ar; sem página individual |
 | Instituições | `/instituicoes` | No ar |
-| Contato | `/contato` | No ar; formulário **oculto** até configurar Resend + Turnstile |
+| Contato | coluna do rodapé (`/#contato`) | Em todas as páginas; `/contato` redireciona (`307`) para `/#contato`. Formulário **desativado por decisão de escopo** (25/11/2026); Resend e Turnstile não são usados |
 | Páginas personalizadas | `/paginas/[slug]` | Só as publicadas; demais respondem 404 (nenhuma publicada hoje) |
 
 Para quem está logado (admin/editor) aparece o botão **“Editar esta página”**,
@@ -237,7 +238,10 @@ Ver [`database-schema.md`](database-schema.md).
   das linhas de pesquisa têm ~450 × 226 px e aparecem borradas em telas
   grandes (ver [`qa-report.md`](qa-report.md#8-imagens-a-substituir-geologar)).
 - Projetos, publicações, instituições e redes sociais reais.
-- Dados de contato oficiais e credenciais do formulário (Resend, Turnstile).
+- Dados de contato oficiais (e-mail, telefone, WhatsApp, endereço, redes
+  sociais), a cadastrar pelo CMS. O formulário de contato não é pendência.
+- Links úteis do rodapé (privacidade, termos, acessibilidade) quando as
+  páginas existirem.
 - Decisão sobre domínio próprio.
 - Contas da equipe: Editores criados pelo Administrador em
   *Usuários e permissões*; Administradores adicionais, pela equipe técnica.

@@ -1,5 +1,6 @@
 import type { HomepageContent } from "@/types/content";
 
+import { isContactHref } from "./contact";
 import type { SectionType } from "./sections";
 
 /**
@@ -12,17 +13,17 @@ export const SECTION_ANCHORS: Partial<Record<SectionType, string>> = {
   projects: "projetos",
   publications: "publicacoes",
   institutions: "instituicoes",
-  cooperation: "contato",
+  cooperation: "cooperacao",
   experiences: "experiencias",
 };
 
 /**
  * Mantém o link apenas se não apontar para uma âncora de seção ausente da
- * homepage (ex.: valores antigos como "/#pesquisa"). Rotas e URLs externas
- * são mantidas.
+ * homepage (ex.: valores antigos como "/#pesquisa"). Rotas, URLs externas e o
+ * contato do rodapé ("/#contato", presente em todas as páginas) são mantidos.
  */
 export function isLinkAvailable(href: string, sections: Set<string>) {
-  return !href.startsWith("/#") || sections.has(href.slice(2));
+  return !href.startsWith("/#") || isContactHref(href) || sections.has(href.slice(2));
 }
 
 /** Textos do banner sem os CTAs que apontam para seções ausentes. */

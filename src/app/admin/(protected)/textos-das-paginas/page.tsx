@@ -7,7 +7,7 @@ import { LoadError, PageTabs, SitePageIntro } from "@/components/admin/site/page
 import { requireAdminAccess } from "@/lib/auth/access";
 import { pageContentDocument, toPageValues } from "@/lib/editorial/content";
 import { docInfo, getEditorialDocument } from "@/lib/queries/editorial";
-import { PAGE_CONTENT_KEYS, PAGE_CONTENT_LABELS, type PageContentKey } from "@/lib/site/page-content";
+import { EDITABLE_PAGE_CONTENT_KEYS, PAGE_CONTENT_LABELS, type PageContentKey } from "@/lib/site/page-content";
 import { firstParam } from "@/lib/utils/search-params";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +20,7 @@ export default async function PageTextsPage({ searchParams }: PageProps<"/admin/
   await requireAdminAccess();
   const query = await searchParams;
   const param = firstParam(query.pagina);
-  const page: PageContentKey = (PAGE_CONTENT_KEYS as readonly string[]).includes(param ?? "")
+  const page: PageContentKey = (EDITABLE_PAGE_CONTENT_KEYS as readonly string[]).includes(param ?? "")
     ? (param as PageContentKey)
     : "rede";
 
@@ -38,7 +38,7 @@ export default async function PageTextsPage({ searchParams }: PageProps<"/admin/
         <PageTabs
           label="Página"
           current={page}
-          tabs={PAGE_CONTENT_KEYS.map((key) => ({
+          tabs={EDITABLE_PAGE_CONTENT_KEYS.map((key) => ({
             key,
             label: PAGE_CONTENT_LABELS[key].label,
             href: `/admin/textos-das-paginas?pagina=${key}`,

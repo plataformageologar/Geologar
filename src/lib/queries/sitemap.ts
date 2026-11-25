@@ -12,7 +12,6 @@ export const STATIC_SITEMAP_PATHS = [
   "/projetos",
   "/publicacoes",
   "/instituicoes",
-  "/contato",
 ] as const;
 
 type Row = { slug: string; updated_at: string };

@@ -43,6 +43,7 @@ export type EditorDraft = {
   pageContent: PageContentValues | null;
   navHeader: NavDraft[] | null;
   navFooter: NavDraft[] | null;
+  navUseful: NavDraft[] | null;
   appearance: Appearance | null;
 };
 
@@ -56,6 +57,7 @@ export const DRAFT_SLICES: readonly DraftSlice[] = [
   "pageContent",
   "navHeader",
   "navFooter",
+  "navUseful",
   "appearance",
 ];
 
@@ -68,6 +70,7 @@ export const SLICE_PARTS = {
   pageContent: "page",
   navHeader: "header",
   navFooter: "footer",
+  navUseful: "useful",
   appearance: "appearance",
 } as const satisfies Record<DraftSlice, string>;
 
@@ -100,6 +103,7 @@ export type EditorErrors = {
   pageContent?: PageContentFieldErrors;
   navHeader?: Record<string, NavFieldErrors>;
   navFooter?: Record<string, NavFieldErrors>;
+  navUseful?: Record<string, NavFieldErrors>;
   appearance?: AppearanceFieldErrors;
 };
 
@@ -164,6 +168,7 @@ export function draftSiteSettings(values: SiteSettingsFormValues | null): SiteSe
     short_description: nullable(values.short_description),
     contact_email: nullable(values.contact_email),
     contact_phone: nullable(values.contact_phone),
+    contact_whatsapp: nullable(values.contact_whatsapp),
     address: nullable(values.address),
     city: nullable(values.city),
     state: nullable(values.state),
@@ -175,6 +180,7 @@ export function draftSiteSettings(values: SiteSettingsFormValues | null): SiteSe
     footer_nav_title: nullable(values.footer_nav_title),
     footer_contact_title: nullable(values.footer_contact_title),
     footer_social_title: nullable(values.footer_social_title),
+    footer_links_title: nullable(values.footer_links_title),
     footer_logo_mode: nullable(values.footer_logo_mode) ?? "official",
     footer_logo_path: nullable(values.footer_logo_path),
     header_style: nullable(values.header_style) ?? "solid",

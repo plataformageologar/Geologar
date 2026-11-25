@@ -3,8 +3,8 @@
 Rede de Pesquisa em Geociências — Recursos Naturais e Sustentabilidade.
 
 Portal institucional da GeoLogar: homepage e páginas públicas (A Rede,
-Pesquisa, Projetos, Publicações, Instituições, Contato e páginas
-personalizadas), integradas ao Supabase (leitura pública via RLS), e a área
+Pesquisa, Projetos, Publicações, Instituições e páginas personalizadas; contato
+institucional no rodapé), integradas ao Supabase (leitura pública via RLS), e a área
 administrativa (`/admin`): login com autorização por papel, CMS de todo o
 conteúdo, biblioteca de mídia, editor visual, rascunhos com publicação
 controlada e histórico de versões. Situação atual em
@@ -53,9 +53,9 @@ código; quando for, deve ser lida apenas em código de servidor.
 
 As variáveis do formulário de contato (`CONTACT_FORM_ENABLED`,
 `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `NEXT_PUBLIC_TURNSTILE_SITE_KEY`,
-`RESEND_API_KEY`, `TURNSTILE_SECRET_KEY`) são de **runtime** do Worker: no
-painel do Cloudflare em produção e em `.dev.vars` localmente (modelo em
-`.dev.vars.example`) — nunca em `.env*`. Ver
+`RESEND_API_KEY`, `TURNSTILE_SECRET_KEY`) **não são necessárias**: o
+formulário está desativado por decisão de escopo e nenhum código em execução
+as lê. Se um dia forem usadas, são de **runtime** do Worker — nunca em `.env*`. Ver
 [`docs/contact-form.md`](docs/contact-form.md).
 
 ## Scripts
@@ -83,7 +83,7 @@ src/
     admin/              Área administrativa: (auth) login/recuperação, (protected) painel,
                         (preview) prévia de demonstração
     auth/callback/      Retorno dos links de e-mail do Supabase Auth
-    api/contact/        Envio do formulário de contato (POST)
+    api/contact/        Formulário de contato desativado: responde 404 sem processar nada
     robots.ts sitemap.ts  robots.txt e sitemap.xml (somente conteúdo publicado)
   proxy.ts              Sessão do Supabase Auth nas rotas /admin
   assets/brand/         Logotipo oficial (importado via next/image)
@@ -95,7 +95,7 @@ src/
       homepage/         Formulário do módulo Homepage do CMS
       media/            Biblioteca de mídia: grade, envio, seletor e campo de imagem
     home/               Seções da homepage
-    contact/            Formulário de contato e widget do Turnstile
+    contact/            Formulário de contato e widget do Turnstile (desativados; guardados para reativação)
     demo/               Notas da prévia de demonstração (somente /admin/demonstracao)
     research/ projects/ publications/ institutions/ network/
                         Cards e listas compartilhados entre homepage e páginas internas
@@ -105,7 +105,7 @@ src/
   lib/
     admin/              CMS: campos editáveis, validação e Server Actions de gravação
     auth/               Autorização administrativa, Server Actions de login e redirecionamentos seguros
-    contact/            Formulário de contato: validação, Turnstile, e-mail (Resend) e limite de envios
+    contact/            Formulário de contato (desativado): validação, Turnstile, e-mail (Resend) e limite de envios
     media/              Bucket, limites, verificação de arquivos e referências de imagem
     queries/            Consultas de conteúdo (públicas e contagens do painel)
     supabase/           Clientes Supabase (navegador, servidor e público)
@@ -127,7 +127,7 @@ supabase/
 docs/
   admin-auth.md         Autenticação, autorização e primeiro administrador
   cms.md                CMS: módulos, validação, salvamento, exclusão e RLS de escrita
-  contact-form.md       Formulário de contato: segurança, variáveis, testes e ativação
+  contact-form.md       Formulário de contato: desativado por decisão de escopo; referência para reativação
   content-handover.md   Conteúdos que a equipe GeoLogar precisa fornecer ou aprovar
   database-schema.md    Modelo de dados
   deployment.md         Deploy no Cloudflare Workers e checklist de produção
@@ -185,8 +185,9 @@ Regras:
 ## Páginas internas
 
 A navegação principal aponta para as rotas reais (`/rede`, `/pesquisa`,
-`/projetos`, `/publicacoes`, `/contato`; `/instituicoes` fica no rodapé), com
-indicação do item ativo. Rotas, filtros, consultas, estados vazios e regras de
+`/projetos`, `/publicacoes`; `/instituicoes` fica no rodapé), com indicação do
+item ativo. “Contato” leva à coluna Contato do rodapé na página atual
+(`/#contato`); a antiga rota `/contato` redireciona para ela. Rotas, filtros, consultas, estados vazios e regras de
 erro/404 estão em [`docs/public-pages.md`](docs/public-pages.md).
 
 ## Área administrativa
@@ -231,8 +232,8 @@ Políticas e permissões na migration
 `/admin/instituicoes/categorias`), **`/admin/configuracoes`** e
 **`/admin/redes-sociais`**: publicações com DOI normalizado e vínculos com
 projetos e linhas (gravação atômica em `save_publication`); instituições por
-categoria; informações institucionais usadas no rodapé, em `/contato` e nos
-metadados; redes sociais ativas no rodapé. Categorias, configurações e redes
+categoria; informações institucionais usadas no rodapé (inclusive a coluna
+Contato: e-mail, telefone, WhatsApp e endereço) e nos metadados; redes sociais ativas no rodapé. Categorias, configurações e redes
 sociais são editadas só por administradores. Políticas na migration
 `20261109175247_enable_publications_institutions_settings_cms.sql`.
 
@@ -266,16 +267,19 @@ a equipe precisa fornecer ou aprovar está em
 [`docs/content-handover.md`](docs/content-handover.md). Importado não
 significa aprovado.
 
-### Formulário de contato (Etapa 9)
+### Contato institucional e formulário (Etapa 9, ajuste de 25/11/2026)
 
-`/contato` tem um formulário (nome, e-mail, assunto fixo e mensagem) enviado
-por e-mail via Resend, protegido por Cloudflare Turnstile, honeypot, limite de
-5 envios/minuto por visitante (binding de Rate Limiting do Workers) e
-validação estrita no servidor (`/api/contact`). Nenhuma mensagem é gravada no
-banco. **Fica oculto até que as variáveis de runtime sejam configuradas**
-com os dados da GeoLogar; até lá a página mostra só os canais publicados.
-Detalhes, testes e checklist de ativação em
-[`docs/contact-form.md`](docs/contact-form.md).
+O contato fica na coluna **Contato do rodapé** de todas as páginas
+(`id="contato"`): e-mail, telefone, WhatsApp, endereço e redes sociais,
+cadastrados pelo CMS e exibidos só quando preenchidos. Menus e o botão da
+chamada para cooperação apontam para `/#contato`; `/contato` redireciona para
+lá e saiu do sitemap.
+
+O formulário de contato da Etapa 9 (Resend + Turnstile) é **opcional** no
+briefing e foi **desativado por decisão de escopo**: nada dele é exibido ou
+carregado, `/api/contact` responde `404` sem processar nada e o binding de
+limite de envios foi removido. O código e os testes continuam no repositório
+para uma eventual reativação ([`docs/contact-form.md`](docs/contact-form.md)).
 
 ### Editor visual e personalização (Etapa 9.5)
 

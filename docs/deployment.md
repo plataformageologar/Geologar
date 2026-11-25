@@ -17,7 +17,7 @@ converte o build do Next.js em um Worker.
 
 | Arquivo                         | Função                                                   |
 | ------------------------------- | -------------------------------------------------------- |
-| `wrangler.jsonc`                | Worker `geologar`, assets estáticos, imagens, limite de envios do formulário de contato (`ratelimits`) e autorreferência exigida pelo OpenNext |
+| `wrangler.jsonc`                | Worker `geologar`, assets estáticos, imagens e autorreferência exigida pelo OpenNext |
 | `open-next.config.ts`           | Configuração do adaptador (sem cache incremental)        |
 | `public/_headers`               | Cache longo (`immutable`) para `/_next/static/*`         |
 | `scripts/assert-no-secret-env.mjs` | Bloqueia deploy local se houver chave secreta (`SUPABASE_SECRET_KEY`, `RESEND_API_KEY`, `TURNSTILE_SECRET_KEY`) em `.env*` |
@@ -28,9 +28,9 @@ configurado e **não executa mais a configuração automática** (`@opennextjs/c
 migrate --force-install`, com versões `@latest`) a cada build.
 
 Não há R2, D1, KV nem Durable Objects: não são necessários enquanto a homepage
-for renderizada sob demanda (ver abaixo). O único binding adicional é o
-`CONTACT_RATE_LIMITER` (Rate Limiting do Workers, sem armazenamento), usado
-pelo formulário de contato.
+for renderizada sob demanda (ver abaixo). O binding `CONTACT_RATE_LIMITER`
+do formulário de contato foi removido em 25/11/2026, junto com o formulário
+(desativado por decisão de escopo; ver [`contact-form.md`](contact-form.md)).
 
 ## Configuração no painel do Cloudflare
 
@@ -73,9 +73,16 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 - Depois de alterar uma variável, dispare um novo build (*Deployments → Retry
   build*, ou um novo push na `main`).
 
-### Variáveis de runtime (formulário de contato)
+### Variáveis de runtime (formulário de contato — desativado)
 
-O formulário de `/contato` lê suas variáveis **em tempo de execução**, em
+> **Desde 25/11/2026 nenhuma destas variáveis é necessária nem lida pelo
+> site.** O formulário foi desativado por decisão de escopo: `/contato`
+> redireciona para `/#contato` (contato no rodapé) e `POST /api/contact`
+> responde `404` sem processar nada, mesmo com `CONTACT_FORM_ENABLED=true`.
+> Não cadastre estas variáveis; se já existirem no painel, podem ser
+> removidas. A tabela abaixo fica como referência para uma reativação.
+
+O formulário de `/contato` lia suas variáveis **em tempo de execução**, em
 *Workers & Pages → geologar → Settings → Variables and Secrets* (não na seção
 *Build*). Valores fornecidos pela GeoLogar; nunca no repositório, no
 `wrangler.jsonc` ou em `.env*`.
@@ -107,9 +114,10 @@ npm run preview   # build do OpenNext + Worker local no runtime do Cloudflare (w
 npm test          # testes unitários (node --test), sem rede
 ```
 
-Variáveis de runtime do Worker local (formulário de contato) ficam em
-`.dev.vars` (modelo em `.dev.vars.example`, não versionado), que o Wrangler lê
-no `preview` e o build **não** embute no Worker.
+Variáveis de runtime do Worker local ficam em `.dev.vars` (modelo em
+`.dev.vars.example`, não versionado), que o Wrangler lê no `preview` e o
+build **não** embute no Worker. As do formulário de contato não são mais
+lidas (formulário desativado).
 
 O `preview` (porta 8787) reproduz o ambiente de produção e é o teste que vale
 antes de qualquer mudança em cache, renderização ou dependências do servidor.
@@ -194,7 +202,9 @@ Redirect URLs, cadastro público) em [`admin-auth.md`](admin-auth.md).
 - [ ] `GET /` responde `200` com o conteúdo do banco (hero, A Rede, 6 linhas de
       pesquisa, contato).
 - [ ] Páginas internas (`/rede`, `/pesquisa`, `/projetos`, `/publicacoes`,
-      `/instituicoes`, `/contato`) em `200`; slug inexistente em `404`.
+      `/instituicoes`) em `200`; slug inexistente em `404`.
+- [ ] `GET /contato` em `307` para `/#contato`; a coluna Contato do rodapé
+      (`id="contato"`) existe em todas as páginas.
 - [ ] Assets `/_next/static/*` com `Cache-Control: public,max-age=31536000,immutable`.
 - [ ] Logotipo (`/_next/image`) carregando; favicon em `/brand/favicon.png`
       (ou o configurado no CMS).
@@ -221,11 +231,8 @@ Redirect URLs, cadastro público) em [`admin-auth.md`](admin-auth.md).
       `X-Frame-Options: SAMEORIGIN`, `Permissions-Policy`.
 - [ ] `<link rel="canonical">` e `og:url` das páginas apontando para o endereço
       público.
-- [ ] `/contato`: sem as variáveis do formulário, apenas canais/aviso vazio e
-      nenhum script do Turnstile; `POST /api/contact` em `503`.
-- [ ] Com o formulário ativado: envio real de teste recebido, token inválido
-      recusado e limite de envios funcionando (ver
-      [`contact-form.md`](contact-form.md#checklist-de-ativação)).
+- [ ] Nenhuma página com formulário de contato ou script do Turnstile;
+      `POST /api/contact` em `404`; `sitemap.xml` sem `/contato`.
 
 ## Problemas comuns
 
@@ -236,8 +243,8 @@ Redirect URLs, cadastro público) em [`admin-auth.md`](admin-auth.md).
 | Site só com hero, A Rede e contato        | Variáveis `NEXT_PUBLIC_*` ausentes no build: cadastre e refaça o build |
 | Link de recuperação volta com "link inválido" | Aberto em outro navegador (PKCE) ou Redirect URL ausente no Supabase: ver [`admin-auth.md`](admin-auth.md) |
 | Login correto leva a "acesso negado"      | Conta sem registro ativo em `admin_memberships`   |
-| Formulário de contato não aparece        | Alguma variável de runtime ausente ou inválida, ou `CONTACT_FORM_ENABLED` diferente de `true` |
-| Envio sempre falha                        | Ver o código no log (`provider-auth`, `turnstile-hostname-mismatch`…) em [`contact-form.md`](contact-form.md#códigos-de-log) |
+| Formulário de contato não aparece        | Esperado: desativado por decisão de escopo; o contato fica no rodapé ([`contact-form.md`](contact-form.md)) |
+| Coluna Contato do rodapé sem dados        | Nenhum canal cadastrado em *Configurações* (mostra “serão informados em breve”) |
 
 ## Domínio oficial
 
@@ -250,8 +257,7 @@ antes da validação. Depois de ativar o domínio:
 2. No Supabase, atualizar *Site URL* e acrescentar
    `https://<domínio>/auth/callback` às Redirect URLs (o endereço
    `workers.dev` continua aceito pelo código).
-3. No Turnstile, incluir o novo hostname no widget.
-4. Enviar o novo `sitemap.xml` às ferramentas de busca, se desejado.
+3. Enviar o novo `sitemap.xml` às ferramentas de busca, se desejado.
 
 ## Indexação
 

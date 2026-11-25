@@ -229,13 +229,6 @@ function ListBody({ state }: { state: CanvasState }) {
           )}
         </Container>
       );
-    case "contato":
-      return (
-        <Placeholder
-          title="Canais e formulário de contato"
-          text="E-mail, telefone e endereço vêm do rodapé (Informações institucionais, somente administradores). O formulário não é editável e não envia mensagens nesta tela."
-        />
-      );
   }
 }
 
@@ -339,7 +332,13 @@ function CanvasContent({ state }: { state: CanvasState }) {
       </main>
 
       <Target id="footer" label="Rodapé" selected={isSelected("footer")}>
-        <Footer settings={settings} navigation={draftNavigation(draft.navFooter)} socialLinks={render.socialLinks} />
+        <Footer
+          settings={settings}
+          navigation={draftNavigation(draft.navFooter)}
+          usefulLinks={draftNavigation(draft.navUseful)}
+          socialLinks={render.socialLinks}
+          editing
+        />
       </Target>
     </>
   );

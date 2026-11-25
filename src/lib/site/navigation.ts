@@ -5,16 +5,19 @@ import { isUuidOrNull } from "./lists";
 
 /**
  * Menus do cabeçalho e do rodapé (tabela site_navigation; somente
- * administradores). O link "Área restrita" não faz parte destes menus: fica
- * no código, para que nenhuma edição bloqueie o acesso ao CMS.
+ * administradores). "useful" é a coluna "Links úteis" do rodapé
+ * (privacidade, termos, acessibilidade… quando existirem). O link "Área
+ * restrita" não faz parte destes menus: fica no código, para que nenhuma
+ * edição bloqueie o acesso ao CMS.
  */
 
-export const NAV_LOCATIONS = ["header", "footer"] as const;
+export const NAV_LOCATIONS = ["header", "footer", "useful"] as const;
 export type NavLocation = (typeof NAV_LOCATIONS)[number];
 
 export const NAV_LOCATION_LABELS: Record<NavLocation, string> = {
   header: "Menu do cabeçalho",
   footer: "Links do rodapé",
+  useful: "Links úteis do rodapé",
 };
 
 export const NAV_MAX = 20;
@@ -36,7 +39,7 @@ export type NavFieldErrors = Partial<Record<"label" | "href", string>>;
 export type ValidNavItem = Omit<NavDraft, "key" | "label" | "href"> & { label: string; href: string };
 
 export function isNavLocation(value: unknown): value is NavLocation {
-  return value === "header" || value === "footer";
+  return value === "header" || value === "footer" || value === "useful";
 }
 
 /** Links internos que nunca entram nos menus públicos. */
@@ -103,7 +106,11 @@ export function validateNavList(raw: unknown): {
 
 const page = (label: string, href: string): SiteNavItem => ({ label, href, openInNewTab: false });
 
-/** Menus do conteúdo inicial (fallback quando o banco não responde). */
+/**
+ * Menus do conteúdo inicial (fallback quando o banco não responde). "Contato"
+ * leva à coluna de contato do rodapé (âncora #contato, presente em todas as
+ * páginas).
+ */
 export const DEFAULT_NAVIGATION: Record<NavLocation, SiteNavItem[]> = {
   header: [
     page("Início", "/"),
@@ -111,7 +118,7 @@ export const DEFAULT_NAVIGATION: Record<NavLocation, SiteNavItem[]> = {
     page("Pesquisa", "/pesquisa"),
     page("Projetos", "/projetos"),
     page("Publicações", "/publicacoes"),
-    page("Contato", "/contato"),
+    page("Contato", "/#contato"),
   ],
   footer: [
     page("Início", "/"),
@@ -120,8 +127,9 @@ export const DEFAULT_NAVIGATION: Record<NavLocation, SiteNavItem[]> = {
     page("Projetos", "/projetos"),
     page("Publicações", "/publicacoes"),
     page("Instituições", "/instituicoes"),
-    page("Contato", "/contato"),
+    page("Contato", "/#contato"),
   ],
+  useful: [],
 };
 
 export type UnavailableLink = { location: NavLocation; label: string; href: string; reason: string };

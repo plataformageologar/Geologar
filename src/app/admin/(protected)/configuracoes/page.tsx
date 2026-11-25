@@ -49,7 +49,7 @@ export default async function SiteSettingsPage() {
       <div className="flex flex-col gap-2">
         <h1 className="text-h1">Configurações</h1>
         <p className="text-body text-muted-foreground">
-          Informações institucionais usadas no cabeçalho, no rodapé, na página de contato e nos metadados do site.
+          Informações institucionais usadas no cabeçalho, no rodapé (inclusive a coluna Contato) e nos metadados do site.
           {isAdmin && " Salvar guarda um rascunho; o site muda só ao publicar."}
         </p>
       </div>
@@ -61,7 +61,7 @@ export default async function SiteSettingsPage() {
           <EditorialScope
             doc={docInfo(doc.data)}
             canPublish
-            previewHref="/admin/editor?pagina=%2Fcontato"
+            previewHref="/admin/editor?pagina=%2F"
             loginNext="/admin/configuracoes"
           >
             <SiteSettingsForm initialValues={toSiteSettingsFormValues(settings)} readOnly={false} />

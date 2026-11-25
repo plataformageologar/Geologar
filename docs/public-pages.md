@@ -19,7 +19,7 @@ administrativa (`/admin`) tem layout próprio.
 | `/projetos/[slug]`  | `src/app/(public)/projetos/[slug]/page.tsx`    | Projeto, ficha técnica, linhas, publicações e projetos relacionados |
 | `/publicacoes`      | `src/app/(public)/publicacoes/page.tsx`        | Publicações por ano, busca, filtros por ano e linha (20/página)    |
 | `/instituicoes`     | `src/app/(public)/instituicoes/page.tsx`       | Instituições agrupadas pelas categorias cadastradas                |
-| `/contato`          | `src/app/(public)/contato/page.tsx`            | Canais reais de `site_settings` e `social_links`; formulário de contato quando configurado ([`contact-form.md`](contact-form.md)) |
+| `/contato`          | redirecionamento em `next.config.ts`           | `307` para `/#contato` (coluna Contato do rodapé, em todas as páginas). A página e o formulário foram desativados por decisão de escopo ([`contact-form.md`](contact-form.md)) |
 | 404                 | `src/app/not-found.tsx`, `src/app/(public)/not-found.tsx` | Página não encontrada, com links de retorno (URL inexistente / `notFound()` de uma página) |
 | erro                | `src/app/(public)/error.tsx`                   | Falha temporária de carregamento, com "Tentar novamente"           |
 
@@ -56,7 +56,6 @@ publicações, só quando há publicações (ou filtros ativos).
 | `getPublishedPublications(filters)` | `/publicacoes`                                              |
 | `getPublicationFilterOptions()`   | Anos e linhas que têm publicações                             |
 | `getPublishedInstitutionGroups()` | `/instituicoes`                                               |
-| `getContactChannels()`            | `/contato`                                                    |
 
 Regras:
 
@@ -105,7 +104,8 @@ Regras:
 
 A migration `20261103183909_homepage_links_to_internal_pages.sql` troca os
 CTAs que ainda apontavam para âncoras (`/#pesquisa`, `/#a-rede`) pelas rotas
-`/pesquisa` e `/rede`, e define `/contato` para "Fale com a GeoLogar". Cada
+`/pesquisa` e `/rede`, e define `/contato` para "Fale com a GeoLogar" (hoje
+`/#contato`: o site leva `/contato` e `/#contato` à coluna Contato do rodapé). Cada
 campo só é alterado se ainda tiver o valor original: links personalizados ou
 externos são preservados. Os fallbacks em `src/data/site.ts` usam os mesmos
 destinos.

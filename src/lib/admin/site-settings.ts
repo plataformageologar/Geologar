@@ -1,4 +1,5 @@
 import { parseImageReference } from "@/lib/media/references";
+import { validateWhatsapp } from "@/lib/site/contact";
 import type { Tables } from "@/types/database.types";
 
 import { normalizeText, validateEmail, validatePhone, validateText, type TextRule } from "./validation";
@@ -22,6 +23,7 @@ export const siteSettingsTextRules = {
   footer_nav_title: { max: 40 },
   footer_contact_title: { max: 40 },
   footer_social_title: { max: 40 },
+  footer_links_title: { max: 40 },
 } satisfies Record<string, TextRule>;
 
 /** Logotipo do rodapé: oficial (arquivo do código), o institucional ou um próprio. */
@@ -45,7 +47,12 @@ export const FOOTER_DEFAULT_TITLES = {
   footer_nav_title: "Navegação",
   footer_contact_title: "Contato",
   footer_social_title: "Redes sociais",
+  footer_links_title: "Links úteis",
 } as const;
+
+/** Texto de apresentação do rodapé quando o campo está vazio (editável no CMS). */
+export const FOOTER_DEFAULT_DESCRIPTION =
+  "Ciência para compreender o território, valorizar os recursos naturais e construir um futuro sustentável.";
 
 export const siteSettingsFields = [
   "site_name",
@@ -54,6 +61,7 @@ export const siteSettingsFields = [
   "short_description",
   "contact_email",
   "contact_phone",
+  "contact_whatsapp",
   "address",
   "city",
   "state",
@@ -65,6 +73,7 @@ export const siteSettingsFields = [
   "footer_nav_title",
   "footer_contact_title",
   "footer_social_title",
+  "footer_links_title",
   "footer_logo_mode",
   "footer_logo_path",
   "header_style",
@@ -137,6 +146,11 @@ export function parseSiteSettingsValues(
   const phoneError = validatePhone(phone);
   if (phoneError) errors.contact_phone = phoneError;
 
+  // WhatsApp só quando cadastrado: nunca copiado do telefone.
+  const whatsapp = normalizeText(values.contact_whatsapp);
+  const whatsappError = validateWhatsapp(whatsapp);
+  if (whatsappError) errors.contact_whatsapp = whatsappError;
+
   const data: SiteSettingsRecord = {
     site_name: text("site_name") ?? "",
     institutional_name: text("institutional_name"),
@@ -144,6 +158,7 @@ export function parseSiteSettingsValues(
     short_description: text("short_description"),
     contact_email: email,
     contact_phone: phone,
+    contact_whatsapp: whatsapp,
     address: text("address"),
     city: text("city"),
     state: text("state"),
@@ -155,6 +170,7 @@ export function parseSiteSettingsValues(
     footer_nav_title: text("footer_nav_title"),
     footer_contact_title: text("footer_contact_title"),
     footer_social_title: text("footer_social_title"),
+    footer_links_title: text("footer_links_title"),
     footer_logo_mode: footerLogoMode ?? "official",
     // O arquivo próprio fica guardado mesmo com outra opção ativa.
     footer_logo_path: footerLogo.value,

@@ -252,7 +252,7 @@ export function VisualEditor({ doc }: { doc: EditorDocument }) {
       return field && HEADER_SETTINGS.has(field) ? "header" : "footer";
     }
     if (found.navHeader) return "header";
-    if (found.navFooter) return "footer";
+    if (found.navFooter || found.navUseful) return "footer";
     if (found.appearance) return "appearance";
     return null;
   }
