@@ -19,6 +19,8 @@
 | Binding `CONTACT_RATE_LIMITER` | Removido do `wrangler.jsonc`. |
 | Código preservado | `src/lib/contact/*` (validação, Turnstile, Resend, limite de envios), `src/components/contact/*` e os testes de `tests/contact/` continuam no repositório e rodam em `npm test`. |
 | Contato no site | Coluna “Contato” do rodapé, editável em *Configurações* e no editor visual (ver [`cms.md`](cms.md#informações-institucionais-adminconfiguracoes)). |
+| Links no CMS | “Contato” do cabeçalho e do rodapé e o botão “Fale com a GeoLogar” gravados como `/#contato` e publicados em 25/11/2026 (navegação, revisão 6, 12:19; página inicial, revisão 13, 12:20). Links úteis: vazios (só “Área restrita”, fixo). |
+| Canais de contato | Nenhum cadastrado: a coluna mostra “Os canais oficiais de contato serão informados em breve.” até a GeoLogar fornecer os dados. Conferido no editor visual com valores fictícios **não salvos**. |
 
 ### Como reativar (somente com nova decisão da GeoLogar)
 
