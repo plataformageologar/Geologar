@@ -114,8 +114,9 @@ ela (`/#contato`). Cada campo só aparece quando preenchido.
       Não é copiado do telefone.
 - [ ] Endereço (logradouro) e confirmação de Salvador — BA — Brasil.
 - [ ] Redes sociais ativas (endereços completos `https://`).
-- [ ] Links úteis do rodapé (privacidade, termos, mapa do site,
-      acessibilidade) — só quando as páginas existirem.
+- [ ] Links úteis do rodapé: Termos de uso, Política de privacidade e
+      Acessibilidade apontam para páginas **provisórias** (ver Jurídico).
+      Mapa do site não foi criado.
 
 O formulário de contato **não será usado** (decisão de escopo em
 25/11/2026; o briefing o trata como opcional). Resend e Turnstile não são
@@ -141,13 +142,21 @@ Ver [`digital-experiences.md`](digital-experiences.md).
 
 ## Jurídico
 
-- [ ] Política de privacidade.
-- [ ] Termos de uso, quando aplicáveis.
+- [ ] Política de privacidade (texto oficial).
+- [ ] Termos de uso, quando aplicáveis (texto oficial).
+- [ ] Declaração de acessibilidade (texto oficial).
 
-Nenhum texto jurídico foi redigido: os links do mockup (termos, privacidade,
-mapa do site, acessibilidade) só serão criados com textos fornecidos ou
-validados pela equipe. Criar essas páginas exige uma etapa de
-desenvolvimento.
+**Páginas provisórias (25/11/2026, a pedido da GeoLogar):**
+`/paginas/termos-de-uso`, `/paginas/politica-de-privacidade` e
+`/paginas/acessibilidade` foram criadas como páginas personalizadas e
+publicadas, ligadas à coluna Links úteis do rodapé. **Nenhum texto jurídico
+foi redigido**: cada página diz que é provisória e que o texto oficial está
+em elaboração. A de privacidade informa apenas que o portal não tem
+formulário de cadastro nem de contato; a de acessibilidade lista só recursos
+que o site de fato oferece (link para pular ao conteúdo, foco visível no
+teclado, texto alternativo, menos movimento, ajuste ao celular). Para
+substituir: *Páginas* › abrir a página › editar a introdução ou acrescentar
+blocos › publicar (o endereço não muda).
 
 ## Administrativo
 

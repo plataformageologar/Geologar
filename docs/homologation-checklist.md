@@ -46,8 +46,8 @@ Use, se possível, um computador e um celular.
       atuais são provisórios do conceito (`geologar@ufba.br`, Salvador — BA —
       Brasil); faltam telefone completo, WhatsApp (se houver), endereço e
       redes sociais.
-- [ ] Links úteis do rodapé (privacidade, termos, acessibilidade), quando as
-      páginas existirem.
+- [ ] Textos oficiais para as páginas provisórias dos Links úteis (Termos
+      de uso, Política de privacidade, Acessibilidade).
 - [ ] Decisão sobre domínio próprio (endereço definitivo do site).
 
 ### Identidade visual (Etapa 10.7)

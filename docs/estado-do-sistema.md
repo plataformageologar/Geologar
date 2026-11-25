@@ -54,7 +54,7 @@ contato não são mais lidas (formulário desativado; ver
 | Publicações | `/publicacoes` | No ar; sem página individual |
 | Instituições | `/instituicoes` | No ar |
 | Contato | coluna do rodapé (`/#contato`) | Em todas as páginas; `/contato` redireciona (`307`) para `/#contato`. Formulário **desativado por decisão de escopo** (25/11/2026); Resend e Turnstile não são usados |
-| Páginas personalizadas | `/paginas/[slug]` | Só as publicadas; demais respondem 404 (nenhuma publicada hoje) |
+| Páginas personalizadas | `/paginas/[slug]` | Só as publicadas; demais respondem 404. Publicadas: Termos de uso, Política de privacidade e Acessibilidade (provisórias, 25/11/2026) |
 
 Para quem está logado (admin/editor) aparece o botão **“Editar esta página”**,
 com a permissão verificada no servidor. Ver [`public-pages.md`](public-pages.md).
@@ -240,8 +240,8 @@ Ver [`database-schema.md`](database-schema.md).
 - Projetos, publicações, instituições e redes sociais reais.
 - Dados de contato oficiais (e-mail, telefone, WhatsApp, endereço, redes
   sociais), a cadastrar pelo CMS. O formulário de contato não é pendência.
-- Links úteis do rodapé (privacidade, termos, acessibilidade) quando as
-  páginas existirem.
+- Textos oficiais de termos de uso, privacidade e acessibilidade (as páginas
+  dos Links úteis do rodapé são provisórias).
 - Decisão sobre domínio próprio.
 - Contas da equipe: Editores criados pelo Administrador em
   *Usuários e permissões*; Administradores adicionais, pela equipe técnica.
